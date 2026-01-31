@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/webp" href="https://d64gsuwffb70l.cloudfront.net/69192c98db8a9927f5f026a9_1764553503127_f571a4a3.webp" />
+    <link rel="canonical" href="https://levelworks.org" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Level" />
+    <title>Level - Contractor Management Tool</title>
+    <meta name="description" content="Professional estimates, invoices, job tracking, and AI assistant for contractors. Manage your contracting business efficiently." />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="https://d64gsuwffb70l.cloudfront.net/69192c98db8a9927f5f026a9_1764553503127_f571a4a3.webp" />
+    <meta property="og:title" content="Level Works - Contractor Management Tool" />
+    <meta property="og:description" content="Professional estimates, invoices, job tracking, and AI assistant for contractors. Manage your contracting business efficiently." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://d64gsuwffb70l.cloudfront.net/69192c98db8a9927f5f026a9_1764553503127_f571a4a3.webp" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://d64gsuwffb70l.cloudfront.net/69192c98db8a9927f5f026a9_1764553503127_f571a4a3.webp" />
+
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // CRITICAL: Clear all caches and update service worker on every page load
+      (async function() {
+        if ('serviceWorker' in navigator) {
+          try {
+            // Step 1: Clear ALL caches
+            const cacheNames = await caches.keys();
+            for (const name of cacheNames) {
+              await caches.delete(name);
+              console.log('Deleted cache:', name);
+            }
+            
+            // Step 2: Get all service worker registrations
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            
+            // Step 3: Force update on all registrations
+            for (const registration of registrations) {
+              await registration.update();
+              console.log('Updated service worker');
+            }
+            
+            // Step 4: Register new service worker (for push notifications only)
+            const reg = await navigator.serviceWorker.register('/sw.js');
+            console.log('Service Worker v6 registered');
+            
+            // Step 5: If there's a waiting worker, skip waiting
+            if (reg.waiting) {
+              reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+            
+            // Step 6: Listen for new workers
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                  }
+                });
+              }
+            });
+          } catch (err) {
+            console.log('Service Worker setup:', err);
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>

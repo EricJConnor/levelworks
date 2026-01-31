@@ -1,0 +1,43 @@
+{
+  "domain": {
+    "primary": "levelworks.org",
+    "www": true,
+    "ssl": true,
+    "provider": "godaddy",
+    "autoConnect": true
+  },
+  "deployment": {
+    "platform": "famous.ai",
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "nodeVersion": "18"
+  },
+  "dns": {
+    "records": [
+      {
+        "type": "A",
+        "name": "@",
+        "value": "AUTO_DETECT",
+        "ttl": 600
+      },
+      {
+        "type": "CNAME",
+        "name": "www",
+        "value": "cname.famous.ai",
+        "ttl": 600
+      }
+    ]
+  },
+  "environment": {
+    "production": {
+      "VITE_SUPABASE_URL": "https://vqonfzleebbcydfafoio.supabase.co",
+      "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+    }
+  },
+  "metadata": {
+    "name": "Level Works",
+    "description": "Professional contractor management platform",
+    "author": "Level Works Team"
+
+  }
+}

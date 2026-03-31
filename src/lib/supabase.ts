@@ -1,9 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize database client with proper session persistence
-const databaseUrl = 'https://vqonfzleebbcydfafoio.supabase.co';
-const databaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZxb25memxlZWJiY3lkZmFmb2lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2NDc2MTIsImV4cCI6MjA3OTIyMzYxMn0.N0bsLp4PgqzxSdGm594LuJYzD5QBG_jPtp-mdI-7S24';
-
+const databaseUrl = const databaseUrl = 'https://djrsmuafbbzxpbdibolq.supabase.co';
+const databaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqcnNtdWFmYmJ6eHBiZGlib2xxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5ODE1OTIsImV4cCI6MjA5MDU1NzU5Mn0.vIKq1NjFXX3w7Jj09AEU8F4KLxG9O6TA-bsDl7vFKlw';
 
 const supabase = createClient(databaseUrl, databaseKey, {
   auth: {

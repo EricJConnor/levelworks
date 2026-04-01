@@ -1,14 +1,11 @@
-
 import React, { useState } from 'react';
 import { useInvoices } from '@/contexts/InvoiceContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, DollarSign, Calendar, Trash2, Link, Copy, Check, Send } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { FileText, DollarSign, Calendar, Trash2, Link, Check, Send, ChevronDown, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { sendInvoiceEmail } from '@/lib/edgeFunctions';
@@ -16,6 +13,7 @@ import { sendInvoiceEmail } from '@/lib/edgeFunctions';
 export const InvoicesList: React.FC = () => {
   const { invoices, deleteInvoice, recordPayment, updateInvoice } = useInvoices();
   const { toast } = useToast();
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; invoiceId: string | null }>({ open: false, invoiceId: null });
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentNote, setPaymentNote] = useState('');
@@ -28,6 +26,7 @@ export const InvoicesList: React.FC = () => {
     setPaymentDialog({ open: false, invoiceId: null });
     setPaymentAmount('');
     setPaymentNote('');
+    toast({ title: 'Payment recorded!' });
   };
 
   const copyPaymentLink = (invoice: any) => {
@@ -43,11 +42,9 @@ export const InvoicesList: React.FC = () => {
       toast({ title: 'Error', description: 'Client email is required to send invoice', variant: 'destructive' });
       return;
     }
-    
     setSendingId(invoice.id);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
       const result = await sendInvoiceEmail({
         invoiceId: invoice.id,
         clientEmail: invoice.clientEmail,
@@ -66,14 +63,10 @@ export const InvoicesList: React.FC = () => {
         },
         userId: user?.id
       });
-
       if (result.error) throw result.error;
-      
-      // Update sentAt
       await updateInvoice(invoice.id, { sentAt: new Date().toISOString() });
       toast({ title: 'Invoice sent successfully!' });
     } catch (error: any) {
-      console.error('Send invoice error:', error);
       toast({ title: 'Error', description: error.message || 'Failed to send invoice', variant: 'destructive' });
     } finally {
       setSendingId(null);
@@ -87,6 +80,12 @@ export const InvoicesList: React.FC = () => {
       case 'overdue': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const parseLineItems = (items: any) => {
+    if (!items) return [];
+    if (Array.isArray(items)) return items;
+    try { return JSON.parse(items); } catch { return []; }
   };
 
   return (
@@ -103,53 +102,131 @@ export const InvoicesList: React.FC = () => {
       ) : (
         <div className="space-y-3">
           {invoices.map(invoice => (
-            <Card key={invoice.id} className="p-3 md:p-4">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-base md:text-lg font-semibold">{invoice.invoiceNumber}</h3>
-                  <Badge className={`${getStatusColor(invoice.status)} text-xs`}>{invoice.status.replace('_', ' ').toUpperCase()}</Badge>
-                  {!invoice.sentAt && <Badge className="bg-orange-100 text-orange-800 text-xs">Not Sent</Badge>}
+            <Card
+              key={invoice.id}
+              className="p-3 md:p-4 cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => setSelectedInvoice(invoice)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <h3 className="text-base font-semibold">{invoice.invoiceNumber}</h3>
+                    <Badge className={`${getStatusColor(invoice.status)} text-xs`}>{invoice.status.replace('_', ' ').toUpperCase()}</Badge>
+                    {!invoice.sentAt && <Badge className="bg-orange-100 text-orange-800 text-xs">Not Sent</Badge>}
+                  </div>
+                  <p className="text-sm text-gray-600 truncate">{invoice.clientName} — {invoice.projectName}</p>
+                  <div className="flex gap-4 mt-1 text-xs text-gray-500">
+                    <span>${invoice.total.toFixed(2)} total</span>
+                    <span className="text-green-600">${invoice.amountPaid.toFixed(2)} paid</span>
+                    <span className="text-blue-600">${(invoice.total - invoice.amountPaid).toFixed(2)} due</span>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600">{invoice.clientName} - {invoice.projectName}</p>
-                <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{new Date(invoice.issueDate).toLocaleDateString()}</span>
-                  {invoice.dueDate && <span>Due: {new Date(invoice.dueDate).toLocaleDateString()}</span>}
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-xs md:text-sm py-2 border-t border-b">
-                  <div><span className="text-gray-500 block">Total</span><span className="font-semibold">${invoice.total.toFixed(2)}</span></div>
-                  <div><span className="text-gray-500 block">Paid</span><span className="font-semibold text-green-600">${invoice.amountPaid.toFixed(2)}</span></div>
-                  <div><span className="text-gray-500 block">Balance</span><span className="font-semibold text-blue-600">${(invoice.total - invoice.amountPaid).toFixed(2)}</span></div>
-                </div>
-                <div className="flex gap-2 flex-wrap">
-                  {!invoice.sentAt && (
-                    <Button 
-                      size="sm" 
-                      className="text-xs h-8 bg-green-600 hover:bg-green-700" 
-                      onClick={() => handleSendInvoice(invoice)}
-                      disabled={sendingId === invoice.id}
-                    >
-                      <Send className="h-3 w-3 mr-1" />
-                      {sendingId === invoice.id ? 'Sending...' : 'Send Invoice'}
-                    </Button>
-                  )}
-                  {invoice.status !== 'paid' && (
-                    <>
-                      <Button size="sm" className="text-xs h-8 flex-1" onClick={() => setPaymentDialog({ open: true, invoiceId: invoice.id })}>
-                        <DollarSign className="h-3 w-3 mr-1" />Record Payment
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => copyPaymentLink(invoice)}>
-                        {copiedId === invoice.id ? <Check className="h-3 w-3 mr-1" /> : <Link className="h-3 w-3 mr-1" />}
-                        {copiedId === invoice.id ? 'Copied!' : 'Link'}
-                      </Button>
-                    </>
-                  )}
-                  <Button size="sm" variant="destructive" className="text-xs h-8" onClick={() => deleteInvoice(invoice.id)}>
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
+                <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0 ml-2" />
               </div>
             </Card>
           ))}
+        </div>
+      )}
+
+      {selectedInvoice && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-3">
+          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-auto shadow-2xl">
+            <div className="bg-blue-600 text-white p-4 flex justify-between items-center rounded-t-xl sticky top-0">
+              <div>
+                <h2 className="text-lg font-bold">{selectedInvoice.invoiceNumber}</h2>
+                <p className="text-blue-200 text-sm">{selectedInvoice.clientName} — {selectedInvoice.projectName}</p>
+              </div>
+              <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-blue-700 rounded-lg">
+                <X size={22} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-5">
+              <div className="flex flex-wrap gap-3 items-center">
+                <Badge className={`${getStatusColor(selectedInvoice.status)} text-sm px-3 py-1`}>
+                  {selectedInvoice.status.replace('_', ' ').toUpperCase()}
+                </Badge>
+                {!selectedInvoice.sentAt && <Badge className="bg-orange-100 text-orange-800 text-sm px-3 py-1">Not Sent</Badge>}
+                <span className="text-sm text-gray-500 flex items-center gap-1">
+                  <Calendar className="h-3 w-3" /> Issued: {new Date(selectedInvoice.issueDate).toLocaleDateString()}
+                </span>
+                {selectedInvoice.dueDate && (
+                  <span className="text-sm text-gray-500">Due: {new Date(selectedInvoice.dueDate).toLocaleDateString()}</span>
+                )}
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-xs text-gray-500 font-semibold uppercase mb-2">Client</p>
+                <p className="font-semibold text-gray-900">{selectedInvoice.clientName}</p>
+                {selectedInvoice.clientEmail && <p className="text-sm text-gray-600">{selectedInvoice.clientEmail}</p>}
+                {selectedInvoice.clientPhone && <p className="text-sm text-gray-600">{selectedInvoice.clientPhone}</p>}
+              </div>
+
+              <div>
+                <p className="text-xs text-gray-500 font-semibold uppercase mb-2">Line Items</p>
+                <div className="space-y-2">
+                  {parseLineItems(selectedInvoice.lineItems).map((item: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-start bg-gray-50 rounded-lg p-3">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-800 text-sm">{item.description}</p>
+                        <p className="text-xs text-gray-500">Qty: {item.quantity} × ${Number(item.rate).toFixed(2)}</p>
+                      </div>
+                      <p className="font-semibold text-gray-900 ml-4">${Number(item.total || item.quantity * item.rate).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-blue-50 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between text-sm"><span className="text-gray-600">Total</span><span className="font-semibold">${selectedInvoice.total.toFixed(2)}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-green-600">Amount Paid</span><span className="font-semibold text-green-600">-${selectedInvoice.amountPaid.toFixed(2)}</span></div>
+                <div className="flex justify-between text-lg font-bold border-t pt-2"><span>Balance Due</span><span className="text-blue-600">${(selectedInvoice.total - selectedInvoice.amountPaid).toFixed(2)}</span></div>
+              </div>
+
+              {selectedInvoice.notes && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-xs text-gray-500 font-semibold uppercase mb-1">Notes</p>
+                  <p className="text-sm text-gray-700">{selectedInvoice.notes}</p>
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-3 pt-2">
+                {!selectedInvoice.sentAt && (
+                  <button
+                    onClick={() => handleSendInvoice(selectedInvoice)}
+                    disabled={sendingId === selectedInvoice.id}
+                    className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm disabled:opacity-50"
+                  >
+                    <Send size={16} />
+                    {sendingId === selectedInvoice.id ? 'Sending...' : 'Send Invoice'}
+                  </button>
+                )}
+                {selectedInvoice.status !== 'paid' && (
+                  <>
+                    <button
+                      onClick={() => { setPaymentDialog({ open: true, invoiceId: selectedInvoice.id }); setSelectedInvoice(null); }}
+                      className="flex items-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm"
+                    >
+                      <DollarSign size={16} /> Record Payment
+                    </button>
+                    <button
+                      onClick={() => copyPaymentLink(selectedInvoice)}
+                      className="flex items-center gap-2 px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 font-semibold text-sm text-gray-700"
+                    >
+                      {copiedId === selectedInvoice.id ? <Check size={16} /> : <Link size={16} />}
+                      {copiedId === selectedInvoice.id ? 'Copied!' : 'Copy Payment Link'}
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => { deleteInvoice(selectedInvoice.id); setSelectedInvoice(null); }}
+                  className="flex items-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold text-sm"
+                >
+                  <Trash2 size={16} /> Delete
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -171,7 +248,6 @@ export const InvoicesList: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 };

@@ -82,12 +82,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
         if (error) throw error;
         if (!data.session) throw new Error('No session returned');
         
-        // Store remember me preference
-        if (!rememberMe) {
-          sessionStorage.setItem('clearSessionOnClose', 'true');
-        } else {
-          sessionStorage.removeItem('clearSessionOnClose');
-        }
+        // Session persisted by Supabase - keep me signed in works automatically
+        localStorage.setItem('levelworks-remember-me', rememberMe ? 'true' : 'false');
         
         // Wait for session to be fully established
         await new Promise(resolve => setTimeout(resolve, 300));

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { toast } from '@/components/ui/use-toast';
 import { SendEstimateModal } from './SendEstimateModal';
-import { X, Plus, Trash2, Users } from 'lucide-react';
+import { X, Plus, Trash2, Users, Edit } from 'lucide-react';
 
 interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; }
 interface Props { onClose: () => void; onConvertToInvoice?: (data: any) => void; existingEstimate?: any; }
@@ -62,6 +62,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [showSendModal, setShowSendModal] = useState(false);
   const [savedEstimateData, setSavedEstimateData] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(!!existingEstimate);
 const [showClientPicker, setShowClientPicker] = useState(false);
 
 
@@ -263,8 +264,15 @@ const [showClientPicker, setShowClientPicker] = useState(false);
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 md:p-4">
       <div className="bg-white rounded-lg w-full max-w-6xl max-h-[95vh] overflow-auto">
         <div className="sticky top-0 bg-blue-600 text-white p-3 md:p-4 flex justify-between items-center z-10">
-          <h2 className="text-lg md:text-2xl font-bold">{existingEstimate ? 'Edit' : 'Create'} Estimate</h2>
-          <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded"><X size={24} /></button>
+          <h2 className="text-lg md:text-2xl font-bold">{isReadOnly ? 'View Estimate' : existingEstimate ? 'Edit Estimate' : 'Create Estimate'}</h2>
+          <div className="flex items-center gap-2">
+            {isReadOnly && (
+              <button onClick={() => setIsReadOnly(false)} className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg font-bold hover:bg-blue-50">
+                <Edit size={16} /> Edit
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded"><X size={24} /></button>
+          </div>
         </div>
         <div className="p-4 md:p-6">
           <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
@@ -305,10 +313,10 @@ const [showClientPicker, setShowClientPicker] = useState(false);
                 </div>
               )}
             </div>
-            <div><label className="block text-sm font-semibold mb-2">Client Name *</label><input value={clientName} onChange={(e) => setClientName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="Enter client name" /></div>
-            <div><label className="block text-sm font-semibold mb-2">Client Email</label><input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="client@email.com" type="email" /></div>
-            <div><label className="block text-sm font-semibold mb-2">Client Phone</label><input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="(555) 123-4567" type="tel" /></div>
-            <div className="md:col-span-3"><label className="block text-sm font-semibold mb-2">Project Name *</label><input value={projectName} onChange={(e) => setProjectName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="Enter project name" /></div>
+            <div><label className="block text-sm font-semibold mb-2">Client Name *</label><input value={clientName} onChange={(e) => setClientName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="Enter client name" disabled={isReadOnly} /></div>
+            <div><label className="block text-sm font-semibold mb-2">Client Email</label><input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="client@email.com" type="email" disabled={isReadOnly} /> /></div>
+            <div><label className="block text-sm font-semibold mb-2">Client Phone</label><input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="(555) 123-4567" type="tel" disabled={isReadOnly} /> /></div>
+            <div className="md:col-span-3"><label className="block text-sm font-semibold mb-2">Project Name *</label><input value={projectName} onChange={(e) => setProjectName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="Enter project name" disabled={isReadOnly} /> /></div>
           </div>
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4"><h3 className="text-lg font-bold">Line Items</h3><button onClick={addLineItem} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"><Plus size={18} /> Add</button></div>

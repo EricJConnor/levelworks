@@ -233,7 +233,7 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewRecei
   }, []);
 
   // Get recent estimates (last 5)
-  const recentEstimates = estimates.slice(0, 5);
+  const recentEstimates = estimates.slice(0, 3);
 
   // Calculate estimate stats
   const pendingEstimates = estimates.filter(e => e.status === 'sent').length;
@@ -390,11 +390,7 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewRecei
         </div>
       </div>
 
-      {/* Recent Jobs Section */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Recent Jobs</h3>
-        <JobsList jobs={jobs.slice(0, 3)} onCreateEstimate={onCreateEstimate} onViewJob={(job: any) => console.log('View job', job)} />
-      </div>
+      
     </div>
   );
 }

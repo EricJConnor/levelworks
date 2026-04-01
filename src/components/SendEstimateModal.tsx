@@ -97,7 +97,7 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
     setErrorMessage(null);
 
     // Generate the estimate URL
-    const estimateUrl = `${window.location.origin}/estimate/${viewToken}`;
+    const estimateUrl = `${window.location.origin}/view-estimate/${viewToken}`;
     const contractorName = profile?.full_name || profile?.company_name || 'Your Contractor';
 
     try {

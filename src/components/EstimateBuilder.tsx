@@ -51,7 +51,7 @@ const cleanLineItem = (item: any, index: number): LineItem | null => {
 };
 
 export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, existingEstimate }) => {
-  const { addEstimate, updateEstimate, refreshEstimates } = useData();
+  const { addEstimate, updateEstimate, refreshEstimates, addClient, clients } = useData();
   const [clientName, setClientName] = useState(existingEstimate?.clientName || '');
   const [clientEmail, setClientEmail] = useState(existingEstimate?.clientEmail || '');
   const [clientPhone, setClientPhone] = useState(existingEstimate?.clientPhone || '');
@@ -160,6 +160,25 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         resultId = saveResult.id;
         resultViewToken = saveResult.viewToken;
         console.log('[EstimateBuilder] Created new estimate:', resultId, 'with viewToken:', resultViewToken);
+
+        // Auto-save client if name provided and doesn't already exist
+        if (clientName.trim()) {
+          const exists = clients.some(c => c.name.toLowerCase() === clientName.trim().toLowerCase());
+          if (!exists) {
+            try {
+              await addClient({
+                name: clientName.trim(),
+                email: clientEmail.trim(),
+                phone: clientPhone.trim(),
+                address: '',
+                totalJobs: 0,
+                totalValue: 0
+              });
+            } catch (e) {
+              console.log('[EstimateBuilder] Client save skipped:', e);
+            }
+          }
+        }
       }
       
       // Refresh to get latest data

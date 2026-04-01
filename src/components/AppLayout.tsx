@@ -8,7 +8,6 @@ import { ClientsList } from './ClientsList';
 import { EstimateBuilder } from './EstimateBuilder';
 import { InvoiceBuilder } from './InvoiceBuilder';
 import { InvoicesList } from './InvoicesList';
-import { AIAssistant } from './AIAssistant';
 import { NotificationSettings } from './NotificationSettings';
 import { EstimatesList } from './EstimatesList';
 import { ReferralWidget } from './ReferralWidget';
@@ -73,8 +72,7 @@ export const AppLayout: React.FC = () => {
     { key: 'estimates', label: 'Estimates' }, 
     { key: 'invoices', label: 'Invoices' }, 
     { key: 'receipts', label: 'Receipts' }, 
-    { key: 'ai', label: 'AI' }
-  ];
+      ];
   const handleNavClick = (view: View) => { setCurrentView(view); setMobileMenuOpen(false); };
 
   // Handle design to estimate conversion
@@ -178,8 +176,7 @@ export const AppLayout: React.FC = () => {
           />
         )}
                 {currentView === 'jobs' && <JobsList jobs={jobs} onCreateEstimate={() => setShowEstimate(true)} onViewJob={(job) => console.log('View job', job)} />}
-        {currentView === 'ai' && <AIAssistant />}
-        {currentView === 'notifications' && <NotificationSettings />}
+                {currentView === 'notifications' && <NotificationSettings />}
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onViewClient={(client) => console.log('View client', client)} />}
         {currentView === 'estimates' && <EstimatesList />}
         {currentView === 'invoices' && <InvoicesList />}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { toast } from '@/components/ui/use-toast';
 import { SendEstimateModal } from './SendEstimateModal';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, Users } from 'lucide-react';
 
 interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; }
 interface Props { onClose: () => void; onConvertToInvoice?: (data: any) => void; existingEstimate?: any; }
@@ -62,7 +62,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [showSendModal, setShowSendModal] = useState(false);
   const [savedEstimateData, setSavedEstimateData] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
-
+const [showClientPicker, setShowClientPicker] = useState(false);
 
 
   const subtotal = lineItems.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
@@ -268,8 +268,45 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         </div>
         <div className="p-4 md:p-6">
           <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
+            <div className="md:col-span-3 mb-2">
+              {clients.length > 0 && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowClientPicker(!showClientPicker)}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 font-semibold text-sm"
+                  >
+                    <Users size={16} /> Choose Saved Client
+                  </button>
+                  {showClientPicker && (
+                    <div className="absolute top-12 left-0 z-50 bg-white border-2 border-gray-200 rounded-xl shadow-xl w-80 max-h-64 overflow-auto">
+                      <div className="p-3 border-b bg-gray-50">
+                        <p className="text-sm font-semibold text-gray-700">Select a client</p>
+                      </div>
+                      {clients.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setClientName(c.name);
+                            setClientEmail(c.email || '');
+                            setClientPhone(c.phone || '');
+                            setShowClientPicker(false);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b last:border-0"
+                        >
+                          <p className="font-semibold text-gray-900">{c.name}</p>
+                          {c.email && <p className="text-xs text-gray-500">{c.email}</p>}
+                          {c.phone && <p className="text-xs text-gray-500">{c.phone}</p>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <div><label className="block text-sm font-semibold mb-2">Client Name *</label><input value={clientName} onChange={(e) => setClientName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="Enter client name" /></div>
-            <div><label className="block text-sm font-semibold mb-2">Client Email *</label><input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="client@email.com" type="email" /></div>
+            <div><label className="block text-sm font-semibold mb-2">Client Email</label><input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="client@email.com" type="email" /></div>
             <div><label className="block text-sm font-semibold mb-2">Client Phone</label><input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="(555) 123-4567" type="tel" /></div>
             <div className="md:col-span-3"><label className="block text-sm font-semibold mb-2">Project Name *</label><input value={projectName} onChange={(e) => setProjectName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" placeholder="Enter project name" /></div>
           </div>

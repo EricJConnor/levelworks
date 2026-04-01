@@ -20,7 +20,7 @@ import AuthModal from './AuthModal';
 import { useData, Estimate } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
-import { Menu, X, Bell, Gift, Loader2, User, LogOut, ArrowLeft, FileText, Eye, ExternalLink, CheckCircle, Clock, Send, ChefHat, Sparkles } from 'lucide-react';
+import { Menu, X, Bell, Gift, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, Eye, ExternalLink, CheckCircle, Clock, Send, ChefHat, Sparkles } from 'lucide-react';
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';

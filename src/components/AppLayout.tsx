@@ -216,7 +216,7 @@ interface DashboardViewProps {
   onOpenDesign: () => void;
 }
 
-function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewReceipts, onViewEstimates, onOpenDesign }: DashboardViewProps) {
+function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewReceipts, onViewEstimates, onOpenDesign, onViewEstimate }: DashboardViewProps) {
   const { toast } = useToast();
   const [receiptCount, setReceiptCount] = useState(0);
   

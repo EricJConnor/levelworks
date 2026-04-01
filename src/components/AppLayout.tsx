@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { JobsList } from './JobsList';
 import { ClientsList } from './ClientsList';
 import { EstimateBuilder } from './EstimateBuilder';
 import { InvoiceBuilder } from './InvoiceBuilder';
@@ -26,7 +25,7 @@ import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
-type View = 'dashboard' | 'jobs' | 'clients' | 'ai' | 'notifications' | 'estimates' | 'invoices' | 'referrals' | 'account' | 'receipts' | 'design';
+type View = 'dashboard' | 'clients' | 'ai' | 'notifications' | 'estimates' | 'invoices' | 'referrals' | 'account' | 'receipts' | 'design';
 
 export const AppLayout: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -66,8 +65,7 @@ export const AppLayout: React.FC = () => {
 
   const navItems = [
     { key: 'dashboard', label: 'Dashboard' }, 
-      { key: 'jobs', label: 'Jobs' }, 
-    { key: 'clients', label: 'Clients' }, 
+      { key: 'clients', label: 'Clients' }, 
     { key: 'estimates', label: 'Estimates' }, 
     { key: 'invoices', label: 'Invoices' }, 
     { key: 'receipts', label: 'Receipts' }, 
@@ -174,7 +172,6 @@ export const AppLayout: React.FC = () => {
             onViewEstimate={(estimate) => { setSelectedEstimate(estimate); setShowEstimate(true); }}
           />
         )}
-                {currentView === 'jobs' && <JobsList jobs={jobs} onCreateEstimate={() => setShowEstimate(true)} onViewJob={(job) => console.log('View job', job)} />}
                 {currentView === 'notifications' && <NotificationSettings />}
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} />}
         {currentView === 'estimates' && <EstimatesList />}

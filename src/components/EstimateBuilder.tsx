@@ -268,7 +268,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <button onClick={handleSave} disabled={isSaving} className="px-4 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-base disabled:opacity-50">{isSaving ? 'Saving...' : 'Save'}</button>
             <button onClick={handleSendEstimate} disabled={isSaving} className="px-4 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-base disabled:opacity-50">{isSaving ? 'Saving...' : 'Send'}</button>
-            <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-4 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold text-base">Convert to Invoice</button>
+            <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-4 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-base">Convert to Invoice</button>
             <button onClick={onClose} className="px-4 py-4 border-2 rounded-lg hover:bg-gray-50 font-semibold text-base">Cancel</button>
           </div>
         </div>

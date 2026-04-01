@@ -170,7 +170,8 @@ export const AppLayout: React.FC = () => {
             onCreateEstimate={() => setShowEstimate(true)} 
             onViewReceipts={() => setCurrentView('receipts')}
             onViewEstimates={() => setCurrentView('estimates')}
-            onOpenDesign={() => setCurrentView('design')}
+            onOpenDesign={() => setCurrentView('design')} 
+            onViewEstimate={(estimate) => { setSelectedEstimate(estimate); setShowEstimate(true); }}
           />
         )}
                 {currentView === 'jobs' && <JobsList jobs={jobs} onCreateEstimate={() => setShowEstimate(true)} onViewJob={(job) => console.log('View job', job)} />}
@@ -239,11 +240,7 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewRecei
   const approvedEstimates = estimates.filter(e => e.status === 'approved').length;
   const totalEstimateValue = estimates.reduce((sum, e) => sum + (e.total || 0), 0);
 
-  // View estimate in new tab
-  const handleViewEstimate = (estimate: Estimate) => {
-    setSelectedEstimate(estimate);
-    setShowEstimate(true);
-  };
+  
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -326,7 +323,7 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewRecei
                 <Card 
                   key={estimate.id} 
                   className="p-4 hover:shadow-md transition-shadow cursor-pointer group"
-                  onClick={() => handleViewEstimate(estimate)}
+                 onClick={() => onViewEstimate(estimate)}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 flex-1 min-w-0">

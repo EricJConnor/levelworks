@@ -14,7 +14,7 @@ import { SubscriptionBlocker } from './SubscriptionBlocker';
 import { ProfileEditor } from './ProfileEditor';
 import { ChangePasswordForm } from './ChangePasswordForm';
 import { DeleteAccountDialog } from './DeleteAccountDialog';
-import { Receipts } from './Receipts';
+import { Notes } from './Notes';
 import { DesignStudio } from './DesignStudio';
 import AuthModal from './AuthModal';
 import { useData, Estimate } from '@/contexts/DataContext';
@@ -25,7 +25,7 @@ import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
-type View = 'dashboard' | 'clients' | 'ai' | 'notifications' | 'estimates' | 'invoices' | 'referrals' | 'account' | 'receipts' | 'design';
+type View = 'dashboard' | 'clients' | 'ai' | 'notifications' | 'estimates' | 'invoices' | 'referrals' | 'account' | 'notes' | 'design';
 
 export const AppLayout: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -68,7 +68,7 @@ export const AppLayout: React.FC = () => {
       { key: 'clients', label: 'Clients' }, 
     { key: 'estimates', label: 'Estimates' }, 
     { key: 'invoices', label: 'Invoices' }, 
-    { key: 'receipts', label: 'Receipts' }, 
+    { key: 'notes', label: 'Notes' }, 
       ];
   const handleNavClick = (view: View) => { setCurrentView(view); setMobileMenuOpen(false); };
 
@@ -130,7 +130,7 @@ export const AppLayout: React.FC = () => {
           </nav>
           <div className="hidden md:flex gap-2 items-center">
             <AddToHomeScreen />
-            <button onClick={() => handleNavClick('receipts')} className="p-2 hover:bg-blue-700 rounded" title="Receipts"><Receipt size={20} /></button>
+            <button onClick={() => handleNavClick('notes')} className="p-2 hover:bg-blue-700 rounded" title="Notes"><Receipt size={20} /></button>
             <button onClick={() => handleNavClick('notifications')} className="p-2 hover:bg-blue-700 rounded relative"><Bell size={20} />{!pushEnabled && <span className="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full" />}</button>
             <Button onClick={handleAccountClick} variant="ghost" size="sm" className="!bg-white/20 hover:!bg-white/30 !text-white border border-white/50 flex items-center gap-2">{profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="" className="w-5 h-5 rounded-full object-cover" /> : <User size={16} />}{profile?.full_name?.split(' ')[0] || 'Account'}</Button>
             <Button onClick={() => setShowEstimate(true)} size="sm" className="bg-orange-500 hover:bg-orange-600">+ Estimate</Button>
@@ -166,7 +166,7 @@ export const AppLayout: React.FC = () => {
             clients={clients} 
             estimates={estimates}
             onCreateEstimate={() => setShowEstimate(true)} 
-            onViewReceipts={() => setCurrentView('receipts')}
+            onViewNotes={() => setCurrentView('notes')}
             onViewEstimates={() => setCurrentView('estimates')}
             onOpenDesign={() => setCurrentView('design')} 
             onViewEstimate={(estimate) => { setSelectedEstimate(estimate); setShowEstimate(true); }}
@@ -176,7 +176,7 @@ export const AppLayout: React.FC = () => {
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} />}
         {currentView === 'estimates' && <EstimatesList />}
         {currentView === 'invoices' && <InvoicesList />}
-        {currentView === 'receipts' && <Receipts />}
+        {currentView === 'notes' && <Notes />}
         {currentView === 'account' && <AccountView onBack={() => setCurrentView('dashboard')} />}
       </main>
       {showEstimate && <EstimateBuilder 
@@ -208,21 +208,21 @@ interface DashboardViewProps {
   clients: any[];
   estimates: Estimate[];
   onCreateEstimate: () => void;
-  onViewReceipts: () => void;
+  onViewNotes: () => void;
   onViewEstimates: () => void;
   onOpenDesign: () => void;
 }
 
-function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewReceipts, onViewEstimates, onOpenDesign, onViewEstimate }: DashboardViewProps) {
+function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewNotes, onViewEstimates, onOpenDesign, onViewEstimate }: DashboardViewProps) {
   const { toast } = useToast();
   const [receiptCount, setReceiptCount] = useState(0);
   
   useEffect(() => {
-    const stored = localStorage.getItem('levelworks_receipts');
+    const stored = localStorage.getItem('levelworks_notes');
     if (stored) {
       try {
-        const receipts = JSON.parse(stored);
-        setReceiptCount(receipts.length);
+        const notes = JSON.parse(stored);
+        setReceiptCount(notes.length);
       } catch (e) {
         setReceiptCount(0);
       }
@@ -285,13 +285,13 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewRecei
         </Card>
         <Card 
           className="p-4 md:p-6 cursor-pointer hover:shadow-md transition-shadow border-2 border-teal-100 bg-teal-50/50"
-          onClick={onViewReceipts}
+          onClick={onViewNotes}
         >
           <div className="flex items-center gap-2">
             <Receipt className="w-5 h-5 text-teal-600" />
             <div className="text-2xl md:text-3xl font-bold text-teal-600 mb-1">{receiptCount}</div>
           </div>
-          <div className="text-xs md:text-sm text-gray-600">Receipts</div>
+          <div className="text-xs md:text-sm text-gray-600">Notes</div>
         </Card>
       </div>
 

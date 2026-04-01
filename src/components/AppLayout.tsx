@@ -389,11 +389,7 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewRecei
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-2">
-              <Button onClick={onOpenDesign} className="w-full bg-purple-600 hover:bg-purple-700">
-                <ChefHat className="w-4 h-4 mr-2" />
-                Design Studio
-              </Button>
-              <Button onClick={onCreateEstimate} className="w-full bg-orange-500 hover:bg-orange-600">
+                            <Button onClick={onCreateEstimate} className="w-full bg-orange-500 hover:bg-orange-600">
                 + New Estimate
               </Button>
               <Button variant="outline" onClick={onViewEstimates} className="w-full">

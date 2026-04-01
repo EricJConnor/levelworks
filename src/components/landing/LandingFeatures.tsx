@@ -1,9 +1,8 @@
 
-import { Bell, FileText, Receipt, Users, Camera, Sparkles, PenTool, FolderOpen, Shield, Gift } from 'lucide-react';
+import { Bell, FileText, Receipt, Users, Camera, PenTool, FolderOpen, Shield, Gift } from 'lucide-react';
 
 const features = [
   { icon: Bell, title: 'Push Notifications', desc: 'Get instant alerts when estimates are viewed, signed, or clients respond', color: 'bg-red-500', new: true },
-  { icon: Sparkles, title: 'AI Assistant', desc: 'Get instant expert answers to contractor questions 24/7', color: 'bg-purple-500', new: true },
   { icon: Receipt, title: 'Receipt Tracking', desc: 'Snap photos of receipts and organize expenses by job', color: 'bg-emerald-500', new: true },
   { icon: Gift, title: 'Referral Program', desc: 'Invite friends and both get a free month - no limits!', color: 'bg-pink-500', new: true },
   { icon: FileText, title: 'Professional Estimates', desc: 'Create beautiful, branded estimates in minutes', color: 'bg-blue-500' },

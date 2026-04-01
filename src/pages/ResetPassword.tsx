@@ -13,13 +13,11 @@ export default function ResetPassword() {
   const [isValidSession, setIsValidSession] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    supabase.auth.onAuthStateChange((event) => {
+ useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') setIsValidSession(true);
     });
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setIsValidSession(true);
-    });
+    return () => subscription.unsubscribe();
   }, []);
 
   const checks = [

@@ -212,7 +212,7 @@ interface DashboardViewProps {
   onViewEstimates: () => void;
   onOpenDesign: () => void;
   onViewEstimate: (estimate: any) => void;
-  onViewEstimate: (estimate: any) => void;
+  
 }
 
 function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewNotes, onViewEstimates, onOpenDesign, onViewEstimate }: DashboardViewProps) {

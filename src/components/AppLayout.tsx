@@ -10,8 +10,6 @@ import { InvoiceBuilder } from './InvoiceBuilder';
 import { InvoicesList } from './InvoicesList';
 import { NotificationSettings } from './NotificationSettings';
 import { EstimatesList } from './EstimatesList';
-import { ReferralWidget } from './ReferralWidget';
-import { ReferralProgram } from './ReferralProgram';
 import { AddToHomeScreen } from './AddToHomeScreen';
 import { SubscriptionBlocker } from './SubscriptionBlocker';
 import { ProfileEditor } from './ProfileEditor';
@@ -134,7 +132,6 @@ export const AppLayout: React.FC = () => {
           <div className="hidden md:flex gap-2 items-center">
             <AddToHomeScreen />
             <button onClick={() => handleNavClick('receipts')} className="p-2 hover:bg-blue-700 rounded" title="Receipts"><Receipt size={20} /></button>
-            <button onClick={() => handleNavClick('referrals')} className="p-2 hover:bg-blue-700 rounded" title="Referrals"><Gift size={20} /></button>
             <button onClick={() => handleNavClick('notifications')} className="p-2 hover:bg-blue-700 rounded relative"><Bell size={20} />{!pushEnabled && <span className="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full" />}</button>
             <Button onClick={handleAccountClick} variant="ghost" size="sm" className="!bg-white/20 hover:!bg-white/30 !text-white border border-white/50 flex items-center gap-2">{profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="" className="w-5 h-5 rounded-full object-cover" /> : <User size={16} />}{profile?.full_name?.split(' ')[0] || 'Account'}</Button>
             <Button onClick={() => setShowEstimate(true)} size="sm" className="bg-orange-500 hover:bg-orange-600">+ Estimate</Button>
@@ -181,7 +178,6 @@ export const AppLayout: React.FC = () => {
         {currentView === 'estimates' && <EstimatesList />}
         {currentView === 'invoices' && <InvoicesList />}
         {currentView === 'receipts' && <Receipts />}
-        {currentView === 'referrals' && <div><h2 className="text-2xl font-bold mb-4">Referral Program</h2><ReferralProgram /></div>}
         {currentView === 'account' && <AccountView onBack={() => setCurrentView('dashboard')} />}
       </main>
       {showEstimate && <EstimateBuilder 
@@ -398,9 +394,7 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewRecei
 
           {/* Referral Widget */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Refer & Earn</h3>
-            <ReferralWidget />
-          </div>
+                     </div>
         </div>
       </div>
 
@@ -425,12 +419,10 @@ function AccountView({ onBack }: { onBack: () => void }) {
         <TabsList className="grid grid-cols-4 w-full max-w-lg">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="referrals">Referrals</TabsTrigger>
           <TabsTrigger value="danger" className="text-red-600 data-[state=active]:text-red-600">Danger</TabsTrigger>
         </TabsList>
         <TabsContent value="profile"><ProfileEditor /></TabsContent>
         <TabsContent value="security"><ChangePasswordForm /></TabsContent>
-        <TabsContent value="referrals"><ReferralProgram /></TabsContent>
         <TabsContent value="danger">
           <Card className="p-6 border-red-200 bg-red-50">
             <h3 className="text-lg font-semibold text-red-800 mb-2">Danger Zone</h3>

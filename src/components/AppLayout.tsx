@@ -130,8 +130,7 @@ export const AppLayout: React.FC = () => {
               >
                 {item.icon}
                 {item.label}
-                {item.key === 'design' && <Sparkles className="w-3 h-3 text-yellow-300" />}
-              </button>
+                             </button>
             ))}
           </nav>
           <div className="hidden md:flex gap-2 items-center">
@@ -155,8 +154,7 @@ export const AppLayout: React.FC = () => {
               >
                 {item.icon}
                 {item.label}
-                {item.key === 'design' && <Sparkles className="w-3 h-3 text-yellow-300" />}
-              </button>
+                             </button>
             ))}
             <div className="pt-3 border-t border-blue-500 space-y-2">
               <AddToHomeScreen />
@@ -179,8 +177,7 @@ export const AppLayout: React.FC = () => {
             onOpenDesign={() => setCurrentView('design')}
           />
         )}
-        {currentView === 'design' && <DesignStudio onCreateEstimate={handleDesignToEstimate} />}
-        {currentView === 'jobs' && <JobsList jobs={jobs} onCreateEstimate={() => setShowEstimate(true)} onViewJob={(job) => console.log('View job', job)} />}
+                {currentView === 'jobs' && <JobsList jobs={jobs} onCreateEstimate={() => setShowEstimate(true)} onViewJob={(job) => console.log('View job', job)} />}
         {currentView === 'ai' && <AIAssistant />}
         {currentView === 'notifications' && <NotificationSettings />}
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onViewClient={(client) => console.log('View client', client)} />}
@@ -281,30 +278,7 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewRecei
     <div>
       <h2 className="text-2xl md:text-3xl font-bold mb-4">Dashboard</h2>
       
-      {/* Design Studio Promo Card */}
-      <Card 
-        className="p-4 md:p-6 mb-6 bg-gradient-to-r from-purple-600 to-blue-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
-        onClick={onOpenDesign}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <ChefHat className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold">Design Studio</h3>
-                <Sparkles className="w-4 h-4 text-yellow-300" />
-              </div>
-              <p className="text-purple-100 text-sm">Design kitchens, bathrooms & basements with accurate cost estimates</p>
-            </div>
-          </div>
-          <Button variant="secondary" className="bg-white text-purple-700 hover:bg-purple-100">
-            Open Studio
-          </Button>
-        </div>
-      </Card>
-      
+            
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 md:gap-4 mb-6">
         <Card className="p-4 md:p-6">

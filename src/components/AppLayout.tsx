@@ -31,6 +31,7 @@ type View = 'dashboard' | 'jobs' | 'clients' | 'ai' | 'notifications' | 'estimat
 export const AppLayout: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [showEstimate, setShowEstimate] = useState(false);
+  const [selectedEstimate, setSelectedEstimate] = useState<any>(null);
   const [showInvoice, setShowInvoice] = useState(false);
   const [invoiceInitialData, setInvoiceInitialData] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -181,9 +182,11 @@ export const AppLayout: React.FC = () => {
         {currentView === 'account' && <AccountView onBack={() => setCurrentView('dashboard')} />}
       </main>
       {showEstimate && <EstimateBuilder 
-        onClose={() => setShowEstimate(false)} 
+        onClose={() => { setShowEstimate(false); setSelectedEstimate(null); }} 
+        existingEstimate={selectedEstimate}
         onConvertToInvoice={(data) => { 
-          setShowEstimate(false); 
+          setShowEstimate(false);
+          setSelectedEstimate(null);
           setInvoiceInitialData(data);
           setShowInvoice(true); 
         }} 
@@ -238,16 +241,8 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewRecei
 
   // View estimate in new tab
   const handleViewEstimate = (estimate: Estimate) => {
-    if (!estimate.viewToken) {
-      toast({ 
-        title: 'Cannot view estimate', 
-        description: 'This estimate does not have a view link yet. Try sending it first.', 
-        variant: 'destructive' 
-      });
-      return;
-    }
-    const url = `${window.location.origin}/view-estimate/${estimate.viewToken}`;
-    window.open(url, '_blank');
+    setSelectedEstimate(estimate);
+    setShowEstimate(true);
   };
 
   const getStatusIcon = (status: string) => {

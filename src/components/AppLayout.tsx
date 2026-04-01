@@ -176,7 +176,7 @@ export const AppLayout: React.FC = () => {
         )}
                 {currentView === 'jobs' && <JobsList jobs={jobs} onCreateEstimate={() => setShowEstimate(true)} onViewJob={(job) => console.log('View job', job)} />}
                 {currentView === 'notifications' && <NotificationSettings />}
-        {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onViewClient={(client) => console.log('View client', client)} />}
+        {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} />}
         {currentView === 'estimates' && <EstimatesList />}
         {currentView === 'invoices' && <InvoicesList />}
         {currentView === 'receipts' && <Receipts />}

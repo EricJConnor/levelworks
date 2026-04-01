@@ -92,15 +92,15 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2">Email *</label>
-              <input type="email" placeholder="client@email.com" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} required className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" />
+              <input type="email" placeholder="client@email.com" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})}  className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" />
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2">Phone *</label>
-              <input placeholder="(555) 123-4567" value={newClient.phone} onChange={e => setNewClient({...newClient, phone: e.target.value})} required className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" />
+              <input placeholder="(555) 123-4567" value={newClient.phone} onChange={e => setNewClient({...newClient, phone: e.target.value})}  className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" />
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2">Address *</label>
-              <input placeholder="123 Main St" value={newClient.address} onChange={e => setNewClient({...newClient, address: e.target.value})} required className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" />
+              <input placeholder="123 Main St" value={newClient.address} onChange={e => setNewClient({...newClient, address: e.target.value})}  className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" />
             </div>
             <Button type="submit" className="w-full py-4 text-base">{editingClient ? 'Update' : 'Add Client'}</Button>
           </form>

@@ -130,7 +130,7 @@ export const AppLayout: React.FC = () => {
           </nav>
           <div className="hidden md:flex gap-2 items-center">
             <AddToHomeScreen />
-            <button onClick={() => handleNavClick('notes')} className="p-2 hover:bg-blue-700 rounded" title="Notes"><Receipt size={20} /></button>
+            <button onClick={() => handleNavClick('notes')} className="p-2 hover:bg-blue-700 rounded" title="Notes"><Bell size={20} /></button>
             <button onClick={() => handleNavClick('notifications')} className="p-2 hover:bg-blue-700 rounded relative"><Bell size={20} />{!pushEnabled && <span className="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full" />}</button>
             <Button onClick={handleAccountClick} variant="ghost" size="sm" className="!bg-white/20 hover:!bg-white/30 !text-white border border-white/50 flex items-center gap-2">{profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="" className="w-5 h-5 rounded-full object-cover" /> : <User size={16} />}{profile?.full_name?.split(' ')[0] || 'Account'}</Button>
             <Button onClick={() => setShowEstimate(true)} size="sm" className="bg-orange-500 hover:bg-orange-600">+ Estimate</Button>
@@ -211,6 +211,7 @@ interface DashboardViewProps {
   onViewNotes: () => void;
   onViewEstimates: () => void;
   onOpenDesign: () => void;
+  onViewEstimate: (estimate: any) => void;
 }
 
 function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewNotes, onViewEstimates, onOpenDesign, onViewEstimate }: DashboardViewProps) {

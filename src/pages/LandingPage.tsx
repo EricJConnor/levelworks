@@ -10,7 +10,6 @@ import LandingTestimonials from '@/components/landing/LandingTestimonials';
 import LandingPricing from '@/components/landing/LandingPricing';
 import LandingFAQ from '@/components/landing/LandingFAQ';
 import LandingCTA from '@/components/landing/LandingCTA';
-import LandingAI from '@/components/landing/LandingAI';
 import LandingReferral from '@/components/landing/LandingReferral';
 import LandingReceipts from '@/components/landing/LandingReceipts';
 import { PricingCountdown } from '@/components/PricingCountdown';
@@ -103,7 +102,7 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <div className="inline-flex items-center gap-2 bg-blue-600/20 border border-blue-500/30 rounded-full px-4 py-2 mb-6">
-              <Sparkles className="w-4 h-4 text-blue-400" /><span className="text-blue-300 text-sm font-medium">AI-Powered Business Tools</span>
+              <Sparkles className="w-4 h-4 text-blue-400" /><span className="text-blue-300 text-sm font-medium">Professional Tools for Contractors</span>          
             </div>
             <h1 className="text-5xl font-bold text-white mb-6 leading-tight">Create Professional Estimates in Minutes</h1>
             <p className="text-xl text-blue-200 mb-6">Create professional estimates, get digital signatures, and track receipts. All for just $5/month with unlimited estimates.</p>
@@ -125,8 +124,7 @@ export default function LandingPage() {
       </section>
 
       <LandingReceipts onGetStarted={openSignUp} />
-      <LandingAI />
-      <LandingNotifications />
+           <LandingNotifications />
 
       <LandingFeatures />
       <LandingReferral onGetStarted={openSignUp} />
@@ -140,7 +138,7 @@ export default function LandingPage() {
       <footer className="border-t border-blue-900/30 bg-black/20 py-12">
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div><div className="text-2xl font-bold text-white mb-4">level</div><p className="text-blue-300 text-sm">Professional tools for contractors. Estimates, invoices, and AI assistance.</p></div>
+            <div><div className="text-2xl font-bold text-white mb-4">level</div><p className="text-blue-300 text-sm">Professional tools for contractors. Estimates, invoices, and more.</p></div>
             <div><h4 className="font-semibold text-white mb-4">Product</h4><div className="space-y-2"><button onClick={() => scrollTo('features')} className="block text-blue-300 hover:text-white text-sm">Features</button><button onClick={() => scrollTo('receipts')} className="block text-blue-300 hover:text-white text-sm">Receipts</button><button onClick={() => scrollTo('pricing')} className="block text-blue-300 hover:text-white text-sm">Pricing</button></div></div>
             <div><h4 className="font-semibold text-white mb-4">Legal</h4><div className="space-y-2"><button onClick={() => navigate('/terms')} className="block text-blue-300 hover:text-white text-sm">Terms</button><button onClick={() => navigate('/privacy')} className="block text-blue-300 hover:text-white text-sm">Privacy</button></div></div>
             <div><h4 className="font-semibold text-white mb-4">Support</h4><p className="text-blue-300 text-sm">support@levelworks.app</p></div>

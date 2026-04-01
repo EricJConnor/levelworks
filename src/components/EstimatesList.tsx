@@ -98,16 +98,7 @@ export const EstimatesList: React.FC = () => {
 
   // View estimate in new tab
   const handleViewEstimate = (estimate: Estimate) => {
-    if (!estimate.viewToken) {
-      toast({ 
-        title: 'Cannot view estimate', 
-        description: 'This estimate does not have a view link yet. Try sending it first.', 
-        variant: 'destructive' 
-      });
-      return;
-    }
-    const url = `${window.location.origin}/view-estimate/${estimate.viewToken}`;
-    window.open(url, '_blank');
+    setEditEstimate(estimate);
   };
 
   // Copy estimate link to clipboard

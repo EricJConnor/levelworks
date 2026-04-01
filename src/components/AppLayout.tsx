@@ -68,8 +68,7 @@ export const AppLayout: React.FC = () => {
 
   const navItems = [
     { key: 'dashboard', label: 'Dashboard' }, 
-    { key: 'design', label: 'Design', icon: <ChefHat className="w-4 h-4" /> },
-    { key: 'jobs', label: 'Jobs' }, 
+      { key: 'jobs', label: 'Jobs' }, 
     { key: 'clients', label: 'Clients' }, 
     { key: 'estimates', label: 'Estimates' }, 
     { key: 'invoices', label: 'Invoices' }, 

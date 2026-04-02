@@ -393,7 +393,75 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewNotes
     </div>
   );
 }
+function BillingSettings() {
+  const [status, setStatus] = useState<string | null>(null);
+  const [daysLeft, setDaysLeft] = useState<number | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const { toast } = useToast();
 
+  useEffect(() => {
+    const loadStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.functions.invoke('check-subscription', {
+        body: { userId: user.id, userEmail: user.email, userName: '' }
+      });
+      if (data) { setStatus(data.status); setDaysLeft(data.daysLeft); }
+    };
+    loadStatus();
+  }, []);
+
+  const handleCancel = async () => {
+    if (!confirm('Are you sure you want to cancel your subscription? You will lose access at the end of your current billing period.')) return;
+    setCancelling(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { error } = await supabase.functions.invoke('cancel-subscription', {
+        body: { userId: user.id }
+      });
+      if (error) throw error;
+      setStatus('cancelled');
+      toast({ title: 'Subscription cancelled', description: 'You can reactivate anytime.' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to cancel', variant: 'destructive' });
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4 max-w-lg">
+      <div className="bg-gray-50 rounded-xl p-5 border">
+        <p className="text-xs text-gray-500 font-semibold uppercase mb-3">Subscription Status</p>
+        {status === 'active' && (
+          <div>
+            <p className="font-semibold text-green-600 text-lg mb-1">✓ Active — $5/month</p>
+            <p className="text-sm text-gray-600 mb-4">Your subscription is active. Thank you!</p>
+            <button onClick={handleCancel} disabled={cancelling} className="px-4 py-2 border-2 border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm font-semibold disabled:opacity-50">
+              {cancelling ? 'Cancelling...' : 'Cancel Subscription'}
+            </button>
+          </div>
+        )}
+        {status === 'trial' && (
+          <div>
+            <p className="font-semibold text-blue-600 text-lg mb-1">Free Trial</p>
+            <p className="text-sm text-gray-600">{daysLeft !== null ? `${daysLeft} days remaining` : 'Trial active'}</p>
+          </div>
+        )}
+        {status === 'cancelled' && (
+          <div>
+            <p className="font-semibold text-gray-600 text-lg mb-1">Cancelled</p>
+            <p className="text-sm text-gray-600 mb-4">Your subscription has been cancelled.</p>
+          </div>
+        )}
+        {status === null && (
+          <p className="text-sm text-gray-400">Loading...</p>
+        )}
+      </div>
+    </div>
+  );
+}
 function AccountView({ onBack }: { onBack: () => void }) {
 
   return (

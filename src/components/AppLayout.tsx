@@ -220,15 +220,16 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewNotes
   const [receiptCount, setReceiptCount] = useState(0);
   
   useEffect(() => {
-    const stored = localStorage.getItem('levelworks_notes');
-    if (stored) {
-      try {
-        const notes = JSON.parse(stored);
-        setReceiptCount(notes.length);
-      } catch (e) {
-        setReceiptCount(0);
-      }
-    }
+    const loadNoteCount = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { count } = await supabase
+        .from('notes')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      setReceiptCount(count || 0);
+    };
+    loadNoteCount();
   }, []);
 
   // Get recent estimates (last 5)

@@ -111,9 +111,14 @@ export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) 
   }, []);
 
   const checkSubscription = async () => {
+    // Timeout after 5 seconds - fail open
+    const timeout = setTimeout(() => {
+      setStatus('active');
+    }, 5000);
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) { clearTimeout(timeout); setStatus('active'); return; }
 
       setUserId(user.id);
       setUserEmail(user.email || '');
@@ -131,6 +136,7 @@ export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) 
       setStatus(data.status);
       setDaysLeft(data.daysLeft);
     } catch (err) {
+      clearTimeout(timeout);
       setStatus('active');
     }
   };

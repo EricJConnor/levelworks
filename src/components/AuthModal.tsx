@@ -245,6 +245,24 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                 autoComplete={isSignUp ? "new-password" : "current-password"}
               />
             </div>
+            {isSignUp && (
+              <div>
+                <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                  <Lock size={16} />
+                  Confirm Password
+                </label>
+                <input 
+                  type="password" 
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)} 
+                  required 
+                  minLength={6} 
+                  className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none transition-colors" 
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                />
+              </div>
+            )}
             {!isSignUp && (
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer select-none bg-gray-50 p-3 rounded-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all">

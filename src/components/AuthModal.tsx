@@ -200,7 +200,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
           <form onSubmit={handleSubmit} className="p-5 space-y-4">
             {isSignUp && (
               <div>
-                if (!fullName.trim())
+                
                   value={fullName} 
                   onChange={(e) => setFullName(e.target.value)} 
                   required 

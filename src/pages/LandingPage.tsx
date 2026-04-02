@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Check, FileText, Users, Briefcase, Receipt, PenTool, Send, ChevronRight, Shield, Zap, Star } from 'lucide-react';
+import { Menu, X, Check, FileText, Users, Briefcase, StickyNote, PenTool, Send, ChevronRight, Shield, Zap, Star } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -35,7 +35,7 @@ export default function LandingPage() {
     { icon: PenTool, title: 'Digital Signatures', desc: 'Clients sign from any device. You get notified instantly.' },
     { icon: Users, title: 'Client Database', desc: 'Every client, every job, every detail — organized and searchable.' },
     { icon: Briefcase, title: 'Job Management', desc: 'Track every job from first call to final payment.' },
-    { icon: Receipt, title: 'Receipt Tracking', desc: 'Snap receipts on the job. Organized by project automatically.' },
+    { icon: StickyNote, title: 'Job Notes', desc: 'Capture notes, reminders, and details for every job. Syncs across all your devices.' },
     { icon: Shield, title: 'Invoicing', desc: 'Convert estimates to invoices in one tap. Get paid faster.' },
   ];
 
@@ -148,7 +148,7 @@ export default function LandingPage() {
               </div>
               <p style={{ color: '#93c5fd', fontSize: '14px', marginBottom: '24px' }}>Everything you need. Nothing you don't.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
-                {['Unlimited Estimates & Invoices', 'Digital Signatures', 'Client Database', 'Job Management', 'Receipt Tracking', 'Push Notifications', 'Email & Text Sending'].map((f, i) => (
+                {['Unlimited Estimates & Invoices', 'Digital Signatures', 'Client Database', 'Job Management', 'Job Notes', 'Push Notifications', 'Email & Text Sending'].map((f, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#e8e8e8' }}>
                     <Check size={14} style={{ color: '#3b82f6', flexShrink: 0 }} />
                     <span style={{ fontSize: '14px' }}>{f}</span>

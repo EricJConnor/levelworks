@@ -110,7 +110,7 @@ export default function LandingPage() {
               See How It Works
             </button>
           </div>
-          <p style={{ color: '#444', fontSize: '13px', marginTop: '16px' }}>No credit card required. 14-day free trial.</p>
+          <p style={{ color: '#444', fontSize: '13px', marginTop: '16px' }}>No credit card required. 30-day free trial.</p>
         </div>
       </section>
 

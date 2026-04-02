@@ -17,6 +17,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -26,6 +27,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
   const resetForm = useCallback(() => {
     setEmail('');
     setPassword('');
+    setConfirmPassword('');
     setFullName('');
     setIsForgotPassword(false);
   }, []);

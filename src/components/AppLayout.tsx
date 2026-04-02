@@ -403,13 +403,14 @@ function AccountView({ onBack }: { onBack: () => void }) {
         <h2 className="text-2xl font-bold">Account Settings</h2>
       </div>
       <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList className="grid grid-cols-4 w-full max-w-lg">
+        <TabsList className="grid grid-cols-3 w-full max-w-lg">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="danger" className="text-red-600 data-[state=active]:text-red-600">Danger</TabsTrigger>
+          <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
         <TabsContent value="profile"><ProfileEditor /></TabsContent>
         <TabsContent value="security"><ChangePasswordForm /></TabsContent>
+        <TabsContent value="billing"><BillingSettings /></TabsContent>
         <TabsContent value="danger">
           <Card className="p-6 border-red-200 bg-red-50">
             <h3 className="text-lg font-semibold text-red-800 mb-2">Danger Zone</h3>

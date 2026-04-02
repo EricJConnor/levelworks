@@ -178,7 +178,7 @@ export default function LandingPage() {
       <section id="features" style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px' }}>
         <div style={{ marginBottom: '48px' }}>
           <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '12px' }}>Everything You Need</h2>
-          <p style={{ color: '#a0a0a0', fontSize: '18px' }}>Built by someone who understands what contractors actually use.</p>
+          <p style={{ color: '#a0a0a0', fontSize: '18px' }}>Built by by a contractor, for contractors.</p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1px', background: '#1a1a1a', border: '1px solid #1a1a1a', borderRadius: '12px', overflow: 'hidden' }}>
           {features.map((f, i) => (

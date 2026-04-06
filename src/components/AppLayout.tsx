@@ -173,7 +173,7 @@ export const AppLayout: React.FC = () => {
             onConnectStripe={async () => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
-  window.location.href = `https://connect.stripe.com/oauth/authorize?client_id=ca_T3ss3sYTBR7iYQrEPRYmsQYyo8BI5XVA&scope=read_write&redirect_uri=https://levelworks.org/stripe-connect-callback&state=${user.id}`;
+  window.location.href = `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=ca_T3ss3sYTBR7iYQrEPRYmsQYyo8BI5XVA&scope=read_write&redirect_uri=https://levelworks.org/stripe-connect-callback&state=${user.id}`;
 }}
 stripeConnected={!!profile?.stripe_account_id}
             />

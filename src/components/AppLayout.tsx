@@ -170,6 +170,8 @@ export const AppLayout: React.FC = () => {
             onViewEstimates={() => setCurrentView('estimates')}
             onOpenDesign={() => setCurrentView('design')} 
             onViewEstimate={(estimate) => { setSelectedEstimate(estimate); setShowEstimate(true); }}
+            onConnectStripe={() => { window.location.href = '/stripe-connect-callback'; }}
+  stripeConnected={false}
           />
         )}
                 {currentView === 'notifications' && <NotificationSettings />}
@@ -212,11 +214,13 @@ interface DashboardViewProps {
   onViewEstimates: () => void;
   onOpenDesign: () => void;
   onViewEstimate: (estimate: any) => void;
+  onConnectStripe: () => void;
+  stripeConnected: boolean;
   
 }
 
-function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewNotes, onViewEstimates, onOpenDesign, onViewEstimate }: DashboardViewProps) {
-  const { toast } = useToast();
+function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewNotes, onViewEstimates, onOpenDesign, onViewEstimate, onConnectStripe, stripeConnected }: DashboardViewProps) {
+const { toast } = useToast();
   const [receiptCount, setReceiptCount] = useState(0);
   
   useEffect(() => {
@@ -262,6 +266,20 @@ function DashboardView({ jobs, clients, estimates, onCreateEstimate, onViewNotes
   return (
     <div>
       <h2 className="text-2xl md:text-3xl font-bold mb-4">Dashboard</h2>
+      {!stripeConnected && (
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-white font-bold text-lg">💳 Collect Client Payments</h3>
+            <p className="text-blue-100 text-sm">Accept credit cards directly from clients. Money goes straight to your bank.</p>
+          </div>
+          <button
+            onClick={onConnectStripe}
+            className="flex-shrink-0 px-5 py-3 bg-white text-blue-600 rounded-lg font-bold hover:bg-blue-50 text-sm whitespace-nowrap"
+          >
+            Set Up Payments
+          </button>
+        </div>
+      )}
       
             
       {/* Stats Cards */}

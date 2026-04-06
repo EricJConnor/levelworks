@@ -170,9 +170,16 @@ export const AppLayout: React.FC = () => {
             onViewEstimates={() => setCurrentView('estimates')}
             onOpenDesign={() => setCurrentView('design')} 
             onViewEstimate={(estimate) => { setSelectedEstimate(estimate); setShowEstimate(true); }}
-            onConnectStripe={() => { window.location.href = '/stripe-connect-callback'; }}
-  stripeConnected={false}
-          />
+            onConnectStripe={async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const { data } = await supabase.functions.invoke('connect-stripe-account', {
+    body: { action: 'get_oauth_url', userId: user.id }
+  });
+  if (data?.url) window.location.href = data.url;
+}}
+stripeConnected={!!profile?.stripe_account_id}
+            />
         )}
                 {currentView === 'notifications' && <NotificationSettings />}
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} />}

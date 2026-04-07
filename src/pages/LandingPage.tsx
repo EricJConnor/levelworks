@@ -133,6 +133,12 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+          <p style={{ color: '#4ade80', fontSize: '15px', fontWeight: '600', marginTop: '20px' }}>
+  No additional charge — included free with your $5/month plan.
+</p>
+<p style={{ color: '#6b7280', fontSize: '13px', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+  🔒 All payments processed securely through Stripe. Your clients' card info is never stored on our servers.
+</p>
         </div>
       </section>
 

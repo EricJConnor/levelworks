@@ -108,7 +108,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const total = subtotal + tax;
   const balanceDue = total - deposit;
 
-  const addLineItem = () => setLineItems([...lineItems, { id: Date.now().toString(), description: '', quantity: 1, rate: 0, total: 0 }]);
+  const addLineItem = () => setLineItems(prev => [...prev, { id: Date.now().toString(), description: '', quantity: 1, rate: 0, total: 0 }]);
 
   const updateItem = (id: string, field: string, value: any) => {
     setLineItems(lineItems.map(item => {
@@ -207,93 +207,97 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const handleSendSuccess = () => { setShowSendModal(false); setSavedEstimateData(null); onClose(); };
 
   const renderItem = (item: LineItem, idx: number) => (
-    <div key={item.id} className="bg-gray-50 p-4 rounded-lg border mb-4">
-      <div className="flex justify-between items-start mb-3">
-        <span className="text-sm font-semibold text-gray-600">Item {idx + 1}</span>
-        {!isReadOnly && <button onClick={() => removeItem(item.id)} className="text-red-600 p-1"><Trash2 size={18} /></button>}
-      </div>
-      <div className="space-y-3">
+    <div key={item.id} className="mb-4">
+      <div className="bg-gray-50 p-4 rounded-lg border">
+        <div className="flex justify-between items-start mb-3">
+          <span className="text-sm font-semibold text-gray-600">Item {idx + 1}</span>
+          {!isReadOnly && <button onClick={() => removeItem(item.id)} className="text-red-600 p-1"><Trash2 size={18} /></button>}
+        </div>
+        <div className="space-y-3">
 
-        {/* Section Title */}
-        {!isReadOnly && (
-          <div className="relative" ref={openTitlePicker === item.id ? titlePickerRef : undefined}>
-            <label className="block text-xs text-gray-500 mb-1">Section Title (optional)</label>
-            <input
-              value={item.sectionTitle || ''}
-              onChange={(e) => updateItem(item.id, 'sectionTitle', e.target.value)}
-              onFocus={() => { setOpenTitlePicker(item.id); setShowNewTitleInput(false); }}
-              placeholder="e.g. Demo, Plumbing, Labor..."
-              className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-orange-400 focus:outline-none bg-white"
-            />
-            {openTitlePicker === item.id && (
-              <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
-                <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-50">
-                  <span className="text-xs font-semibold text-gray-500">Saved Titles</span>
-                  {!showNewTitleInput ? (
-                    <button onClick={() => setShowNewTitleInput(true)} className="bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">+ New Title</button>
+          {/* Section Title */}
+          {!isReadOnly && (
+            <div className="relative" ref={openTitlePicker === item.id ? titlePickerRef : undefined}>
+              <label className="block text-xs text-gray-500 mb-1">Section Title (optional)</label>
+              <input
+                value={item.sectionTitle || ''}
+                onChange={(e) => updateItem(item.id, 'sectionTitle', e.target.value)}
+                onFocus={() => { setOpenTitlePicker(item.id); setShowNewTitleInput(false); }}
+                placeholder="e.g. Demo, Plumbing, Labor..."
+                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-orange-400 focus:outline-none bg-white"
+              />
+              {openTitlePicker === item.id && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-50">
+                    <span className="text-xs font-semibold text-gray-500">Saved Titles</span>
+                    {!showNewTitleInput ? (
+                      <button onClick={() => setShowNewTitleInput(true)} className="bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">+ New Title</button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          autoFocus
+                          value={newTitleInput}
+                          onChange={e => setNewTitleInput(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') addNewTitle(item.id); if (e.key === 'Escape') setShowNewTitleInput(false); }}
+                          placeholder="Type new title..."
+                          className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-orange-400 w-40"
+                        />
+                        <button onClick={() => addNewTitle(item.id)} className="bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Add</button>
+                      </div>
+                    )}
+                  </div>
+                  {savedTitles.length === 0 ? (
+                    <p className="text-sm text-gray-400 text-center py-4">No saved titles yet — add your first one above</p>
                   ) : (
-                    <div className="flex gap-2">
-                      <input
-                        autoFocus
-                        value={newTitleInput}
-                        onChange={e => setNewTitleInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') addNewTitle(item.id); if (e.key === 'Escape') setShowNewTitleInput(false); }}
-                        placeholder="Type new title..."
-                        className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-orange-400 w-40"
-                      />
-                      <button onClick={() => addNewTitle(item.id)} className="bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Add</button>
+                    <div className="max-h-48 overflow-y-auto p-2">
+                      {savedTitles.map((t, i) => (
+                        <button key={i} onClick={() => applyTitle(item.id, t)} className="w-full text-left px-3 py-2.5 hover:bg-orange-50 rounded-lg text-sm text-gray-800 font-medium" style={{ borderLeft: item.sectionTitle === t ? '3px solid #f97316' : '3px solid transparent' }}>
+                          {t}
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>
-                {savedTitles.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-4">No saved titles yet — add your first one above</p>
-                ) : (
-                  <div className="max-h-48 overflow-y-auto p-2">
-                    {savedTitles.map((t, i) => (
-                      <button
-                        key={i}
-                        onClick={() => applyTitle(item.id, t)}
-                        className="w-full text-left px-3 py-2.5 hover:bg-orange-50 rounded-lg text-sm text-gray-800 font-medium"
-                        style={{ borderLeft: item.sectionTitle === t ? '3px solid #f97316' : '3px solid transparent' }}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
 
-        {/* Read-only title display */}
-        {isReadOnly && item.sectionTitle && (
-          <div style={{ borderLeft: '3px solid #f97316', background: '#fff8f5', borderRadius: '0 6px 6px 0', padding: '7px 14px' }}>
-            <span className="font-semibold text-gray-800 text-sm">{item.sectionTitle}</span>
-          </div>
-        )}
+          {/* Read-only title */}
+          {isReadOnly && item.sectionTitle && (
+            <div style={{ borderLeft: '3px solid #f97316', background: '#fff8f5', borderRadius: '0 6px 6px 0', padding: '7px 14px' }}>
+              <span className="font-semibold text-gray-800 text-sm">{item.sectionTitle}</span>
+            </div>
+          )}
 
-        {/* Description */}
-        <div>
-          <label className="block text-xs text-gray-500 mb-1">Description</label>
-          <textarea value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none resize-none disabled:bg-gray-100" placeholder="Description" rows={2} disabled={isReadOnly} />
-        </div>
+          {/* Description */}
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Description</label>
+            <textarea value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none resize-none disabled:bg-gray-100" placeholder="Description" rows={2} disabled={isReadOnly} />
+          </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Qty</label>
-            <input type="number" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Rate</label>
-            <input type="number" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Total</label>
-            <div className="w-full border-2 border-gray-200 bg-gray-100 rounded-lg px-3 py-3 text-base text-center font-semibold">${(Number(item.total) || 0).toFixed(2)}</div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Qty</label>
+              <input type="number" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Rate</label>
+              <input type="number" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Total</label>
+              <div className="w-full border-2 border-gray-200 bg-gray-100 rounded-lg px-3 py-3 text-base text-center font-semibold">${(Number(item.total) || 0).toFixed(2)}</div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Add another item button below each item */}
+      {!isReadOnly && (
+        <button onClick={addLineItem} className="w-full mt-2 py-2 border border-dashed border-gray-300 rounded-lg text-sm text-gray-400 hover:border-gray-400 hover:text-gray-600 flex items-center justify-center gap-1">
+          <Plus size={14} /> Add Another Item
+        </button>
+      )}
     </div>
   );
 

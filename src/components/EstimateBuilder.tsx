@@ -160,7 +160,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 md:p-4">
       <div className="bg-white rounded-lg w-full max-w-6xl max-h-[95vh] overflow-auto">
 
-        <div className="sticky top-0 bg-blue-600 text-white p-3 md:p-4 flex justify-between items-center z-10">
+        <div className="sticky top-0 text-white p-3 md:p-4 flex justify-between items-center z-10" style={{background: '#1c1c1e'}}>
           <h2 className="text-lg md:text-2xl font-bold">
             {isReadOnly ? 'View Estimate' : existingEstimate ? 'Edit Estimate' : 'Create Estimate'}
           </h2>

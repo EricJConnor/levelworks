@@ -179,3 +179,105 @@ export default function LandingPage() {
               <button onClick={openSignUp} style={{ width: '100%', background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', padding: '14px', borderRadius: '6px', fontSize: '16px', fontWeight: '700' }}>
                 Start Free — 30 Days
               </
+button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px' }}>
+        <div style={{ marginBottom: '48px' }}>
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '12px' }}>Everything You Need</h2>
+          <p style={{ color: '#a0a0a0', fontSize: '18px' }}>Built by a contractor who knows what actually matters on the job.</p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1px', background: '#1a1a1a', border: '1px solid #1a1a1a', borderRadius: '12px', overflow: 'hidden' }}>
+          {features.map((f, i) => (
+            <div key={i}
+              style={{ background: f.highlight ? '#0d1e35' : '#0a0a0a', padding: '32px', transition: 'background 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = f.highlight ? '#0f2545' : '#0f1520')}
+              onMouseLeave={e => (e.currentTarget.style.background = f.highlight ? '#0d1e35' : '#0a0a0a')}
+            >
+              <div style={{ width: '40px', height: '40px', background: f.highlight ? 'rgba(59,130,246,0.2)' : '#0f1f3d', border: `1px solid ${f.highlight ? '#3b82f6' : '#1e3a5f'}`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <f.icon size={20} style={{ color: '#3b82f6' }} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <h3 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', margin: 0 }}>{f.title}</h3>
+                {f.highlight && <span style={{ background: '#3b82f6', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px', letterSpacing: '0.5px' }}>NEW</span>}
+              </div>
+              <p style={{ color: '#a0a0a0', fontSize: '14px', lineHeight: '1.6' }}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="how-it-works" style={{ background: '#0f0f0f', borderTop: '1px solid #1a1a1a', borderBottom: '1px solid #1a1a1a', padding: '80px 24px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ marginBottom: '48px' }}>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '12px' }}>How It Works</h2>
+            <p style={{ color: '#a0a0a0', fontSize: '18px' }}>From estimate to payment in minutes.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '32px' }}>
+            {steps.map((s, i) => (
+              <div key={i}>
+                <div style={{ fontSize: '48px', fontWeight: '800', color: 'transparent', backgroundImage: 'linear-gradient(180deg, #c0c0c0 0%, #808080 50%, #c0c0c0 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', letterSpacing: '-2px', marginBottom: '16px', lineHeight: 1 }}>{s.num}</div>
+                <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', marginBottom: '10px' }}>{s.title}</h3>
+                <p style={{ color: '#a0a0a0', fontSize: '14px', lineHeight: '1.7' }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+          {[
+            { quote: "I was paying $99 a month for another app. This does everything I need for $5. No brainer.", name: "Mike R.", trade: "General Contractor" },
+            { quote: "My clients love that they can sign from their phone and pay instantly. I close jobs faster now.", name: "Dave T.", trade: "Roofing Contractor" },
+            { quote: "Simple, fast, does what I need. I don't need a complicated system.", name: "Carlos M.", trade: "Electrical Contractor" },
+          ].map((t, i) => (
+            <div key={i} style={{ background: '#0f0f0f', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '28px' }}>
+              <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
+                {[...Array(5)].map((_, j) => <Star key={j} size={14} style={{ color: '#3b82f6', fill: '#3b82f6' }} />)}
+              </div>
+              <p style={{ color: '#a8a8a8', fontSize: '15px', lineHeight: '1.7', marginBottom: '20px', fontStyle: 'italic' }}>"{t.quote}"</p>
+              <div>
+                <p style={{ color: '#fff', fontSize: '14px', fontWeight: '700' }}>{t.name}</p>
+                <p style={{ color: '#909090', fontSize: '13px' }}>{t.trade}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section style={{ background: '#0f1f3d', borderTop: '1px solid #1e3a5f', padding: '80px 24px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '16px' }}>
+            Ready to save $1,700 a year?
+          </h2>
+          <p style={{ color: '#93c5fd', fontSize: '18px', marginBottom: '40px' }}>Start your free 30-day trial. No credit card required.</p>
+          <button onClick={openSignUp} style={{ background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', padding: '18px 48px', borderRadius: '6px', fontSize: '18px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            Get Started Free <ChevronRight size={20} />
+          </button>
+          <p style={{ color: '#3b82f6', fontSize: '14px', marginTop: '16px' }}>$5/month after trial. Cancel anytime.</p>
+        </div>
+      </section>
+
+      <footer style={{ background: '#050505', borderTop: '1px solid #111', padding: '48px 24px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
+          <div>
+            <div style={{ fontSize: '18px', fontWeight: '800', color: '#fff', marginBottom: '8px' }}>LEVEL<span style={{ color: '#3b82f6' }}>WORKS</span></div>
+            <p style={{ color: '#444', fontSize: '13px' }}>Professional tools for contractors.</p>
+          </div>
+          <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+            <button onClick={() => navigate('/terms')} style={{ color: '#444', fontSize: '13px', background: 'none', border: 'none', cursor: 'pointer' }}>Terms</button>
+            <button onClick={() => navigate('/privacy')} style={{ color: '#444', fontSize: '13px', background: 'none', border: 'none', cursor: 'pointer' }}>Privacy</button>
+            <a href="mailto:support@levelworks.org" style={{ color: '#444', fontSize: '13px', textDecoration: 'none' }}>support@levelworks.org</a>
+          </div>
+          <p style={{ color: '#333', fontSize: '12px' }}>© 2025 LevelWorks. Built for the trades.</p>
+        </div>
+      </footer>
+
+      <AuthModal open={showAuth} onClose={() => setShowAuth(false)} onSuccess={handleAuthSuccess} defaultMode={authMode} />
+    </div>
+  );
+}

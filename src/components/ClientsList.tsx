@@ -94,7 +94,7 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
       {selectedClient && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-3">
           <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-auto shadow-2xl">
-            <div className="bg-blue-600 text-white p-4 flex justify-between items-center rounded-t-xl sticky top-0">
+            <div className="text-white p-4 flex justify-between items-center rounded-t-xl sticky top-0" style={{background: '#1c1c1e'}}>
               <h2 className="text-lg font-bold">{selectedClient.name}</h2>
               <button onClick={() => setSelectedClient(null)} className="p-2 hover:bg-blue-700 rounded-lg">
                 <X size={22} />

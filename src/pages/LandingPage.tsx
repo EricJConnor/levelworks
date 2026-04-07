@@ -138,3 +138,44 @@ export default function LandingPage() {
 
       <section id="pricing" style={{ background: '#0f0f0f', borderTop: '1px solid #1a1a1a', borderBottom: '1px solid #1a1a1a', padding: '80px 24px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+<div style={{ textAlign: 'center', marginBottom: '48px' }}>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '12px' }}>Simple Pricing</h2>
+            <p style={{ color: '#a0a0a0', fontSize: '18px' }}>One plan. Everything included. No surprises.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', maxWidth: '900px', margin: '0 auto', alignItems: 'center' }}>
+            <div style={{ background: '#111', border: '1px solid #222', borderRadius: '12px', padding: '32px' }}>
+              <p style={{ color: '#909090', fontSize: '13px', fontWeight: '600', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '16px' }}>The Competition</p>
+              <div style={{ marginBottom: '8px' }}>
+                <span style={{ fontSize: '48px', fontWeight: '800', color: '#444' }}>$149</span>
+                <span style={{ color: '#444', fontSize: '16px' }}>/month</span>
+              </div>
+              <p style={{ color: '#444', fontSize: '14px', marginBottom: '24px' }}>What other providers charge for their top plan</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {['Estimates & Invoices', 'Digital Signatures', 'Client Management', 'Job Tracking'].map((f, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#444' }}>
+                    <Check size={14} />
+                    <span style={{ fontSize: '14px' }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ background: '#0f1f3d', border: '2px solid #3b82f6', borderRadius: '12px', padding: '32px', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)', background: '#3b82f6', color: '#fff', fontSize: '12px', fontWeight: '700', padding: '4px 16px', borderRadius: '20px', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>LEVELWORKS</div>
+              <p style={{ color: '#3b82f6', fontSize: '13px', fontWeight: '600', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '16px' }}>Your new app</p>
+              <div style={{ marginBottom: '8px' }}>
+                <span style={{ fontSize: '64px', fontWeight: '800', color: '#fff', lineHeight: 1 }}>$5</span>
+                <span style={{ color: '#93c5fd', fontSize: '18px' }}>/month</span>
+              </div>
+              <p style={{ color: '#93c5fd', fontSize: '14px', marginBottom: '24px' }}>Everything you need. Nothing you don't.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+                {['Unlimited Estimates & Invoices', 'Digital Signatures', 'Client Payments (Credit Card)', 'Client Database', 'Job Management', 'Job Notes', 'Push Notifications', 'Email & Text Sending'].map((f, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Check size={14} style={{ color: '#3b82f6', flexShrink: 0 }} />
+                    <span style={{ fontSize: '14px', fontWeight: f === 'Client Payments (Credit Card)' ? '600' : '400', color: f === 'Client Payments (Credit Card)' ? '#93c5fd' : '#e8e8e8' }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <button onClick={openSignUp} style={{ width: '100%', background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', padding: '14px', borderRadius: '6px', fontSize: '16px', fontWeight: '700' }}>
+                Start Free — 30 Days
+              </

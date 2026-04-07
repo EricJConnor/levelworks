@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { toast } from '@/components/ui/use-toast';
 import { SendEstimateModal } from './SendEstimateModal';
 import { supabase } from '@/lib/supabase';
-import { X, Plus, Trash2, Users, Edit, Tag } from 'lucide-react';
+import { X, Plus, Trash2, Users, Edit } from 'lucide-react';
 
 interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; sectionTitle?: string; }
 interface Props { onClose: () => void; onConvertToInvoice?: (data: any) => void; existingEstimate?: any; }
@@ -50,11 +50,24 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [isReadOnly, setIsReadOnly] = useState(!!existingEstimate);
   const [showClientPicker, setShowClientPicker] = useState(false);
   const [savedTitles, setSavedTitles] = useState<string[]>([]);
-  const [showTitlePicker, setShowTitlePicker] = useState<string | null>(null);
+  const [openTitlePicker, setOpenTitlePicker] = useState<string | null>(null);
   const [newTitleInput, setNewTitleInput] = useState('');
   const [showNewTitleInput, setShowNewTitleInput] = useState(false);
+  const titlePickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { loadSavedTitles(); }, []);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (titlePickerRef.current && !titlePickerRef.current.contains(e.target as Node)) {
+        setOpenTitlePicker(null);
+        setShowNewTitleInput(false);
+        setNewTitleInput('');
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const loadSavedTitles = async () => {
     try {
@@ -66,23 +79,28 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   };
 
   const saveNewTitle = async (title: string) => {
-    if (!savedTitles.includes(title)) {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase.from('line_titles').insert({ user_id: user.id, title });
-          setSavedTitles([title, ...savedTitles]);
-        }
-      } catch (e) { console.log('Could not save title'); }
-    }
+    if (!title || savedTitles.includes(title)) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('line_titles').insert({ user_id: user.id, title });
+        setSavedTitles([title, ...savedTitles]);
+      }
+    } catch (e) { console.log('Could not save title'); }
   };
 
   const applyTitle = (itemId: string, title: string) => {
     updateItem(itemId, 'sectionTitle', title);
-    setShowTitlePicker(null);
+    setOpenTitlePicker(null);
     setShowNewTitleInput(false);
     setNewTitleInput('');
     saveNewTitle(title);
+  };
+
+  const addNewTitle = (itemId: string) => {
+    const trimmed = newTitleInput.trim();
+    if (!trimmed) return;
+    applyTitle(itemId, trimmed);
   };
 
   const subtotal = lineItems.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
@@ -189,66 +207,90 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const handleSendSuccess = () => { setShowSendModal(false); setSavedEstimateData(null); onClose(); };
 
   const renderItem = (item: LineItem, idx: number) => (
-    <div key={item.id} className="mb-4">
-      {/* Section title row */}
-      {!isReadOnly && (
-        <div className="flex items-center gap-2 mb-1 relative">
-          <input
-            value={item.sectionTitle || ''}
-            onChange={(e) => updateItem(item.id, 'sectionTitle', e.target.value)}
-            placeholder="Section title (optional) e.g. Demo, Plumbing..."
-            className="flex-1 border border-dashed border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-600 focus:outline-none focus:border-orange-400 bg-transparent"
-          />
-          {savedTitles.length > 0 && (
-            <div className="relative">
-              <button
-                onClick={() => { setShowTitlePicker(showTitlePicker === item.id ? null : item.id); setShowNewTitleInput(false); setNewTitleInput(''); }}
-                className="flex items-center gap-1 px-2 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 text-xs font-semibold"
-                title="Pick saved title"
-              >
-                <Tag size={13} />
-              </button>
-              {showTitlePicker === item.id && (
-                <div className="absolute right-0 top-9 z-50 bg-white border border-gray-200 rounded-xl shadow-xl w-56 overflow-hidden">
-                  <div className="p-2 border-b">
-                    <p className="text-xs text-gray-500 font-semibold px-2 mb-1">Saved Titles</p>
+    <div key={item.id} className="bg-gray-50 p-4 rounded-lg border mb-4">
+      <div className="flex justify-between items-start mb-3">
+        <span className="text-sm font-semibold text-gray-600">Item {idx + 1}</span>
+        {!isReadOnly && <button onClick={() => removeItem(item.id)} className="text-red-600 p-1"><Trash2 size={18} /></button>}
+      </div>
+      <div className="space-y-3">
+
+        {/* Section Title */}
+        {!isReadOnly && (
+          <div className="relative" ref={openTitlePicker === item.id ? titlePickerRef : undefined}>
+            <label className="block text-xs text-gray-500 mb-1">Section Title (optional)</label>
+            <input
+              value={item.sectionTitle || ''}
+              onChange={(e) => updateItem(item.id, 'sectionTitle', e.target.value)}
+              onFocus={() => { setOpenTitlePicker(item.id); setShowNewTitleInput(false); }}
+              placeholder="e.g. Demo, Plumbing, Labor..."
+              className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-orange-400 focus:outline-none bg-white"
+            />
+            {openTitlePicker === item.id && (
+              <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-50">
+                  <span className="text-xs font-semibold text-gray-500">Saved Titles</span>
+                  {!showNewTitleInput ? (
+                    <button onClick={() => setShowNewTitleInput(true)} className="bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">+ New Title</button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        autoFocus
+                        value={newTitleInput}
+                        onChange={e => setNewTitleInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') addNewTitle(item.id); if (e.key === 'Escape') setShowNewTitleInput(false); }}
+                        placeholder="Type new title..."
+                        className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-orange-400 w-40"
+                      />
+                      <button onClick={() => addNewTitle(item.id)} className="bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Add</button>
+                    </div>
+                  )}
+                </div>
+                {savedTitles.length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center py-4">No saved titles yet — add your first one above</p>
+                ) : (
+                  <div className="max-h-48 overflow-y-auto p-2">
                     {savedTitles.map((t, i) => (
-                      <button key={i} onClick={() => applyTitle(item.id, t)} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-800">{t}</button>
+                      <button
+                        key={i}
+                        onClick={() => applyTitle(item.id, t)}
+                        className="w-full text-left px-3 py-2.5 hover:bg-orange-50 rounded-lg text-sm text-gray-800 font-medium"
+                        style={{ borderLeft: item.sectionTitle === t ? '3px solid #f97316' : '3px solid transparent' }}
+                      >
+                        {t}
+                      </button>
                     ))}
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-      {/* Show title in read-only */}
-      {isReadOnly && item.sectionTitle && (
-        <div style={{ borderLeft: '3px solid #f97316', background: '#fff8f5', borderRadius: '0 6px 6px 0', padding: '7px 14px', marginBottom: '6px' }}>
-          <span className="font-semibold text-gray-800 text-sm">{item.sectionTitle}</span>
-        </div>
-      )}
-      {/* Line item box */}
-      <div className="bg-gray-50 p-4 rounded-lg border">
-        <div className="flex justify-between items-start mb-3">
-          <span className="text-sm font-semibold text-gray-600">Item {idx + 1}</span>
-          {!isReadOnly && <button onClick={() => removeItem(item.id)} className="text-red-600 p-1"><Trash2 size={18} /></button>}
-        </div>
-        <div className="space-y-3">
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Read-only title display */}
+        {isReadOnly && item.sectionTitle && (
+          <div style={{ borderLeft: '3px solid #f97316', background: '#fff8f5', borderRadius: '0 6px 6px 0', padding: '7px 14px' }}>
+            <span className="font-semibold text-gray-800 text-sm">{item.sectionTitle}</span>
+          </div>
+        )}
+
+        {/* Description */}
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Description</label>
           <textarea value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none resize-none disabled:bg-gray-100" placeholder="Description" rows={2} disabled={isReadOnly} />
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Qty</label>
-              <input type="number" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Rate</label>
-              <input type="number" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Total</label>
-              <div className="w-full border-2 border-gray-200 bg-gray-100 rounded-lg px-3 py-3 text-base text-center font-semibold">${(Number(item.total) || 0).toFixed(2)}</div>
-            </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">Qty</label>
+            <input type="number" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">Rate</label>
+            <input type="number" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-600 mb-1">Total</label>
+            <div className="w-full border-2 border-gray-200 bg-gray-100 rounded-lg px-3 py-3 text-base text-center font-semibold">${(Number(item.total) || 0).toFixed(2)}</div>
           </div>
         </div>
       </div>
@@ -323,9 +365,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                 </button>
               )}
             </div>
-            <div>
-              {lineItems.map((item, idx) => renderItem(item, idx))}
-            </div>
+            <div>{lineItems.map((item, idx) => renderItem(item, idx))}</div>
           </div>
 
           <div className="bg-blue-50 p-4 rounded-lg space-y-3 mb-6">

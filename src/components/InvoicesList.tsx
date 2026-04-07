@@ -131,7 +131,7 @@ export const InvoicesList: React.FC = () => {
       {selectedInvoice && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-3">
           <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-auto shadow-2xl">
-            <div className="bg-blue-600 text-white p-4 flex justify-between items-center rounded-t-xl sticky top-0">
+            <div className="text-white p-4 flex justify-between items-center rounded-t-xl sticky top-0" style={{background: '#1c1c1e'}}>
               <div>
                 <h2 className="text-lg font-bold">{selectedInvoice.invoiceNumber}</h2>
                 <p className="text-blue-200 text-sm">{selectedInvoice.clientName} — {selectedInvoice.projectName}</p>

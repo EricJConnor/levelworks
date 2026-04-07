@@ -326,3 +326,73 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                             {savedTitles.map((t, i) => (
                               <button key={i} onClick={() => addTitle(t)} className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-gray-800">{t}</button>
                             ))}
+                            </div>
+                        )}
+                        <div className="p-2">
+                          {!showNewTitleInput ? (
+                            <button onClick={() => setShowNewTitleInput(true)} className="w-full text-left px-3 py-2 text-sm text-orange-500 font-semibold hover:bg-orange-50 rounded-lg">+ New title...</button>
+                          ) : (
+                            <div className="flex gap-2 px-2">
+                              <input autoFocus value={newTitleInput} onChange={e => setNewTitleInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addTitle(newTitleInput); if (e.key === 'Escape') setShowNewTitleInput(false); }} placeholder="e.g. Demo, Plumbing..." className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400" />
+                              <button onClick={() => addTitle(newTitleInput)} className="px-3 py-2 bg-orange-500 text-white rounded-lg text-sm font-semibold">Add</button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => addLineItem()} className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-sm font-semibold" style={{ background: '#1c1c1e' }}>
+                    <Plus size={15} /> Add Item
+                  </button>
+                </div>
+              )}
+            </div>
+            <div>{renderLineItems()}</div>
+          </div>
+
+          <div className="bg-blue-50 p-4 rounded-lg space-y-3 mb-6">
+            <div className="flex justify-between text-base"><span>Subtotal:</span><span className="font-semibold">${subtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between items-center">
+              <span>Tax:</span>
+              <div className="flex items-center gap-2">
+                <input type="number" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} className="w-16 border-2 rounded px-2 py-2 text-center text-base disabled:bg-gray-100" disabled={isReadOnly} />
+                <span>%</span>
+                <span className="font-semibold">${tax.toFixed(2)}</span>
+              </div>
+            </div>
+            <div className="flex justify-between text-xl font-bold border-t pt-3"><span>Total:</span><span className="text-blue-600">${total.toFixed(2)}</span></div>
+            <div className="flex justify-between items-center border-t pt-3">
+              <span>Deposit:</span>
+              <input type="number" value={deposit} onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)} className="w-32 border-2 rounded px-3 py-2 text-base font-semibold text-right disabled:bg-gray-100" disabled={isReadOnly} />
+            </div>
+            <div className="flex justify-between text-lg font-bold"><span>Balance Due:</span><span className="text-green-600">${balanceDue.toFixed(2)}</span></div>
+          </div>
+
+          {isReadOnly ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <button onClick={() => setIsReadOnly(false)} className="px-4 py-4 text-white rounded-lg font-semibold text-base flex items-center justify-center gap-2" style={{ background: '#1c1c1e' }}>
+                <Edit size={18} /> Edit
+              </button>
+              <button onClick={handleSendEstimate} disabled={isSaving} className="px-4 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-base disabled:opacity-50">Send</button>
+              {(existingEstimate?.status === 'approved' || existingEstimate?.status === 'sent') && (
+                <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-4 py-4 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-semibold text-base">Convert to Invoice</button>
+              )}
+              <button onClick={onClose} className="px-4 py-4 border-2 rounded-lg hover:bg-gray-50 font-semibold text-base">Close</button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <button onClick={handleSave} disabled={isSaving} className="px-4 py-4 text-white rounded-lg font-semibold text-base disabled:opacity-50" style={{ background: '#1c1c1e' }}>{isSaving ? 'Saving...' : 'Save'}</button>
+              <button onClick={handleSendEstimate} disabled={isSaving} className="px-4 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-base disabled:opacity-50">{isSaving ? 'Saving...' : 'Send'}</button>
+              <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, lineTitles, taxRate, deposit })} className="px-4 py-4 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-semibold text-base">Convert to Invoice</button>
+              <button onClick={onClose} className="px-4 py-4 border-2 rounded-lg hover:bg-gray-50 font-semibold text-base">Cancel</button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {showSendModal && savedEstimateData && (
+        <SendEstimateModal estimateData={savedEstimateData} onClose={handleSendModalClose} onSuccess={handleSendSuccess} />
+      )}
+    </div>
+  );
+};

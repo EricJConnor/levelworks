@@ -83,7 +83,8 @@ const cleanLineItem = (item: any, index: number): object | null => {
     description: String(description),
     quantity: Number(quantity),
     rate: Number(rate),
-    total: Number(total)
+    total: Number(total),
+    sectionTitle: item.sectionTitle ? String(item.sectionTitle) : undefined
   };
 };
 

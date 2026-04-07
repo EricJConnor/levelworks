@@ -150,6 +150,9 @@ export default function PublicInvoiceView() {
               <Button onClick={() => setShowPayment(true)} className="w-full bg-green-600 hover:bg-green-700 py-5 md:py-6 text-base md:text-lg">
                 <CreditCard className="w-5 h-5 mr-2" /> Pay ${amountDue.toFixed(2)} Now
               </Button>
+      <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '13px', marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+  🔒 100% secure payment through Stripe
+</p>
             )}
           </div>
         </Card>

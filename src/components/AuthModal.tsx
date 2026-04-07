@@ -139,7 +139,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="mx-2 max-w-md p-0 overflow-hidden">
-        <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
+        <div className="text-white p-4 flex justify-between items-center" style={{background: '#1c1c1e'}}>
           <div className="flex items-center gap-2">
             {isForgotPassword && (
               <button 

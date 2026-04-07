@@ -191,16 +191,14 @@ export const InvoicesList: React.FC = () => {
               )}
 
               <div className="flex flex-wrap gap-3 pt-2">
-                {!selectedInvoice.sentAt && (
-                  <button
+                <button
                     onClick={() => handleSendInvoice(selectedInvoice)}
                     disabled={sendingId === selectedInvoice.id}
                     className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm disabled:opacity-50"
                   >
                     <Send size={16} />
-                    {sendingId === selectedInvoice.id ? 'Sending...' : 'Send Invoice'}
+                    {sendingId === selectedInvoice.id ? 'Sending...' : selectedInvoice.sentAt ? 'Resend Invoice' : 'Send Invoice'}
                   </button>
-                )}
                 {selectedInvoice.status !== 'paid' && (
                   <>
                     <button

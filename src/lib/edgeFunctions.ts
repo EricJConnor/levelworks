@@ -117,7 +117,7 @@ export async function sendInvoiceEmail(params: {
 }): Promise<EdgeFunctionResult> {
   const baseUrl = window.location.origin;
   const invoiceUrl = params.invoiceData?.viewToken 
-    ? `${baseUrl}/invoice/${safeString(params.invoiceData.viewToken)}`
+    ? `${baseUrl}/view-invoice/${safeString(params.invoiceData.viewToken)}`
     : '';
   
   console.log('[sendInvoiceEmail] Preparing to send:', {

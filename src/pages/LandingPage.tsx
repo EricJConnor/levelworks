@@ -96,7 +96,7 @@ export default function LandingPage() {
             <span style={{ color: '#3b82f6' }}>Not your paperwork.</span>
           </h1>
           <p style={{ fontSize: '20px', color: '#a8a8a8', lineHeight: '1.6', marginBottom: '16px', maxWidth: '560px' }}>
-            Professional estimates, digital signatures, invoicing, client payments — everything other apps do, for <strong style={{ color: '#fff' }}>$5 a month</strong>.
+            Professional UNLIMITED estimates, digital signatures, invoicing, client payments — everything other apps do, for <strong style={{ color: '#fff' }}>$5 a month</strong>.
           </p>
           <p style={{ fontSize: '15px', color: '#909090', marginBottom: '40px' }}>
             Other providers charge up to $149/month. We don't.

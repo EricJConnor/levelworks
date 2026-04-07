@@ -163,7 +163,7 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-3">
       <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-auto shadow-2xl">
 
-        <div className="bg-green-600 text-white p-4 flex justify-between items-center rounded-t-xl">
+        <div className="text-white p-4 flex justify-between items-center rounded-t-xl" style={{background: '#1c1c1e'}}>
           <h2 className="text-lg md:text-xl font-bold">Send Estimate</h2>
           <button onClick={onClose} className="p-2 hover:bg-green-700 rounded-lg" disabled={isSending}>
             <X size={24} />

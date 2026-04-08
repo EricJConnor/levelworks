@@ -259,7 +259,10 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
   <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', margin: 0 }}>Dashboard</h2>
+  <AddToHomeScreen />
+</div>
   <AddToHomeScreen />
 </div>
 

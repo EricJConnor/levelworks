@@ -120,7 +120,7 @@ export const AppLayout: React.FC = () => {
             </nav>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span className="hide-mobile"><AddToHomeScreen /></span>
+            <AddToHomeScreen />
             <button onClick={() => handleNavClick('notifications')} className="hide-mobile" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', position: 'relative' }}>
               <Bell size={20} />
               {!pushEnabled && <span style={{ position: 'absolute', top: '6px', right: '6px', width: '7px', height: '7px', background: '#f97316', borderRadius: '50%' }} />}

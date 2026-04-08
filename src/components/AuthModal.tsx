@@ -246,8 +246,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                   placeholder="••••••••"
                   autoComplete={isSignUp ? "new-password" : "current-password"}
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-0 top-0 h-full px-4 text-gray-400 hover:text-gray-600 flex items-center">
+                  {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                 </button>
               </div>
             </div>

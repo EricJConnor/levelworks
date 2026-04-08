@@ -11,8 +11,7 @@ export const AddToHomeScreen: React.FC = () => {
     <>
       <Button onClick={() => setOpen(true)} variant="ghost" size="sm" className="gap-2 !bg-white/20 hover:!bg-white/30 !text-white border border-white/50">
         <Smartphone size={16} />
-        <span className="hidden sm:inline">Add to Phone</span>
-        <span className="sm:hidden">Install</span>
+        <span>Add to Phone</span>
       </Button>
 
 

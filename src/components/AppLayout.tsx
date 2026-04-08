@@ -258,7 +258,10 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
 
   return (
     <div>
-      <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', marginBottom: '20px' }}>Dashboard</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+  <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', margin: 0 }}>Dashboard</h2>
+  <AddToHomeScreen />
+</div>
 
       {!stripeConnected && (
         <div style={{ background: '#1c1c1e', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>

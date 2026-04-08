@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { X, ArrowLeft, Loader2, Mail, Lock, User, CheckCircle2 } from 'lucide-react';
+import { X, ArrowLeft, Loader2, Mail, Lock, User, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 interface AuthModalProps {
   open: boolean;
@@ -21,6 +21,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
   const [fullName, setFullName] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
   // Reset form fields when modal closes or mode changes
@@ -234,16 +235,21 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                 <Lock size={16} />
                 Password
               </label>
-              <input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                required 
-                minLength={6} 
-                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none transition-colors" 
-                placeholder="••••••••"
-                autoComplete={isSignUp ? "new-password" : "current-password"}
-              />
+              <div className="relative">
+                <input 
+                  type={showPassword ? "text" : "password"}
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  required 
+                  minLength={6} 
+                  className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none transition-colors pr-12" 
+                  placeholder="••••••••"
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
             {isSignUp && (
               <div>

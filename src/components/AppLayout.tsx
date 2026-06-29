@@ -17,7 +17,7 @@ import AuthModal from './AuthModal';
 import { useData, Estimate } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
-import { Menu, X, Bell, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send } from 'lucide-react';
+import { Menu, X, Bell, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send, Plus } from 'lucide-react';
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -129,11 +129,11 @@ export const AppLayout: React.FC = () => {
               {profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <User size={15} />}
               <span>{profile?.full_name?.split(' ')[0] || 'Account'}</span>
             </button>
-            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="hide-mobile" style={{ background: '#f97316', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-              + Estimate
+            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="quick-add-btn" style={{ background: '#f97316', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Plus size={14} className="quick-add-icon" /> <span className="quick-add-label">Estimate</span>
             </button>
-            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="hide-mobile" style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-              + Invoice
+            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="quick-add-btn" style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Plus size={14} className="quick-add-icon" /> <span className="quick-add-label">Invoice</span>
             </button>
             <button onClick={handleSignOut} className="hide-mobile" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <LogOut size={15} /> Sign Out
@@ -173,9 +173,21 @@ export const AppLayout: React.FC = () => {
         @media (max-width: 480px) {
           .app-main { padding: 20px 14px 32px !important; }
         }
+        @media (max-width: 640px) {
+          .quick-add-btn { padding: 8px 10px !important; }
+          .quick-add-label { display: none !important; }
+        }
       `}</style>
 
       <main className="app-main" style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px' }}>
+        {currentView !== 'dashboard' && currentView !== 'account' && (
+          <button
+            onClick={() => setCurrentView('dashboard')}
+            style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '14px', padding: '0', marginBottom: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <ArrowLeft size={16} /> Back to Dashboard
+          </button>
+        )}
         {currentView === 'dashboard' && (
           <DashboardView
             clients={clients}

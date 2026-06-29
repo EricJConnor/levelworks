@@ -132,6 +132,9 @@ export const AppLayout: React.FC = () => {
             <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} style={{ background: '#f97316', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
               + Estimate
             </button>
+            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+              + Invoice
+            </button>
             <button onClick={handleSignOut} className="hide-mobile" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <LogOut size={15} /> Sign Out
             </button>
@@ -149,6 +152,7 @@ export const AppLayout: React.FC = () => {
             ))}
             <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', marginTop: '10px', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); setMobileMenuOpen(false); }} style={{ background: '#f97316', color: '#fff', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Estimate</button>
+              <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); setMobileMenuOpen(false); }} style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Invoice</button>
               <button onClick={handleAccountClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><User size={16} /> Account</button>
               <button onClick={handleSignOut} style={{ background: 'none', color: '#71717a', border: '0.5px solid rgba(255,255,255,0.08)', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><LogOut size={16} /> Sign Out</button>
             </div>
@@ -188,7 +192,7 @@ export const AppLayout: React.FC = () => {
         {currentView === 'notifications' && <NotificationSettings />}
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} />}
         {currentView === 'estimates' && <EstimatesList />}
-        {currentView === 'invoices' && <InvoicesList />}
+        {currentView === 'invoices' && <InvoicesList onCreateInvoice={() => { setInvoiceInitialData(null); setShowInvoice(true); }} />}
         {currentView === 'notes' && <Notes />}
         {currentView === 'account' && <AccountView onBack={() => setCurrentView('dashboard')} />}
       </main>

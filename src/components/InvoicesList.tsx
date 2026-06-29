@@ -10,7 +10,11 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { sendInvoiceEmail } from '@/lib/edgeFunctions';
 
-export const InvoicesList: React.FC = () => {
+interface InvoicesListProps {
+  onCreateInvoice?: () => void;
+}
+
+export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) => {
   const { invoices, deleteInvoice, recordPayment, updateInvoice } = useInvoices();
   const { toast } = useToast();
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
@@ -92,12 +96,14 @@ export const InvoicesList: React.FC = () => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl md:text-2xl font-bold">Invoices</h2>
+        <Button onClick={onCreateInvoice} className="bg-green-600 hover:bg-green-700">+ New Invoice</Button>
       </div>
 
       {invoices.length === 0 ? (
         <Card className="p-6 md:p-8 text-center">
           <FileText className="h-10 w-10 mx-auto text-gray-400 mb-3" />
-          <p className="text-sm text-gray-600">No invoices yet. Convert an approved estimate to create one.</p>
+          <p className="text-sm text-gray-600 mb-4">No invoices yet. Create one directly, or convert an approved estimate.</p>
+          <Button onClick={onCreateInvoice} className="bg-green-600 hover:bg-green-700">Create Your First Invoice</Button>
         </Card>
       ) : (
         <div className="space-y-3">

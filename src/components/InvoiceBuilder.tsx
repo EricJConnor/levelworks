@@ -16,8 +16,8 @@ interface InvoiceBuilderProps {
 }
 
 export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, initialData, onComplete, onClose }) => {
-  const { addInvoice } = useInvoices();
-  const { addClient, clients } = useData();
+  const { addInvoice, invoices } = useInvoices();
+  const { addClient, clients, estimates } = useData();
   const { toast } = useToast();
   const [clientName, setClientName] = useState(initialData?.clientName || '');
   const [clientEmail, setClientEmail] = useState(initialData?.clientEmail || '');
@@ -28,6 +28,16 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
   const [sending, setSending] = useState(false);
+  const [showClientSuggest, setShowClientSuggest] = useState(false);
+  const [showProjectSuggest, setShowProjectSuggest] = useState(false);
+
+  const filteredClients = clientName.trim()
+    ? clients.filter((c: any) => c.name.toLowerCase().includes(clientName.trim().toLowerCase()) && c.name.toLowerCase() !== clientName.trim().toLowerCase())
+    : [];
+  const projectNames = Array.from(new Set([...estimates.map((e: any) => e.projectName), ...invoices.map((i: any) => i.projectName)].filter(Boolean)));
+  const filteredProjectNames = projectName.trim()
+    ? projectNames.filter((p: any) => p.toLowerCase().includes(projectName.trim().toLowerCase()) && p.toLowerCase() !== projectName.trim().toLowerCase())
+    : [];
 
   // Determine if this is a conversion from an estimate
   const isConversion = !!(estimateId || initialData);
@@ -261,9 +271,26 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         </div>
         <div className="p-4 md:p-6 space-y-4">
           <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
-            <div>
+            <div className="relative">
               <label className="block text-sm font-semibold mb-2">Client Name *</label>
-              <input value={clientName} onChange={(e) => setClientName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" placeholder="Client name" />
+              <input
+                value={clientName}
+                onChange={(e) => { setClientName(e.target.value); setShowClientSuggest(true); }}
+                onFocus={() => setShowClientSuggest(true)}
+                onBlur={() => setTimeout(() => setShowClientSuggest(false), 150)}
+                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none"
+                placeholder="Client name"
+              />
+              {showClientSuggest && filteredClients.length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto">
+                  {filteredClients.map((c: any) => (
+                    <button key={c.id} type="button" onMouseDown={(e) => { e.preventDefault(); setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientSuggest(false); }} className="w-full text-left px-4 py-2.5 hover:bg-green-50 border-b last:border-0">
+                      <p className="font-semibold text-gray-900 text-sm">{c.name}</p>
+                      {c.email && <p className="text-xs text-gray-500">{c.email}</p>}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2">Client Email {!isConversion && '*'}</label>
@@ -276,9 +303,25 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
               <label className="block text-sm font-semibold mb-2">Client Phone</label>
               <input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" placeholder="(555) 123-4567" />
             </div>
-            <div>
+            <div className="relative">
               <label className="block text-sm font-semibold mb-2">Project Name *</label>
-              <input value={projectName} onChange={(e) => setProjectName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" placeholder="Project name" />
+              <input
+                value={projectName}
+                onChange={(e) => { setProjectName(e.target.value); setShowProjectSuggest(true); }}
+                onFocus={() => setShowProjectSuggest(true)}
+                onBlur={() => setTimeout(() => setShowProjectSuggest(false), 150)}
+                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none"
+                placeholder="Project name"
+              />
+              {showProjectSuggest && filteredProjectNames.length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto">
+                  {filteredProjectNames.map((p: any, i: number) => (
+                    <button key={i} type="button" onMouseDown={(e) => { e.preventDefault(); setProjectName(p); setShowProjectSuggest(false); }} className="w-full text-left px-4 py-2.5 hover:bg-green-50 border-b last:border-0 text-sm font-medium text-gray-800">
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">

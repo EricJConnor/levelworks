@@ -36,7 +36,7 @@ const cleanLineItem = (item: any, index: number): LineItem | null => {
 };
 
 export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, existingEstimate }) => {
-  const { addEstimate, updateEstimate, refreshEstimates, addClient, clients } = useData();
+  const { addEstimate, updateEstimate, refreshEstimates, addClient, clients, estimates } = useData();
   const [clientName, setClientName] = useState(existingEstimate?.clientName || '');
   const [clientEmail, setClientEmail] = useState(existingEstimate?.clientEmail || '');
   const [clientPhone, setClientPhone] = useState(existingEstimate?.clientPhone || '');
@@ -49,6 +49,8 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [isSaving, setIsSaving] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(!!existingEstimate);
   const [showClientPicker, setShowClientPicker] = useState(false);
+  const [showClientSuggest, setShowClientSuggest] = useState(false);
+  const [showProjectSuggest, setShowProjectSuggest] = useState(false);
   const [savedTitles, setSavedTitles] = useState<string[]>([]);
   const [openTitlePicker, setOpenTitlePicker] = useState<string | null>(null);
   const [newTitleInput, setNewTitleInput] = useState('');
@@ -102,6 +104,14 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     if (!trimmed) return;
     applyTitle(itemId, trimmed);
   };
+
+  const filteredClients = clientName.trim()
+    ? clients.filter(c => c.name.toLowerCase().includes(clientName.trim().toLowerCase()) && c.name.toLowerCase() !== clientName.trim().toLowerCase())
+    : [];
+  const projectNames = Array.from(new Set(estimates.map(e => e.projectName).filter(Boolean)));
+  const filteredProjectNames = projectName.trim()
+    ? projectNames.filter(p => p.toLowerCase().includes(projectName.trim().toLowerCase()) && p.toLowerCase() !== projectName.trim().toLowerCase())
+    : [];
 
   const subtotal = lineItems.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
   const tax = subtotal * (taxRate / 100);
@@ -246,17 +256,21 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                       </div>
                     )}
                   </div>
-                  {savedTitles.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-4">No saved titles yet — add your first one above</p>
-                  ) : (
-                    <div className="max-h-48 overflow-y-auto p-2">
-                      {savedTitles.map((t, i) => (
-                        <button key={i} onClick={() => applyTitle(item.id, t)} className="w-full text-left px-3 py-2.5 hover:bg-orange-50 rounded-lg text-sm text-gray-800 font-medium" style={{ borderLeft: item.sectionTitle === t ? '3px solid #f97316' : '3px solid transparent' }}>
-                          {t}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {(() => {
+                    const typed = (item.sectionTitle || '').trim().toLowerCase();
+                    const matches = typed ? savedTitles.filter(t => t.toLowerCase().includes(typed)) : savedTitles;
+                    return matches.length === 0 ? (
+                      <p className="text-sm text-gray-400 text-center py-4">{savedTitles.length === 0 ? 'No saved titles yet — add your first one above' : 'No matches — add it as a new title above'}</p>
+                    ) : (
+                      <div className="max-h-48 overflow-y-auto p-2">
+                        {matches.map((t, i) => (
+                          <button key={i} onClick={() => applyTitle(item.id, t)} className="w-full text-left px-3 py-2.5 hover:bg-orange-50 rounded-lg text-sm text-gray-800 font-medium" style={{ borderLeft: item.sectionTitle === t ? '3px solid #f97316' : '3px solid transparent' }}>
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>
@@ -342,9 +356,27 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                 </div>
               </div>
             )}
-            <div>
+            <div className="relative">
               <label className="block text-sm font-semibold mb-2">Client Name *</label>
-              <input value={clientName} onChange={(e) => setClientName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-600" placeholder="Enter client name" disabled={isReadOnly} />
+              <input
+                value={clientName}
+                onChange={(e) => { setClientName(e.target.value); setShowClientSuggest(true); }}
+                onFocus={() => setShowClientSuggest(true)}
+                onBlur={() => setTimeout(() => setShowClientSuggest(false), 150)}
+                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-600"
+                placeholder="Enter client name"
+                disabled={isReadOnly}
+              />
+              {showClientSuggest && filteredClients.length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto">
+                  {filteredClients.map((c) => (
+                    <button key={c.id} type="button" onMouseDown={(e) => { e.preventDefault(); setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientSuggest(false); }} className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b last:border-0">
+                      <p className="font-semibold text-gray-900 text-sm">{c.name}</p>
+                      {c.email && <p className="text-xs text-gray-500">{c.email}</p>}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2">Client Email</label>
@@ -354,9 +386,26 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
               <label className="block text-sm font-semibold mb-2">Client Phone</label>
               <input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-600" placeholder="(555) 123-4567" type="tel" disabled={isReadOnly} />
             </div>
-            <div className="md:col-span-3">
+            <div className="md:col-span-3 relative">
               <label className="block text-sm font-semibold mb-2">Project Name *</label>
-              <input value={projectName} onChange={(e) => setProjectName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-600" placeholder="Enter project name" disabled={isReadOnly} />
+              <input
+                value={projectName}
+                onChange={(e) => { setProjectName(e.target.value); setShowProjectSuggest(true); }}
+                onFocus={() => setShowProjectSuggest(true)}
+                onBlur={() => setTimeout(() => setShowProjectSuggest(false), 150)}
+                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-600"
+                placeholder="Enter project name"
+                disabled={isReadOnly}
+              />
+              {showProjectSuggest && filteredProjectNames.length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto">
+                  {filteredProjectNames.map((p, i) => (
+                    <button key={i} type="button" onMouseDown={(e) => { e.preventDefault(); setProjectName(p); setShowProjectSuggest(false); }} className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b last:border-0 text-sm font-medium text-gray-800">
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

@@ -168,7 +168,7 @@ export const InvoicesList: React.FC = () => {
                   {parseLineItems(selectedInvoice.lineItems).map((item: any, idx: number) => (
                     <div key={idx} className="flex justify-between items-start bg-gray-50 rounded-lg p-3">
                       <div className="flex-1">
-                        <p className="font-medium text-gray-800 text-sm">{item.description}</p>
+                        <p className="font-medium text-gray-800 text-sm whitespace-pre-wrap">{item.description}</p>
                         <p className="text-xs text-gray-500">Qty: {item.quantity} × ${Number(item.rate).toFixed(2)}</p>
                       </div>
                       <p className="font-semibold text-gray-900 ml-4">${Number(item.total || item.quantity * item.rate).toFixed(2)}</p>

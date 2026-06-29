@@ -83,7 +83,7 @@ export const EstimateView: React.FC = () => {
           <tbody>
             {estimate.lineItems?.map((item: any, idx: number) => (
               <tr key={idx} className="border-t">
-                <td className="p-3">{item.description}</td>
+                <td className="p-3 whitespace-pre-wrap">{item.description}</td>
                 <td className="p-3 text-right">{item.quantity}</td>
                 <td className="p-3 text-right">${item.rate.toFixed(2)}</td>
                 <td className="p-3 text-right font-semibold">${item.total.toFixed(2)}</td>

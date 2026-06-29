@@ -179,7 +179,7 @@ export default function PublicEstimateView() {
             <div className="bg-gray-50 rounded-lg overflow-hidden">
               {lineItems.map((item: any, idx: number) => (
                 <div key={idx} className="p-3 border-b border-gray-200 last:border-0">
-                  <p className="font-medium text-gray-800">{item.description}</p>
+                  <p className="font-medium text-gray-800 whitespace-pre-wrap">{item.description}</p>
                   <p className="text-right font-semibold">${Number(item.total || 0).toFixed(2)}</p>
                 </div>
               ))}

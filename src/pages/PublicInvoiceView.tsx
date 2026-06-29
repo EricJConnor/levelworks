@@ -96,7 +96,7 @@ export default function PublicInvoiceView() {
             <div className="space-y-3 md:hidden">
               {lineItems.map((item: any, idx: number) => (
                 <div key={idx} className="bg-gray-50 p-3 rounded-lg">
-                  <p className="font-medium mb-2">{item.description}</p>
+                  <p className="font-medium mb-2 whitespace-pre-wrap">{item.description}</p>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>{Number(item.quantity) || 0} x ${Number(item.rate || 0).toFixed(2)}</span>
                     <span className="font-semibold text-gray-900">${((Number(item.quantity) || 0) * (Number(item.rate) || 0)).toFixed(2)}</span>
@@ -112,7 +112,7 @@ export default function PublicInvoiceView() {
                 <tbody>
                   {lineItems.map((item: any, idx: number) => (
                     <tr key={idx} className="border-t">
-                      <td className="p-3">{item.description}</td>
+                      <td className="p-3 whitespace-pre-wrap">{item.description}</td>
                       <td className="p-3 text-right">{Number(item.quantity) || 0}</td>
                       <td className="p-3 text-right">${Number(item.rate || 0).toFixed(2)}</td>
                       <td className="p-3 text-right">${((Number(item.quantity) || 0) * (Number(item.rate) || 0)).toFixed(2)}</td>

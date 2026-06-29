@@ -129,10 +129,10 @@ export const AppLayout: React.FC = () => {
               {profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <User size={15} />}
               <span>{profile?.full_name?.split(' ')[0] || 'Account'}</span>
             </button>
-            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} style={{ background: '#f97316', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="hide-mobile" style={{ background: '#f97316', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
               + Estimate
             </button>
-            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="hide-mobile" style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
               + Invoice
             </button>
             <button onClick={handleSignOut} className="hide-mobile" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -170,9 +170,12 @@ export const AppLayout: React.FC = () => {
           .hide-mobile { display: none !important; }
           .mobile-only { display: block !important; }
         }
+        @media (max-width: 480px) {
+          .app-main { padding: 20px 14px 32px !important; }
+        }
       `}</style>
 
-      <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px' }}>
+      <main className="app-main" style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px' }}>
         {currentView === 'dashboard' && (
           <DashboardView
             clients={clients}
@@ -278,26 +281,32 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '24px' }} className="stats-grid">
-        <div style={{ background: '#fff', borderRadius: '10px', padding: '16px 18px', border: '0.5px solid #e4e4e7' }}>
-          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 6px' }}>Total Value</p>
-          <p style={{ color: '#16a34a', fontSize: '26px', fontWeight: '600', margin: 0 }}>${totalEstimateValue.toLocaleString()}</p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '28px' }} className="stats-grid">
+        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
+          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Total Value</p>
+          <p className="stat-value" style={{ color: '#16a34a', fontSize: '24px', fontWeight: '600', margin: 0 }}>${totalEstimateValue.toLocaleString()}</p>
         </div>
-        <div style={{ background: '#fff', borderRadius: '10px', padding: '16px 18px', border: '0.5px solid #e4e4e7', cursor: 'pointer' }} onClick={onViewEstimates}>
-          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 6px' }}>Estimates</p>
-          <p style={{ color: '#f97316', fontSize: '26px', fontWeight: '600', margin: 0 }}>{estimates.length}</p>
+        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7', cursor: 'pointer' }} onClick={onViewEstimates}>
+          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Estimates</p>
+          <p className="stat-value" style={{ color: '#f97316', fontSize: '24px', fontWeight: '600', margin: 0 }}>{estimates.length}</p>
         </div>
-        <div style={{ background: '#fff', borderRadius: '10px', padding: '16px 18px', border: '0.5px solid #e4e4e7' }}>
-          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 6px' }}>Pending</p>
-          <p style={{ color: '#eab308', fontSize: '26px', fontWeight: '600', margin: 0 }}>{pendingEstimates}</p>
+        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
+          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Pending</p>
+          <p className="stat-value" style={{ color: '#eab308', fontSize: '24px', fontWeight: '600', margin: 0 }}>{pendingEstimates}</p>
         </div>
-        <div style={{ background: '#fff', borderRadius: '10px', padding: '16px 18px', border: '0.5px solid #e4e4e7' }}>
-          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 6px' }}>Clients</p>
-          <p style={{ color: '#18181b', fontSize: '26px', fontWeight: '600', margin: 0 }}>{clients.length}</p>
+        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
+          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Clients</p>
+          <p className="stat-value" style={{ color: '#18181b', fontSize: '24px', fontWeight: '600', margin: 0 }}>{clients.length}</p>
         </div>
       </div>
 
-      <style>{`.stats-grid { } @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr) !important; } }`}</style>
+      <style>{`
+        .stats-grid { }
+        @media (min-width: 640px) {
+          .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
+          .stat-value { font-size: 26px !important; }
+        }
+      `}</style>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <h3 style={{ fontSize: '17px', fontWeight: '500', color: '#18181b', margin: 0 }}>Recent Estimates</h3>
@@ -311,10 +320,10 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
           <button onClick={onCreateEstimate} style={{ background: '#f97316', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Create Your First Estimate</button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {recentEstimates.map((estimate) => (
             <div key={estimate.id} onClick={() => onViewEstimate(estimate)}
-              style={{ background: '#fff', borderRadius: '10px', padding: '16px 18px', border: '0.5px solid #e4e4e7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+              style={{ background: '#fff', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid #e4e4e7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = '#a1a1aa')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = '#e4e4e7')}
             >

@@ -62,31 +62,37 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
       </div>
 
       {clients.length === 0 ? (
-        <Card className="p-6 md:p-8 text-center text-gray-500"><p>No clients yet. Add your first client!</p></Card>
+        <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
+          <Mail style={{ width: '40px', height: '40px', color: '#d4d4d8', margin: '0 auto 12px' }} />
+          <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '16px' }}>No clients yet. Add your first client!</p>
+          <button onClick={() => { setEditingClient(null); setNewClient({ name: '', email: '', phone: '', address: '' }); setShowAddClient(true); }} style={{ background: '#f97316', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Add Your First Client</button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           {clients.map(client => (
-            <Card
+            <div
               key={client.id}
-              className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setSelectedClient(client)}
+              style={{ background: '#fff', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid #e4e4e7', cursor: 'pointer' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#a1a1aa')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#e4e4e7')}
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-base md:text-lg mb-1 truncate">{client.name}</h3>
-                  {client.email && <p className="text-sm text-gray-600 truncate">{client.email}</p>}
-                  {client.phone && <p className="text-sm text-gray-600">{client.phone}</p>}
-                  <div className="mt-3 pt-3 border-t flex justify-between text-sm">
-                    <span>{getClientEstimates(client.name).length} estimates</span>
-                    <span className="font-semibold text-blue-600">${client.totalValue.toLocaleString()}</span>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#18181b', margin: '0 0 4px' }} className="truncate">{client.name}</h3>
+                  {client.email && <p style={{ fontSize: '13px', color: '#71717a', margin: '0 0 2px' }} className="truncate">{client.email}</p>}
+                  {client.phone && <p style={{ fontSize: '13px', color: '#71717a', margin: 0 }}>{client.phone}</p>}
+                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid #e4e4e7', display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                    <span style={{ color: '#71717a' }}>{getClientEstimates(client.name).length} estimates</span>
+                    <span style={{ fontWeight: '600', color: '#f97316' }}>${client.totalValue.toLocaleString()}</span>
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 ml-3">
-                  <button onClick={(e) => handleEdit(client, e)} className="text-blue-600 hover:text-blue-800 text-sm p-2">Edit</button>
-                  <button onClick={(e) => handleDelete(client.id, e)} className="text-red-600 hover:text-red-800 text-sm p-2">Delete</button>
+                <div className="flex flex-col gap-1 ml-3">
+                  <button onClick={(e) => handleEdit(client, e)} style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '13px', padding: '6px', cursor: 'pointer' }}>Edit</button>
+                  <button onClick={(e) => handleDelete(client.id, e)} style={{ background: 'none', border: 'none', color: '#dc2626', fontSize: '13px', padding: '6px', cursor: 'pointer' }}>Delete</button>
                 </div>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}

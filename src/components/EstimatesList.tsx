@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useData, Estimate } from '@/contexts/DataContext';
 import { useInvoices } from '@/contexts/InvoiceContext';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -71,11 +70,11 @@ export const EstimatesList: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'draft': return 'bg-gray-500';
-      case 'sent': return 'bg-blue-500';
-      case 'approved': return 'bg-green-500';
-      case 'rejected': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'draft': return 'bg-gray-100 text-gray-700';
+      case 'sent': return 'bg-blue-100 text-blue-700';
+      case 'approved': return 'bg-green-100 text-green-700';
+      case 'rejected': return 'bg-red-100 text-red-700';
+      default: return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -146,16 +145,19 @@ export const EstimatesList: React.FC = () => {
       </div>
 
       {filteredEstimates.length === 0 ? (
-        <Card className="p-6 md:p-8 text-center text-gray-500 text-sm">No estimates found.</Card>
+        <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
+          <FileText style={{ width: '40px', height: '40px', color: '#d4d4d8', margin: '0 auto 12px' }} />
+          <p style={{ color: '#71717a', fontSize: '15px' }}>No estimates found.</p>
+        </div>
       ) : (
         <div className="space-y-3">
           {filteredEstimates.map((estimate) => (
-            <Card key={estimate.id} className="p-3 md:p-4">
+            <div key={estimate.id} style={{ background: '#fff', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid #e4e4e7' }}>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-base md:text-lg font-semibold">EST-{estimate.id.slice(-6)}</h3>
                   <Badge className={`${getStatusColor(estimate.status)} text-xs`}>{estimate.status.toUpperCase()}</Badge>
-                  {estimate.signedAt && <Badge className="bg-green-500 text-xs">Signed</Badge>}
+                  {estimate.signedAt && <Badge className="bg-green-100 text-green-700 text-xs">Signed</Badge>}
                   {estimate.viewToken && (
                     <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">
                       <ExternalLink className="w-3 h-3 mr-1" />
@@ -225,7 +227,7 @@ export const EstimatesList: React.FC = () => {
                   <Button size="sm" variant="destructive" className="text-xs h-8" onClick={() => handleDelete(estimate.id)}>Delete</Button>
                 </div>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}

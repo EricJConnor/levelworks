@@ -17,7 +17,7 @@ import AuthModal from './AuthModal';
 import { useData, Estimate } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
-import { Menu, X, Bell, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send, Plus } from 'lucide-react';
+import { Menu, X, Bell, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send } from 'lucide-react';
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -129,11 +129,11 @@ export const AppLayout: React.FC = () => {
               {profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <User size={15} />}
               <span>{profile?.full_name?.split(' ')[0] || 'Account'}</span>
             </button>
-            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="quick-add-btn" style={{ background: '#f97316', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Plus size={14} className="quick-add-icon" /> <span className="quick-add-label">Estimate</span>
+            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="hide-mobile" style={{ background: '#f97316', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+              + Estimate
             </button>
-            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="quick-add-btn" style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Plus size={14} className="quick-add-icon" /> <span className="quick-add-label">Invoice</span>
+            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="hide-mobile" style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+              + Invoice
             </button>
             <button onClick={handleSignOut} className="hide-mobile" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <LogOut size={15} /> Sign Out
@@ -143,6 +143,14 @@ export const AppLayout: React.FC = () => {
             </button>
           </div>
         </div>
+        <div className="mobile-quick-add mobile-only" style={{ display: 'flex', gap: '8px', padding: '10px 16px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
+          <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} style={{ flex: 1, background: '#f97316', color: '#fff', border: 'none', padding: '9px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+            + Estimate
+          </button>
+          <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} style={{ flex: 1, background: '#16a34a', color: '#fff', border: 'none', padding: '9px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+            + Invoice
+          </button>
+        </div>
         {mobileMenuOpen && (
           <div style={{ background: '#141416', borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '12px 16px 16px' }}>
             {navItems.map(item => (
@@ -151,8 +159,6 @@ export const AppLayout: React.FC = () => {
               </button>
             ))}
             <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', marginTop: '10px', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); setMobileMenuOpen(false); }} style={{ background: '#f97316', color: '#fff', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Estimate</button>
-              <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); setMobileMenuOpen(false); }} style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Invoice</button>
               <button onClick={handleAccountClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><User size={16} /> Account</button>
               <button onClick={handleSignOut} style={{ background: 'none', color: '#71717a', border: '0.5px solid rgba(255,255,255,0.08)', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><LogOut size={16} /> Sign Out</button>
             </div>
@@ -172,10 +178,6 @@ export const AppLayout: React.FC = () => {
         }
         @media (max-width: 480px) {
           .app-main { padding: 20px 14px 32px !important; }
-        }
-        @media (max-width: 640px) {
-          .quick-add-btn { padding: 8px 10px !important; }
-          .quick-add-label { display: none !important; }
         }
       `}</style>
 

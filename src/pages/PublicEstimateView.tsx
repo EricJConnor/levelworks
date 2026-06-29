@@ -193,6 +193,8 @@ export default function PublicEstimateView() {
             </div>
           </div>
 
+          <p className="mt-6 text-sm text-gray-500 text-center italic">We appreciate the opportunity to work with you. Thanks for considering us!</p>
+
           {!isSigned && (
             <div className="mt-8 border-t pt-6 space-y-4">
               <h3 className="text-xl font-bold text-gray-900">Approve This Estimate</h3>

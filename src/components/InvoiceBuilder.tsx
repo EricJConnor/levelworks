@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useInvoices } from '@/contexts/InvoiceContext';
+import { useData } from '@/contexts/DataContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Send, X, FileText } from 'lucide-react';
@@ -16,6 +17,7 @@ interface InvoiceBuilderProps {
 
 export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, initialData, onComplete, onClose }) => {
   const { addInvoice } = useInvoices();
+  const { addClient, clients } = useData();
   const { toast } = useToast();
   const [clientName, setClientName] = useState(initialData?.clientName || '');
   const [clientEmail, setClientEmail] = useState(initialData?.clientEmail || '');
@@ -129,6 +131,13 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
     }
     setSending(true);
     try {
+      const trimmedName = clientName.trim();
+      const exists = clients.some((c: any) => c.name.toLowerCase() === trimmedName.toLowerCase());
+      if (!exists) {
+        try {
+          await addClient({ name: trimmedName, email: clientEmail.trim(), phone: clientPhone.trim(), address: '', totalJobs: 0, totalValue: 0 });
+        } catch (e) { console.log('[InvoiceBuilder] Client save skipped:', e); }
+      }
       // Helper to safely convert to number (handles NaN)
       const safeNumber = (val: any): number => {
         if (val === null || val === undefined) return 0;

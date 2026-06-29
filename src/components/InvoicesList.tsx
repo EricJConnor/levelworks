@@ -24,6 +24,14 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sendingId, setSendingId] = useState<string | null>(null);
 
+  const handleMarkPaid = async (invoice: any, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const balanceDue = invoice.total - invoice.amountPaid;
+    if (balanceDue <= 0) return;
+    await recordPayment(invoice.id, balanceDue, 'Marked as paid');
+    setSelectedInvoice(null);
+  };
+
   const handleRecordPayment = async () => {
     if (!paymentDialog.invoiceId || !paymentAmount) return;
     await recordPayment(paymentDialog.invoiceId, parseFloat(paymentAmount), paymentNote);
@@ -127,7 +135,17 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                     <span className="text-blue-600">${(invoice.total - invoice.amountPaid).toFixed(2)} due</span>
                   </div>
                 </div>
-                <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0 ml-2" />
+                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                  {invoice.status !== 'paid' && (
+                    <button
+                      onClick={(e) => handleMarkPaid(invoice, e)}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-xs"
+                    >
+                      <Check size={14} /> Paid
+                    </button>
+                  )}
+                  <ChevronDown className="h-5 w-5 text-gray-400" />
+                </div>
               </div>
             </Card>
           ))}
@@ -207,6 +225,12 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                   </button>
                 {selectedInvoice.status !== 'paid' && (
                   <>
+                    <button
+                      onClick={() => handleMarkPaid(selectedInvoice)}
+                      className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm"
+                    >
+                      <Check size={16} /> Mark as Paid
+                    </button>
                     <button
                       onClick={() => { setPaymentDialog({ open: true, invoiceId: selectedInvoice.id }); setSelectedInvoice(null); }}
                       className="flex items-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm"

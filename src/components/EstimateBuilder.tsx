@@ -4,7 +4,8 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
 import { SendEstimateModal } from './SendEstimateModal';
 import { supabase } from '@/lib/supabase';
-import { X, Plus, Trash2, Users, Edit } from 'lucide-react';
+import { X, Plus, Trash2, Users, Edit, ImageIcon } from 'lucide-react';
+import { PhotoUpload } from './PhotoUpload';
 
 interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; sectionTitle?: string; }
 interface Props { onClose: () => void; onConvertToInvoice?: (data: any) => void; existingEstimate?: any; }
@@ -60,8 +61,11 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [newTitleInput, setNewTitleInput] = useState('');
   const [showNewTitleInput, setShowNewTitleInput] = useState(false);
   const titlePickerRef = useRef<HTMLDivElement>(null);
+  const [estimatePhotos, setEstimatePhotos] = useState<{ id: string; fileUrl: string; caption: string }[]>([]);
+  const [photoCaptions, setPhotoCaptions] = useState<Record<string, string>>({});
 
   useEffect(() => { loadSavedTitles(); }, []);
+  useEffect(() => { if (existingEstimate?.id) loadEstimatePhotos(existingEstimate.id); }, [existingEstimate?.id]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -74,6 +78,41 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const loadEstimatePhotos = async (estimateId: string) => {
+    try {
+      const { data, error } = await supabase.from('project_photos').select('id, file_url, caption').eq('estimate_id', estimateId);
+      if (error) throw error;
+      const photos = data?.map(p => ({ id: p.id, fileUrl: p.file_url, caption: p.caption || '' })) || [];
+      setEstimatePhotos(photos);
+      const caps: Record<string, string> = {};
+      photos.forEach(p => { caps[p.id] = p.caption; });
+      setPhotoCaptions(caps);
+    } catch (e) { console.error('Error loading estimate photos:', e); }
+  };
+
+  const handleEstimatePhotoUploaded = (photo: { id: string; fileUrl: string; caption?: string }) => {
+    const p = { id: photo.id, fileUrl: photo.fileUrl, caption: photo.caption || '' };
+    setEstimatePhotos(prev => [...prev, p]);
+    setPhotoCaptions(prev => ({ ...prev, [p.id]: p.caption }));
+  };
+
+  const handleEstimatePhotoDeleted = async (photoId: string) => {
+    if (!confirm('Delete this photo?')) return;
+    try {
+      const { error } = await supabase.from('project_photos').delete().eq('id', photoId);
+      if (error) throw error;
+      setEstimatePhotos(prev => prev.filter(p => p.id !== photoId));
+      setPhotoCaptions(prev => { const n = { ...prev }; delete n[photoId]; return n; });
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    }
+  };
+
+  const handleCaptionSave = async (photoId: string, caption: string) => {
+    try { await supabase.from('project_photos').update({ caption }).eq('id', photoId); }
+    catch (e) { console.error('Caption save failed:', e); }
+  };
 
   const loadSavedTitles = async () => {
     try {
@@ -397,6 +436,20 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                   </div>
                 </div>
 
+                {estimatePhotos.length > 0 && (
+                  <div className="mt-6 border-t pt-6">
+                    <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wide">Project Photos</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {estimatePhotos.map(photo => (
+                        <div key={photo.id} className="space-y-1">
+                          <img src={photo.fileUrl} alt={photoCaptions[photo.id] || 'Project photo'} className="w-full aspect-square object-cover rounded-lg border border-gray-100" />
+                          {photoCaptions[photo.id] && <p className="text-xs text-gray-500 text-center truncate">{photoCaptions[photo.id]}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <p className="mt-6 text-sm text-gray-500 text-center italic">We appreciate the opportunity to work with you. Thanks for considering us!</p>
               </div>
               <p className="text-center text-xs text-gray-400 mt-4">Powered by levelworks.org</p>
@@ -547,6 +600,44 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
             </div>
             <div className="flex justify-between text-lg font-bold"><span>Balance Due:</span><span className="text-green-600">${balanceDue.toFixed(2)}</span></div>
           </div>
+
+          {existingEstimate?.id && (
+            <div className="mb-6 border-t pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-gray-500" />
+                  <h3 className="text-lg font-bold">Project Photos</h3>
+                </div>
+                <PhotoUpload estimateId={existingEstimate.id} onPhotoUploaded={handleEstimatePhotoUploaded} />
+              </div>
+              {estimatePhotos.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-6 bg-gray-50 rounded-lg">No photos yet — tap Camera or Upload above to add your first.</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {estimatePhotos.map(photo => (
+                    <div key={photo.id} className="space-y-1.5">
+                      <div className="relative aspect-square group">
+                        <img src={photo.fileUrl} alt={photoCaptions[photo.id] || 'Project photo'} className="w-full h-full object-cover rounded-lg border border-gray-100" />
+                        <button
+                          onClick={() => handleEstimatePhotoDeleted(photo.id)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition hover:bg-red-600"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <input
+                        value={photoCaptions[photo.id] || ''}
+                        onChange={(e) => setPhotoCaptions(prev => ({ ...prev, [photo.id]: e.target.value }))}
+                        onBlur={(e) => handleCaptionSave(photo.id, e.target.value)}
+                        placeholder="Add a label..."
+                        className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 bg-gray-50"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {isReadOnly ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

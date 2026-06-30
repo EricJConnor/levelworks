@@ -46,8 +46,8 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [deposit, setDeposit] = useState(Number(existingEstimate?.deposit) || 0);
   const [showSendModal, setShowSendModal] = useState(false);
   const [savedEstimateData, setSavedEstimateData] = useState<any>(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewData, setPreviewData] = useState<any>(null);
+  const [showPreview, setShowPreview] = useState(!!existingEstimate);
+  const [previewData, setPreviewData] = useState<any>(existingEstimate || null);
   const [isSaving, setIsSaving] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(!!existingEstimate);
   const [showClientPicker, setShowClientPicker] = useState(false);
@@ -381,7 +381,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
           <div className="p-4 md:p-6 border-t bg-gray-50">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-2xl mx-auto">
-              <button onClick={() => setShowPreview(false)} className="px-4 py-4 text-white rounded-lg font-semibold text-base flex items-center justify-center gap-2" style={{ background: '#1c1c1e' }}>
+              <button onClick={() => { setShowPreview(false); setIsReadOnly(false); }} className="px-4 py-4 text-white rounded-lg font-semibold text-base flex items-center justify-center gap-2" style={{ background: '#1c1c1e' }}>
                 <Edit size={18} /> Edit
               </button>
               <button onClick={handlePreviewSend} disabled={isSaving} className="px-4 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-base disabled:opacity-50">Send</button>

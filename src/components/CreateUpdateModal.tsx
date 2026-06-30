@@ -146,12 +146,8 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
       const { token } = await ensureUpdateRecord();
       const updateUrl = `${window.location.origin}/view-update/${token}`;
       const contractorName = profile?.full_name || profile?.company_name || 'Your Contractor';
-      const { data: result, error } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: clientEmail.trim(),
-          templateType: 'job_update_sent',
-          data: { updateName: name.trim(), message: description.trim() || null, updateUrl, contractorName, photoCount: photos.length },
-        },
+      const { data: result, error } = await supabase.functions.invoke('send-update-email', {
+        body: { to: clientEmail.trim(), contractorName, updateName: name.trim(), message: description.trim() || null, updateUrl },
       });
       if (error || result?.success === false) {
         const msg = error?.message || result?.error || 'Failed to send email';

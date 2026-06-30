@@ -104,13 +104,13 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onVi
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
-        <h2 className="text-xl md:text-2xl font-bold">Jobs</h2>
+        <h2 className="text-xl md:text-2xl font-bold">Photos</h2>
         <Button onClick={() => onCreateEstimate()} size="sm" className="w-full sm:w-auto">+ New Estimate</Button>
       </div>
-      
+
       {jobs.length === 0 ? (
         <Card className="p-6 md:p-8 text-center text-gray-500">
-          <p>No jobs yet. Create your first estimate to get started!</p>
+          <p>No jobs yet. Create your first estimate to get started, then come back here to add job photos.</p>
         </Card>
       ) : (
         jobs.map(job => (

@@ -8,6 +8,7 @@ import { InvoiceBuilder } from './InvoiceBuilder';
 import { InvoicesList } from './InvoicesList';
 import { NotificationSettings } from './NotificationSettings';
 import { EstimatesList } from './EstimatesList';
+import { JobsList } from './JobsList';
 import { AddToHomeScreen } from './AddToHomeScreen';
 import { ProfileEditor } from './ProfileEditor';
 import { ChangePasswordForm } from './ChangePasswordForm';
@@ -22,7 +23,7 @@ import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
-type View = 'dashboard' | 'clients' | 'notifications' | 'estimates' | 'invoices' | 'account' | 'notes';
+type View = 'dashboard' | 'clients' | 'notifications' | 'estimates' | 'photos' | 'invoices' | 'account' | 'notes';
 
 export const AppLayout: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -34,7 +35,7 @@ export const AppLayout: React.FC = () => {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { clients, estimates, addClient, loading } = useData();
+  const { clients, estimates, jobs, addClient, loading } = useData();
   const { profile } = useProfile();
   const { toast } = useToast();
   const mountedRef = useRef(true);
@@ -63,6 +64,7 @@ export const AppLayout: React.FC = () => {
     { key: 'dashboard', label: 'Dashboard' },
     { key: 'clients', label: 'Clients' },
     { key: 'estimates', label: 'Estimates' },
+    { key: 'photos', label: 'Photos' },
     { key: 'invoices', label: 'Invoices' },
     { key: 'notes', label: 'Notes' },
   ];
@@ -209,6 +211,7 @@ export const AppLayout: React.FC = () => {
         {currentView === 'notifications' && <NotificationSettings />}
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} />}
         {currentView === 'estimates' && <EstimatesList />}
+        {currentView === 'photos' && <JobsList jobs={jobs} onCreateEstimate={() => { setSelectedEstimate(null); setShowEstimate(true); }} onViewJob={() => {}} />}
         {currentView === 'invoices' && <InvoicesList onCreateInvoice={() => { setInvoiceInitialData(null); setShowInvoice(true); }} />}
         {currentView === 'notes' && <Notes />}
         {currentView === 'account' && <AccountView onBack={() => setCurrentView('dashboard')} />}

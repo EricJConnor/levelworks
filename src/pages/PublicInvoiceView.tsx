@@ -76,7 +76,6 @@ export default function PublicInvoiceView() {
         <Card className="p-4 md:p-8">
           <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Level Works</h1>
               <h2 className="text-lg md:text-xl text-gray-600">Invoice</h2>
             </div>
             <div className="md:text-right">
@@ -160,6 +159,7 @@ export default function PublicInvoiceView() {
             )}
           </div>
         </Card>
+        <p className="text-center text-xs text-gray-400 mt-4">Powered by levelworks.org</p>
       </div>
     </div>
   );

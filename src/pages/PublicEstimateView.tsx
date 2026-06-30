@@ -157,10 +157,6 @@ export default function PublicEstimateView() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-6 md:py-12 px-3 md:px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Level Works</h1>
-        </div>
-
         <Card className="p-4 md:p-8 shadow-lg">
           {isSigned && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center gap-3">
@@ -170,7 +166,13 @@ export default function PublicEstimateView() {
           )}
 
           <div className="border-b pb-6 mb-6">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900">{estimate.project_name || 'Project Estimate'}</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">{estimate.project_name || 'Project Estimate'}</h2>
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Client</p>
+              <p className="font-semibold text-gray-900">{estimate.client_name}</p>
+              {estimate.client_email && <p className="text-sm text-gray-500">{estimate.client_email}</p>}
+              {estimate.client_phone && <p className="text-sm text-gray-500">{estimate.client_phone}</p>}
+            </div>
           </div>
 
           <EstimatePhotos estimateId={estimate.id} />
@@ -219,6 +221,7 @@ export default function PublicEstimateView() {
             </div>
           )}
         </Card>
+        <p className="text-center text-xs text-gray-400 mt-4">Powered by levelworks.org</p>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '@/contexts/DataContext';
+import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
 import { SendEstimateModal } from './SendEstimateModal';
 import { supabase } from '@/lib/supabase';
@@ -37,6 +38,7 @@ const cleanLineItem = (item: any, index: number): LineItem | null => {
 
 export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, existingEstimate }) => {
   const { addEstimate, updateEstimate, refreshEstimates, addClient, clients, estimates } = useData();
+  const { profile } = useProfile();
   const [clientName, setClientName] = useState(existingEstimate?.clientName || '');
   const [clientEmail, setClientEmail] = useState(existingEstimate?.clientEmail || '');
   const [clientPhone, setClientPhone] = useState(existingEstimate?.clientPhone || '');
@@ -351,8 +353,21 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
               <div className="bg-white rounded-lg shadow-lg p-4 md:p-8">
                 <div className="border-b pb-6 mb-6">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">{previewData.projectName || 'Project Estimate'}</h2>
-                  <p className="text-sm text-gray-500 mt-1">{previewData.clientName}</p>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">{previewData.projectName || 'Project Estimate'}</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-400 uppercase mb-1">From</p>
+                      <p className="font-semibold text-gray-900">{profile?.company_name || profile?.full_name || 'Your Business'}</p>
+                      {profile?.phone_number && <p className="text-sm text-gray-500">{profile.phone_number}</p>}
+                      {profile?.business_address && <p className="text-sm text-gray-500">{profile.business_address}</p>}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Client</p>
+                      <p className="font-semibold text-gray-900">{previewData.clientName}</p>
+                      {previewData.clientEmail && <p className="text-sm text-gray-500">{previewData.clientEmail}</p>}
+                      {previewData.clientPhone && <p className="text-sm text-gray-500">{previewData.clientPhone}</p>}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="bg-gray-50 rounded-lg overflow-hidden">
@@ -376,6 +391,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
                 <p className="mt-6 text-sm text-gray-500 text-center italic">We appreciate the opportunity to work with you. Thanks for considering us!</p>
               </div>
+              <p className="text-center text-xs text-gray-400 mt-4">Powered by levelworks.org</p>
             </div>
           </div>
 

@@ -347,22 +347,25 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
           <div className="bg-gradient-to-b from-gray-50 to-gray-100 py-6 md:py-10 px-3 md:px-4">
             <div className="max-w-2xl mx-auto">
-              <div className="text-center mb-6">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Level Works</h1>
-              </div>
-
               <div className="bg-white rounded-lg shadow-lg p-4 md:p-8">
                 <div className="border-b pb-6 mb-6">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">{previewData.projectName || 'Project Estimate'}</h2>
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
+                    <div>
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900">Estimate</h2>
+                      <p className="text-sm text-gray-500">{previewData.projectName || 'Project Estimate'}</p>
+                    </div>
+                    <div className="sm:text-right">
+                      <p className="text-sm font-semibold text-gray-700">#{safeString(previewData.id).slice(-6).toUpperCase() || 'DRAFT'}</p>
+                      <p className="text-xs text-gray-500">{previewData.createdAt ? new Date(previewData.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</p>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase mb-1">From</p>
                       <p className="font-semibold text-gray-900">{profile?.company_name || profile?.full_name || 'Your Business'}</p>
                       {profile?.phone_number && <p className="text-sm text-gray-500">{profile.phone_number}</p>}
                       {profile?.business_address && <p className="text-sm text-gray-500">{profile.business_address}</p>}
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Client</p>
                       <p className="font-semibold text-gray-900">{previewData.clientName}</p>
                       {previewData.clientEmail && <p className="text-sm text-gray-500">{previewData.clientEmail}</p>}
                       {previewData.clientPhone && <p className="text-sm text-gray-500">{previewData.clientPhone}</p>}

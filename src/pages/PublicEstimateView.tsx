@@ -166,9 +166,17 @@ export default function PublicEstimateView() {
           )}
 
           <div className="border-b pb-6 mb-6">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">{estimate.project_name || 'Project Estimate'}</h2>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">Estimate</h2>
+                <p className="text-sm text-gray-500">{estimate.project_name || 'Project Estimate'}</p>
+              </div>
+              <div className="sm:text-right">
+                <p className="text-sm font-semibold text-gray-700">#{String(estimate.id || '').slice(-6).toUpperCase()}</p>
+                {estimate.created_at && <p className="text-xs text-gray-500">{new Date(estimate.created_at).toLocaleDateString()}</p>}
+              </div>
+            </div>
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Client</p>
               <p className="font-semibold text-gray-900">{estimate.client_name}</p>
               {estimate.client_email && <p className="text-sm text-gray-500">{estimate.client_email}</p>}
               {estimate.client_phone && <p className="text-sm text-gray-500">{estimate.client_phone}</p>}

@@ -15,6 +15,7 @@ import { EstimateView } from "./pages/EstimateView";
 import PublicEstimateView from "./pages/PublicEstimateView";
 import PublicInvoiceView from "./pages/PublicInvoiceView";
 import PublicJobView from "./pages/PublicJobView";
+import PublicUpdateView from "./pages/PublicUpdateView";
 import Dashboard from "./pages/Dashboard";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -41,6 +42,7 @@ const App = () => (
                   <Route path="/view-estimate/:token" element={<PublicEstimateView />} />
                   <Route path="/view-invoice/:token" element={<PublicInvoiceView />} />
                   <Route path="/view-job/:token" element={<PublicJobView />} />
+                  <Route path="/view-update/:token" element={<PublicUpdateView />} />
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/reset-password" element={<ResetPassword />} />

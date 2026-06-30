@@ -8,7 +8,7 @@ import { InvoiceBuilder } from './InvoiceBuilder';
 import { InvoicesList } from './InvoicesList';
 import { NotificationSettings } from './NotificationSettings';
 import { EstimatesList } from './EstimatesList';
-import { JobsList } from './JobsList';
+import { PhotosHub } from './PhotosHub';
 import { AddToHomeScreen } from './AddToHomeScreen';
 import { ProfileEditor } from './ProfileEditor';
 import { ChangePasswordForm } from './ChangePasswordForm';
@@ -211,7 +211,7 @@ export const AppLayout: React.FC = () => {
         {currentView === 'notifications' && <NotificationSettings />}
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} />}
         {currentView === 'estimates' && <EstimatesList />}
-        {currentView === 'photos' && <JobsList jobs={jobs} onCreateEstimate={() => { setSelectedEstimate(null); setShowEstimate(true); }} onViewJob={() => {}} />}
+        {currentView === 'photos' && <PhotosHub onOpenEstimate={(est) => { setSelectedEstimate(est); setShowEstimate(true); }} />}
         {currentView === 'invoices' && <InvoicesList onCreateInvoice={() => { setInvoiceInitialData(null); setShowInvoice(true); }} />}
         {currentView === 'notes' && <Notes />}
         {currentView === 'account' && <AccountView onBack={() => setCurrentView('dashboard')} />}

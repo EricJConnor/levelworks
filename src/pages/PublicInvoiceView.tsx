@@ -13,6 +13,7 @@ export default function PublicInvoiceView() {
   const { token } = useParams();
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<any>(null);
+  const [branding, setBranding] = useState<{ company_name?: string; profile_photo_url?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [showPayment, setShowPayment] = useState(false);
   const [stripe, setStripe] = useState<any>(null);
@@ -28,10 +29,20 @@ export default function PublicInvoiceView() {
       const { data, error } = await supabase.from('invoices').select('*').eq('view_token', token).single();
       if (error) throw error;
       setInvoice(data);
+      loadBranding();
     } catch (error: any) {
       console.error('Load invoice error:', error);
       toast({ title: 'Error', description: 'Unable to load invoice', variant: 'destructive' });
     } finally { setLoading(false); }
+  };
+
+  const loadBranding = async () => {
+    try {
+      const { data } = await supabase.from('public_invoice_branding').select('company_name, profile_photo_url').eq('view_token', token).maybeSingle();
+      if (data) setBranding(data);
+    } catch {
+      // Branding is optional - silently skip if unavailable
+    }
   };
 
   const handlePaymentSuccess = () => {
@@ -75,8 +86,14 @@ export default function PublicInvoiceView() {
       <div className="max-w-4xl mx-auto">
         <Card className="p-4 md:p-8">
           <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
-            <div>
-              <h2 className="text-lg md:text-xl text-gray-600">Invoice</h2>
+            <div className="flex items-start gap-3">
+              {branding?.profile_photo_url && (
+                <img src={branding.profile_photo_url} alt="Logo" className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
+              )}
+              <div>
+                <h2 className="text-lg md:text-xl text-gray-600">Invoice</h2>
+                {branding?.company_name && <p className="text-sm font-medium text-gray-700 mt-1">{branding.company_name}</p>}
+              </div>
             </div>
             <div className="md:text-right">
               <p className="text-base md:text-lg font-semibold">{invoice.invoice_number}</p>

@@ -36,6 +36,7 @@ export default function PublicEstimateView() {
   const { toast } = useToast();
   const signatureRef = useRef<SignatureCanvasRef>(null);
   const [estimate, setEstimate] = useState<any>(null);
+  const [branding, setBranding] = useState<{ company_name?: string; profile_photo_url?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [signing, setSigning] = useState(false);
   const [signedByName, setSignedByName] = useState('');
@@ -76,10 +77,25 @@ export default function PublicEstimateView() {
       }
       
       setEstimate(results[0]);
+      loadBranding();
     } catch (err: any) {
       setError('An unexpected error occurred');
-    } finally { 
-      setLoading(false); 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadBranding = async () => {
+    try {
+      const url = `${SUPABASE_URL}/rest/v1/public_estimate_branding?view_token=eq.${encodeURIComponent(token!)}&select=company_name,profile_photo_url`;
+      const res = await fetch(url, {
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+      });
+      if (!res.ok) return;
+      const rows = await res.json();
+      if (rows && rows.length > 0) setBranding(rows[0]);
+    } catch {
+      // Branding is optional - silently skip if unavailable
     }
   };
 
@@ -167,9 +183,15 @@ export default function PublicEstimateView() {
 
           <div className="border-b pb-6 mb-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900">Estimate</h2>
-                <p className="text-sm text-gray-500">{estimate.project_name || 'Project Estimate'}</p>
+              <div className="flex items-start gap-3">
+                {branding?.profile_photo_url && (
+                  <img src={branding.profile_photo_url} alt="Logo" className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
+                )}
+                <div>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">Estimate</h2>
+                  <p className="text-sm text-gray-500">{estimate.project_name || 'Project Estimate'}</p>
+                  {branding?.company_name && <p className="text-sm font-medium text-gray-700 mt-1">{branding.company_name}</p>}
+                </div>
               </div>
               <div className="sm:text-right">
                 <p className="text-sm font-semibold text-gray-700">#{String(estimate.id || '').slice(-6).toUpperCase()}</p>

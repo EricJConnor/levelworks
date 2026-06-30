@@ -360,10 +360,15 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <p className="font-semibold text-gray-900">{profile?.company_name || profile?.full_name || 'Your Business'}</p>
-                      {profile?.phone_number && <p className="text-sm text-gray-500">{profile.phone_number}</p>}
-                      {profile?.business_address && <p className="text-sm text-gray-500">{profile.business_address}</p>}
+                    <div className="flex items-start gap-3">
+                      {profile?.profile_photo_url && (
+                        <img src={profile.profile_photo_url} alt="Logo" className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
+                      )}
+                      <div>
+                        <p className="font-semibold text-gray-900">{profile?.company_name || profile?.full_name || 'Your Business'}</p>
+                        {profile?.phone_number && <p className="text-sm text-gray-500">{profile.phone_number}</p>}
+                        {profile?.business_address && <p className="text-sm text-gray-500">{profile.business_address}</p>}
+                      </div>
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">{previewData.clientName}</p>

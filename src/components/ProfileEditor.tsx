@@ -48,7 +48,7 @@ export const ProfileEditor: React.FC = () => {
     if (url) {
       setFormData(prev => ({ ...prev, profile_photo_url: url }));
       await updateProfile({ profile_photo_url: url });
-      toast({ title: 'Photo uploaded!', description: 'Your profile photo has been updated' });
+      toast({ title: 'Logo uploaded!', description: 'Your company logo has been updated' });
     }
     setUploading(false);
   };
@@ -77,11 +77,11 @@ export const ProfileEditor: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+              <div className="w-24 h-24 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
                 {formData.profile_photo_url ? (
-                  <img src={formData.profile_photo_url} alt="Profile" className="w-full h-full object-cover" />
+                  <img src={formData.profile_photo_url} alt="Company Logo" className="w-full h-full object-contain" />
                 ) : (
-                  <User className="w-12 h-12 text-gray-400" />
+                  <Building2 className="w-12 h-12 text-gray-400" />
                 )}
               </div>
               <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
@@ -90,7 +90,7 @@ export const ProfileEditor: React.FC = () => {
               </button>
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-            <p className="text-sm text-gray-500">Click the camera icon to upload a photo</p>
+            <p className="text-sm text-gray-500">Click the camera icon to upload your company logo</p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">

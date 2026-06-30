@@ -7,7 +7,8 @@ import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import { PhotoUpload } from './PhotoUpload';
 import { PhotoGallery } from './PhotoGallery';
-import { ImageIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { SendJobUpdateModal } from './SendJobUpdateModal';
+import { ImageIcon, ChevronDown, ChevronUp, Send } from 'lucide-react';
 
 interface Job {
   id: string;
@@ -35,6 +36,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onVi
   const [showActions, setShowActions] = useState<string | null>(null);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [jobPhotos, setJobPhotos] = useState<Record<string, Photo[]>>({});
+  const [sendUpdateJob, setSendUpdateJob] = useState<Job | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -150,7 +152,15 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onVi
               
               {expandedJob === job.id && (
                 <div className="mt-3 space-y-3">
-                  <PhotoUpload jobId={job.id} onPhotoUploaded={(photo) => handlePhotoUploaded(job.id, photo)} />
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <PhotoUpload jobId={job.id} onPhotoUploaded={(photo) => handlePhotoUploaded(job.id, photo)} />
+                    {jobPhotos[job.id] && jobPhotos[job.id].length > 0 && (
+                      <Button variant="outline" size="sm" className="flex items-center gap-1 text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => setSendUpdateJob(job)}>
+                        <Send className="w-4 h-4" />
+                        Send Photo Update
+                      </Button>
+                    )}
+                  </div>
                   {jobPhotos[job.id] && jobPhotos[job.id].length > 0 && (
                     <PhotoGallery photos={jobPhotos[job.id]} onPhotoDeleted={(photoId) => handlePhotoDeleted(job.id, photoId)} />
                   )}
@@ -159,6 +169,15 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onVi
             </div>
           </Card>
         ))
+      )}
+
+      {sendUpdateJob && (
+        <SendJobUpdateModal
+          jobId={sendUpdateJob.id}
+          clientName={sendUpdateJob.clientName}
+          photoCount={jobPhotos[sendUpdateJob.id]?.length || 0}
+          onClose={() => setSendUpdateJob(null)}
+        />
       )}
     </div>
   );

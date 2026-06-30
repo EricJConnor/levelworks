@@ -46,6 +46,8 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [deposit, setDeposit] = useState(Number(existingEstimate?.deposit) || 0);
   const [showSendModal, setShowSendModal] = useState(false);
   const [savedEstimateData, setSavedEstimateData] = useState<any>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(!!existingEstimate);
   const [showClientPicker, setShowClientPicker] = useState(false);
@@ -203,6 +205,14 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     if (result) { toast({ title: 'Success', description: 'Estimate saved successfully' }); onClose(); }
   };
 
+  const handleDone = async () => {
+    const result = await saveEstimate(false);
+    if (result) {
+      setPreviewData(result);
+      setShowPreview(true);
+    }
+  };
+
   const handleSendEstimate = async () => {
     const result = await saveEstimate(true);
     if (result && result.id && result.viewToken) {
@@ -211,6 +221,11 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     } else if (result) {
       toast({ title: 'Error', description: 'Failed to prepare estimate for sending. Please try again.', variant: 'destructive' });
     }
+  };
+
+  const handlePreviewSend = async () => {
+    setSavedEstimateData(previewData);
+    setShowSendModal(true);
   };
 
   const handleSendModalClose = () => { setShowSendModal(false); setSavedEstimateData(null); };
@@ -314,6 +329,76 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
       )}
     </div>
   );
+
+  if (showPreview && previewData) {
+    const previewSubtotal = (previewData.lineItems || []).reduce((sum: number, item: any) => sum + (Number(item.total) || 0), 0);
+    const previewTax = previewSubtotal * (Number(previewData.taxRate) / 100);
+    const previewTotal = previewSubtotal + previewTax;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 md:p-4">
+        <div className="bg-white rounded-lg w-full max-w-3xl max-h-[95vh] overflow-auto">
+          <div className="sticky top-0 text-white p-3 md:p-4 flex justify-between items-center z-10" style={{ background: '#1c1c1e' }}>
+            <h2 className="text-lg md:text-2xl font-bold">Preview — What Your Customer Sees</h2>
+            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded"><X size={24} /></button>
+          </div>
+
+          <div className="bg-gradient-to-b from-gray-50 to-gray-100 py-6 md:py-10 px-3 md:px-4">
+            <div className="max-w-2xl mx-auto">
+              <div className="text-center mb-6">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Level Works</h1>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-lg p-4 md:p-8">
+                <div className="border-b pb-6 mb-6">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">{previewData.projectName || 'Project Estimate'}</h2>
+                  <p className="text-sm text-gray-500 mt-1">{previewData.clientName}</p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg overflow-hidden">
+                  {(previewData.lineItems || []).map((item: any, idx: number) => (
+                    <div key={idx} className="p-3 border-b border-gray-200 last:border-0">
+                      {item.sectionTitle && <p className="text-xs font-semibold text-orange-600 mb-1">{item.sectionTitle}</p>}
+                      <p className="font-medium text-gray-800 whitespace-pre-wrap">{item.description}</p>
+                      <p className="text-right font-semibold">${Number(item.total || 0).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 bg-blue-50 rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between text-sm"><span>Subtotal:</span><span>${previewSubtotal.toFixed(2)}</span></div>
+                  {Number(previewData.taxRate) > 0 && <div className="flex justify-between text-sm"><span>Tax ({previewData.taxRate}%):</span><span>${previewTax.toFixed(2)}</span></div>}
+                  <div className="flex justify-between text-xl font-bold text-gray-900 border-t pt-2">
+                    <span>Total:</span>
+                    <span className="text-blue-600">${previewTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <p className="mt-6 text-sm text-gray-500 text-center italic">We appreciate the opportunity to work with you. Thanks for considering us!</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 md:p-6 border-t bg-gray-50">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-2xl mx-auto">
+              <button onClick={() => setShowPreview(false)} className="px-4 py-4 text-white rounded-lg font-semibold text-base flex items-center justify-center gap-2" style={{ background: '#1c1c1e' }}>
+                <Edit size={18} /> Edit
+              </button>
+              <button onClick={handlePreviewSend} disabled={isSaving} className="px-4 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-base disabled:opacity-50">Send</button>
+              {onConvertToInvoice && (
+                <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-4 py-4 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-semibold text-base">Convert to Invoice</button>
+              )}
+              <button onClick={onClose} className="px-4 py-4 border-2 rounded-lg hover:bg-gray-50 font-semibold text-base">Close</button>
+            </div>
+          </div>
+        </div>
+
+        {showSendModal && savedEstimateData && (
+          <SendEstimateModal estimateData={savedEstimateData} onClose={handleSendModalClose} onSuccess={handleSendSuccess} />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 md:p-4">
@@ -451,7 +536,8 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
               <button onClick={onClose} className="px-4 py-4 border-2 rounded-lg hover:bg-gray-50 font-semibold text-base">Close</button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <button onClick={handleDone} disabled={isSaving} className="px-4 py-4 text-white rounded-lg font-semibold text-base disabled:opacity-50 bg-orange-500 hover:bg-orange-600">{isSaving ? 'Saving...' : 'Done'}</button>
               <button onClick={handleSave} disabled={isSaving} className="px-4 py-4 text-white rounded-lg font-semibold text-base disabled:opacity-50" style={{ background: '#1c1c1e' }}>{isSaving ? 'Saving...' : 'Save'}</button>
               <button onClick={handleSendEstimate} disabled={isSaving} className="px-4 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-base disabled:opacity-50">{isSaving ? 'Saving...' : 'Send'}</button>
               <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-4 py-4 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-semibold text-base">Convert to Invoice</button>

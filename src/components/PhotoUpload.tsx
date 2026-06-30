@@ -39,7 +39,6 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({ estimateId, jobId, onP
         user_id: user.id,
         estimate_id: estimateId || null,
         job_id: jobId || null,
-        file_path: fileName,
         file_url: publicUrl
       }).select().single();
 

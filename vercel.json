@@ -1,6 +1,28 @@
 {
   "rewrites": [
     {
+      "source": "/view-estimate/:token",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Twitterbot|Slackbot|WhatsApp|TelegramBot|LinkedInBot|Discordbot|SkypeUriPreview|iMessage|Googlebot|bingbot|Pinterest|redditbot).*"
+        }
+      ],
+      "destination": "/api/link-preview?type=estimate&token=:token"
+    },
+    {
+      "source": "/view-invoice/:token",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Twitterbot|Slackbot|WhatsApp|TelegramBot|LinkedInBot|Discordbot|SkypeUriPreview|iMessage|Googlebot|bingbot|Pinterest|redditbot).*"
+        }
+      ],
+      "destination": "/api/link-preview?type=invoice&token=:token"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

@@ -106,8 +106,8 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
   };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) uploadPhoto(file);
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => uploadPhoto(file));
     e.target.value = '';
   };
 
@@ -216,7 +216,7 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
 
               <div>
                 <label className="block text-sm font-semibold mb-2 text-gray-700">Photos</label>
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+                <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
                 <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
                 <div className="flex gap-2 mb-3">
                   <button onClick={() => cameraInputRef.current?.click()} disabled={uploading} className="flex items-center gap-1.5 px-3 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-400 transition disabled:opacity-50">

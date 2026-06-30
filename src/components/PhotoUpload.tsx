@@ -55,14 +55,14 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({ estimateId, jobId, onP
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) uploadPhoto(file);
+    const files = Array.from(e.target.files || []);
+    files.forEach(file => uploadPhoto(file));
     e.target.value = '';
   };
 
   return (
     <div className="flex gap-2">
-      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+      <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
       <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileChange} className="hidden" />
       
       <Button variant="outline" size="sm" onClick={() => cameraInputRef.current?.click()} disabled={uploading} className="flex items-center gap-1">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, Check, FileText, Users, Briefcase, StickyNote, PenTool, Send, ChevronRight, Shield, Zap, Star, CreditCard } from 'lucide-react';
+import { Menu, X, Check, FileText, Users, Briefcase, StickyNote, PenTool, Send, ChevronRight, Shield, Zap, Star, CreditCard, Image } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -33,6 +33,7 @@ export default function LandingPage() {
     { icon: FileText, title: 'Unlimited Estimates', desc: 'Create professional estimates in minutes. Send via email or text.' },
     { icon: PenTool, title: 'Digital Signatures', desc: 'Clients sign from any device. You get notified instantly.' },
     { icon: CreditCard, title: 'Accept Payments', desc: 'Clients pay invoices online by credit card. Money goes straight to your bank account.', highlight: true },
+    { icon: Image, title: 'Custom Branding', desc: 'Upload your company logo — it shows up automatically on every estimate and invoice you send.', highlight: true },
     { icon: Users, title: 'Client Database', desc: 'Every client, every job, every detail — organized and searchable.' },
     { icon: Shield, title: 'Invoicing', desc: 'Convert estimates to invoices in one tap. Get paid faster.' },
     { icon: StickyNote, title: 'Job Notes', desc: 'Capture notes, reminders, and details for every job. Syncs across all your devices.' },

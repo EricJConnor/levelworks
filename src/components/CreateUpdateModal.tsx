@@ -82,6 +82,13 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
     return data.id;
   };
 
+  const getContentType = (file: File): string => {
+    if (file.type && file.type.startsWith('image/')) return file.type;
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const map: Record<string, string> = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif' };
+    return map[ext] || 'image/jpeg';
+  };
+
   const uploadPhoto = async (file: File) => {
     setUploading(true);
     try {
@@ -90,7 +97,7 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
       const uid = await ensureUpdateRecordForUpload();
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('project-photos').upload(fileName, file, { cacheControl: '3600', upsert: false, contentType: file.type });
+      const { error: uploadError } = await supabase.storage.from('project-photos').upload(fileName, file, { cacheControl: '3600', upsert: false, contentType: getContentType(file) });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('project-photos').getPublicUrl(fileName);
       const { data, error } = await supabase.from('project_photos').insert({ user_id: user.id, update_id: uid, file_path: fileName, file_url: publicUrl }).select().single();

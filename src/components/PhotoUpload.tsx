@@ -16,6 +16,13 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({ estimateId, jobId, onP
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
+  const getContentType = (file: File): string => {
+    if (file.type && file.type.startsWith('image/')) return file.type;
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const map: Record<string, string> = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif' };
+    return map[ext] || 'image/jpeg';
+  };
+
   const uploadPhoto = async (file: File) => {
     setUploading(true);
     try {
@@ -27,7 +34,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({ estimateId, jobId, onP
       
       const { error: uploadError } = await supabase.storage
         .from('project-photos')
-        .upload(fileName, file, { cacheControl: '3600', upsert: false, contentType: file.type });
+        .upload(fileName, file, { cacheControl: '3600', upsert: false, contentType: getContentType(file) });
 
       if (uploadError) throw uploadError;
 

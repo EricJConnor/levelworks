@@ -11,11 +11,6 @@ const supabase = createClient(databaseUrl, databaseKey, {
     autoRefreshToken: true,
     detectSessionInUrl: true,
   },
-  global: {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  },
 });
 
 export const SUPABASE_URL = databaseUrl;

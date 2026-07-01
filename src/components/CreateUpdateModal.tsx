@@ -90,7 +90,7 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
       const uid = await ensureUpdateRecordForUpload();
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('project-photos').upload(fileName, file, { cacheControl: '3600', upsert: false });
+      const { error: uploadError } = await supabase.storage.from('project-photos').upload(fileName, file, { cacheControl: '3600', upsert: false, contentType: file.type });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('project-photos').getPublicUrl(fileName);
       const { data, error } = await supabase.from('project_photos').insert({ user_id: user.id, update_id: uid, file_path: fileName, file_url: publicUrl }).select().single();

@@ -16,28 +16,22 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({ estimateId, jobId, onP
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
-  const getContentType = (file: File): string => {
-    console.log('FILE DEBUG — name:', file.name, '| type:', file.type, '| size:', file.size);
-    if (file.type && file.type.startsWith('image/')) return file.type;
-    const ext = (file.name.split('.').pop() || '').toLowerCase();
-    const map: Record<string, string> = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif' };
-    const resolved = map[ext] || 'image/jpeg';
-    console.log('FILE DEBUG — resolved contentType:', resolved);
-    return resolved;
-  };
-
   const uploadPhoto = async (file: File) => {
     setUploading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const fileExt = file.name.split('.').pop();
+      const fileExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      
+
+      const mimeMap: Record<string, string> = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif' };
+      const mimeType = (file.type && file.type.startsWith('image/')) ? file.type : (mimeMap[fileExt] || 'image/jpeg');
+      const typedBlob = new Blob([file], { type: mimeType });
+
       const { error: uploadError } = await supabase.storage
         .from('project-photos')
-        .upload(fileName, file, { cacheControl: '3600', upsert: false, contentType: getContentType(file) });
+        .upload(fileName, typedBlob, { cacheControl: '3600', upsert: false, contentType: mimeType });
 
       if (uploadError) throw uploadError;
 

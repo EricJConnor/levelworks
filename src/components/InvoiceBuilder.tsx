@@ -331,7 +331,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
             </div>
             <div>
               <label className="block text-sm font-semibold mb-2">Tax Rate (%)</label>
-              <input type="number" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" />
+              <input type="number" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" />
             </div>
           </div>
           <div>
@@ -347,11 +347,11 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">Qty</label>
-                      <input type="number" placeholder="Qty" value={item.quantity} onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-green-500 focus:outline-none" />
+                      <input type="number" placeholder="Qty" value={item.quantity} onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-green-500 focus:outline-none" />
                     </div>
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">Rate ($)</label>
-                      <input type="number" placeholder="Rate" value={item.rate} onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-green-500 focus:outline-none" />
+                      <input type="number" placeholder="Rate" value={item.rate} onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-green-500 focus:outline-none" />
                     </div>
                   </div>
                 </div>

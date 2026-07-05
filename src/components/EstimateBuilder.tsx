@@ -348,11 +348,11 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-xs text-gray-600 mb-1">Qty</label>
-              <input type="number" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
+              <input type="number" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
             </div>
             <div>
               <label className="block text-xs text-gray-600 mb-1">Rate</label>
-              <input type="number" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
+              <input type="number" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
             </div>
             <div>
               <label className="block text-xs text-gray-600 mb-1">Total</label>
@@ -588,7 +588,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
             <div className="flex justify-between items-center">
               <span>Tax:</span>
               <div className="flex items-center gap-2">
-                <input type="number" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} className="w-16 border-2 rounded px-2 py-2 text-center text-base disabled:bg-gray-100" disabled={isReadOnly} />
+                <input type="number" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-16 border-2 rounded px-2 py-2 text-center text-base disabled:bg-gray-100" disabled={isReadOnly} />
                 <span>%</span>
                 <span className="font-semibold">${tax.toFixed(2)}</span>
               </div>
@@ -596,7 +596,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
             <div className="flex justify-between text-xl font-bold border-t pt-3"><span>Total:</span><span className="text-blue-600">${total.toFixed(2)}</span></div>
             <div className="flex justify-between items-center border-t pt-3">
               <span>Deposit:</span>
-              <input type="number" value={deposit} onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)} className="w-32 border-2 rounded px-3 py-2 text-base font-semibold text-right disabled:bg-gray-100" disabled={isReadOnly} />
+              <input type="number" value={deposit} onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-32 border-2 rounded px-3 py-2 text-base font-semibold text-right disabled:bg-gray-100" disabled={isReadOnly} />
             </div>
             <div className="flex justify-between text-lg font-bold"><span>Balance Due:</span><span className="text-green-600">${balanceDue.toFixed(2)}</span></div>
           </div>

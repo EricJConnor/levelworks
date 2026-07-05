@@ -295,7 +295,10 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
               {openTitlePicker === item.id && (
                 <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
                   <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-50">
-                    <span className="text-xs font-semibold text-gray-500">Saved Titles</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-500">Saved Titles</span>
+                      <button onClick={() => setOpenTitlePicker(null)} className="text-gray-400 hover:text-gray-600 leading-none" title="Close">✕</button>
+                    </div>
                     {!showNewTitleInput ? (
                       <button onClick={() => setShowNewTitleInput(true)} className="bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">+ New Title</button>
                     ) : (

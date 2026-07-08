@@ -21,7 +21,7 @@ export const tradeLandingConfig: Record<string, TradeConfig> = {
     headlineLine1: 'Run your roofing business.',
     headlineLine2: 'Not your paperwork.',
     subheadline:
-      'Professional UNLIMITED estimates, digital signatures, invoicing, client payments, your branded logo, and before/during/after job-site photos for insurance documentation — everything other apps do, for $5 a month.',
+      'Professional UNLIMITED estimates, digital signatures, invoicing, client payments, your branded logo, and before/during/after job-site photos for insurance documentation — everything for $5 a month.',
     testimonial: {
       quote: 'My clients love that they can sign from their phone and pay instantly. I close jobs faster now.',
       name: 'Dave T.',
@@ -38,7 +38,7 @@ export const tradeLandingConfig: Record<string, TradeConfig> = {
     headlineLine1: 'Run your electrical business.',
     headlineLine2: 'Not your paperwork.',
     subheadline:
-      'Professional UNLIMITED estimates, digital signatures, invoicing, client payments, and your branded logo on every job — everything other apps do, for $5 a month.',
+      'Professional UNLIMITED estimates, digital signatures, invoicing, client payments, and your branded logo on every job — everything for $5 a month.',
     testimonial: {
       quote: "Simple, fast, does what I need. I don't need a complicated system.",
       name: 'Carlos M.',
@@ -55,7 +55,7 @@ export const tradeLandingConfig: Record<string, TradeConfig> = {
     headlineLine1: 'Run your plumbing business.',
     headlineLine2: 'Not your paperwork.',
     subheadline:
-      'Professional UNLIMITED estimates, digital signatures, invoicing, client payments, and job notes that sync across every device — everything other apps do, for $5 a month.',
+      'Professional UNLIMITED estimates, digital signatures, invoicing, client payments, and job notes that sync across every device — everything for $5 a month.',
     testimonial: {
       quote: 'I was paying $99 a month for another app. This does everything I need for $5. No brainer.',
       name: 'Mike R.',
@@ -72,7 +72,7 @@ export const tradeLandingConfig: Record<string, TradeConfig> = {
     headlineLine1: 'Run your contracting business.',
     headlineLine2: 'Not your paperwork.',
     subheadline:
-      'Professional UNLIMITED estimates, digital signatures, invoicing, client payments, your branded logo, and a searchable client database — everything other apps do, for $5 a month.',
+      'Professional UNLIMITED estimates, digital signatures, invoicing, client payments, your branded logo, and a searchable client database — everything for $5 a month.',
     testimonial: {
       quote: 'I was paying $99 a month for another app. This does everything I need for $5. No brainer.',
       name: 'Mike R.',

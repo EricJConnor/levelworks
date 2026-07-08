@@ -14,6 +14,8 @@ import { ReferralProgram } from '@/components/ReferralProgram';
 import { PricingCountdown } from '@/components/PricingCountdown';
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
 import { EdgeFunctionDiagnostic } from '@/components/EdgeFunctionDiagnostic';
+import { TrialCheckoutForm } from '@/components/TrialCheckoutForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import AuthModal from '@/components/AuthModal';
 import { Loader2, Gift, User, Mail, Calendar, Lock, AlertTriangle, Wrench } from 'lucide-react';
 
@@ -24,16 +26,33 @@ export default function Dashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
+  const [trialStatus, setTrialStatus] = useState<string | null>(null);
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userCreatedAt, setUserCreatedAt] = useState<string | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [updatePaymentOpen, setUpdatePaymentOpen] = useState(false);
+  const [subscribeOpen, setSubscribeOpen] = useState(false);
   const { profile, refreshProfile } = useProfile();
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') || 'profile';
   const mountedRef = useRef(true);
 
   const loadSubscriptionData = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+      const { data } = await supabase.functions.invoke('check-subscription', {
+        body: { userId: user.id, userEmail: user.email, userName: user.user_metadata?.full_name || '' },
+      });
+      if (data) {
+        setTrialStatus(data.status);
+        setTrialDaysLeft(data.daysLeft ?? null);
+      }
+    } catch (e) { console.error('Trial status error:', e); }
+
     const customerId = localStorage.getItem('stripeCustomerId');
     if (customerId) {
       try {
@@ -61,6 +80,7 @@ export default function Dashboard() {
       
       if (session?.user) {
         setIsAuthenticated(true);
+        setUserId(session.user.id);
         setUserEmail(session.user.email || null);
         setUserCreatedAt(session.user.created_at || null);
         await Promise.all([loadSubscriptionData(), refreshProfile()]);
@@ -69,14 +89,15 @@ export default function Dashboard() {
       }
       setLoading(false);
     };
-    
+
     initAuth();
-    
+
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mountedRef.current) return;
       if (event === 'SIGNED_OUT') window.location.href = '/';
       else if (session?.user) {
         setIsAuthenticated(true);
+        setUserId(session.user.id);
         setUserEmail(session.user.email || null);
         setUserCreatedAt(session.user.created_at || null);
       }
@@ -122,7 +143,17 @@ export default function Dashboard() {
           <TabsTrigger value="danger" className="text-xs sm:text-sm text-red-600"><AlertTriangle className="w-3 h-3 mr-1" />Danger</TabsTrigger>
         </TabsList>
         <TabsContent value="profile"><ProfileEditor /></TabsContent>
-        <TabsContent value="subscription"><SubscriptionCard subscription={subscription} onCancel={() => setCancelDialogOpen(true)} onUpdatePayment={() => setUpdatePaymentOpen(true)} /><PricingCountdown className="mt-4" /></TabsContent>
+        <TabsContent value="subscription">
+          <SubscriptionCard
+            subscription={subscription}
+            trialStatus={trialStatus}
+            trialDaysLeft={trialDaysLeft}
+            onCancel={() => setCancelDialogOpen(true)}
+            onUpdatePayment={() => setUpdatePaymentOpen(true)}
+            onSubscribe={() => setSubscribeOpen(true)}
+          />
+          <PricingCountdown className="mt-4" />
+        </TabsContent>
         <TabsContent value="security"><ChangePasswordForm /></TabsContent>
         <TabsContent value="referrals"><ReferralProgram /></TabsContent>
         <TabsContent value="diagnostic">
@@ -155,6 +186,22 @@ export default function Dashboard() {
 
       <CancelSubscriptionDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen} subscription={subscription} onSuccess={loadSubscriptionData} />
       <UpdatePaymentDialog open={updatePaymentOpen} onOpenChange={setUpdatePaymentOpen} onSuccess={loadSubscriptionData} />
+      <Dialog open={subscribeOpen} onOpenChange={setSubscribeOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Subscribe — $5/month</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {userId && userEmail && (
+              <TrialCheckoutForm
+                userId={userId}
+                userEmail={userEmail}
+                onSuccess={() => { setSubscribeOpen(false); loadSubscriptionData(); }}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -180,13 +227,48 @@ function ProfileCard({ profile, userEmail, userCreatedAt }: { profile: any; user
   );
 }
 
-function SubscriptionCard({ subscription, onCancel, onUpdatePayment }: any) {
-  if (!subscription) return (
-    <Card className="mb-6">
-      <CardHeader className="p-4"><CardTitle className="text-lg">No Active Subscription</CardTitle></CardHeader>
-      <CardContent className="p-4 pt-0"><div className="bg-blue-50 border border-blue-200 rounded-lg p-4"><p className="text-sm text-blue-800 mb-3">Get started with a 14-day free trial.</p><Button className="bg-blue-600 hover:bg-blue-700">Start Free Trial</Button></div></CardContent>
-    </Card>
-  );
+function SubscriptionCard({ subscription, trialStatus, trialDaysLeft, onCancel, onUpdatePayment, onSubscribe }: any) {
+  // subscription (from get-subscription-status) reflects a live paid Stripe subscription.
+  // trialStatus (from check-subscription) is the source of truth for trial/expired/cancelled state.
+  if (!subscription) {
+    if (trialStatus === 'trial') {
+      return (
+        <Card className="mb-6">
+          <CardHeader className="p-4"><CardTitle className="text-lg">Free Trial</CardTitle></CardHeader>
+          <CardContent className="p-4 pt-0">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800 mb-3">
+                {trialDaysLeft !== null ? `${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''} remaining in your 14-day trial.` : 'Your 14-day trial is active.'}
+              </p>
+              <Button onClick={onSubscribe} className="bg-blue-600 hover:bg-blue-700">Subscribe Now — $5/month</Button>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    if (trialStatus === 'expired' || trialStatus === 'cancelled') {
+      return (
+        <Card className="mb-6">
+          <CardHeader className="p-4"><CardTitle className="text-lg">{trialStatus === 'cancelled' ? 'Subscription Cancelled' : 'Trial Ended'}</CardTitle></CardHeader>
+          <CardContent className="p-4 pt-0">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <p className="text-sm text-orange-800 mb-3">Subscribe for $5/month to keep access to your estimates, clients, and invoices.</p>
+              <Button onClick={onSubscribe} className="bg-blue-600 hover:bg-blue-700">Subscribe Now — $5/month</Button>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card className="mb-6">
+        <CardHeader className="p-4"><CardTitle className="text-lg">Subscription Status</CardTitle></CardHeader>
+        <CardContent className="p-4 pt-0"><p className="text-sm text-gray-600">Loading your plan details…</p></CardContent>
+      </Card>
+    );
+  }
+
   const amount = subscription.plan?.amount ? (subscription.plan.amount / 100).toFixed(0) : null;
   return (
     <Card className="mb-6">

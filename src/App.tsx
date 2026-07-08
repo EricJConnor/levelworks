@@ -10,6 +10,9 @@ import { InvoiceProvider } from "@/contexts/InvoiceContext";
 import { ProfileProvider } from "@/contexts/ProfileContext";
 import Index from "./pages/Index";
 import LandingPage from "./pages/LandingPage";
+import TradeLandingPage from "./pages/TradeLandingPage";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import NotFound from "./pages/NotFound";
 import { EstimateView } from "./pages/EstimateView";
 import PublicEstimateView from "./pages/PublicEstimateView";
@@ -36,6 +39,9 @@ const App = () => (
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
+                  <Route path="/for/:trade" element={<TradeLandingPage />} />
+                  <Route path="/resources" element={<Blog />} />
+                  <Route path="/resources/:slug" element={<BlogPost />} />
                   <Route path="/app" element={<Index />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/estimate/:id" element={<EstimateView />} />

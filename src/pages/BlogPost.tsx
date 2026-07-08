@@ -45,7 +45,7 @@ export default function BlogPost() {
 
         <div style={{ marginTop: '48px', background: '#0f1f3d', border: '1px solid #1e3a5f', borderRadius: '12px', padding: '32px', textAlign: 'center' }}>
           <h3 style={{ color: '#fff', fontSize: '20px', fontWeight: '700', marginBottom: '12px' }}>Ready to send estimates like this?</h3>
-          <p style={{ color: '#93c5fd', fontSize: '15px', marginBottom: '24px' }}>Start your free 30-day trial. No credit card required.</p>
+          <p style={{ color: '#93c5fd', fontSize: '15px', marginBottom: '24px' }}>Start your free 14-day trial. No credit card required.</p>
           <button onClick={() => navigate('/')} style={{ background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', padding: '14px 32px', borderRadius: '6px', fontSize: '15px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
             Get Started Free <ChevronRight size={18} />
           </button>

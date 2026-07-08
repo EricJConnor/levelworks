@@ -1,16 +1,14 @@
 User-agent: *
 Allow: /
+Disallow: /app
+Disallow: /dashboard
+Disallow: /estimate/
+Disallow: /view-estimate/
+Disallow: /view-invoice/
+Disallow: /view-job/
+Disallow: /view-update/
+Disallow: /reset-password
+Disallow: /stripe-connect-callback
+
 Sitemap: https://levelworks.org/sitemap.xml
 Host: levelworks.org
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: *
-Allow: /

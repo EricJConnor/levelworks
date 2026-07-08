@@ -1,15 +1,24 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, Check, FileText, Users, Briefcase, StickyNote, PenTool, Send, ChevronRight, Shield, Zap, Star, CreditCard, Image, Camera } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
+import { tradeLandingConfig } from '@/data/tradeLandingConfig';
 
-export default function LandingPage() {
+const baseTestimonials = [
+  { quote: "I was paying $99 a month for another app. This does everything I need for $5. No brainer.", name: "Mike R.", trade: "General Contractor" },
+  { quote: "My clients love that they can sign from their phone and pay instantly. I close jobs faster now.", name: "Dave T.", trade: "Roofing Contractor" },
+  { quote: "Simple, fast, does what I need. I don't need a complicated system.", name: "Carlos M.", trade: "Electrical Contractor" },
+];
+
+export default function TradeLandingPage() {
+  const { trade: slug } = useParams();
+  const config = slug ? tradeLandingConfig[slug] : undefined;
+
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [searchParams] = useSearchParams();
-  const referralCode = searchParams.get('ref');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,6 +28,19 @@ export default function LandingPage() {
     };
     checkExistingSession();
   }, [navigate]);
+
+  useDocumentMeta(
+    config
+      ? { title: config.seoTitle, description: config.seoDescription, canonicalPath: `/for/${config.slug}` }
+      : { title: 'levelworks.org', description: 'Professional estimates, invoices, job tracking, and AI assistant for contractors.', canonicalPath: '/' }
+  );
+
+  if (!config) return <Navigate to="/" replace />;
+
+  const testimonials = [
+    config.testimonial,
+    ...baseTestimonials.filter((t) => t.name !== config.testimonial.name),
+  ].slice(0, 3);
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -81,24 +103,18 @@ export default function LandingPage() {
         )}
       </header>
 
-      {referralCode && (
-        <div style={{ background: '#1a3a5c', borderBottom: '1px solid #1e4a7a', padding: '12px 24px', textAlign: 'center' }}>
-          <span style={{ color: '#93c5fd', fontSize: '14px' }}>Referral code <strong style={{ color: '#fff' }}>{referralCode}</strong> applied — you'll get <strong style={{ color: '#fff' }}>60 days free</strong> when you sign up.</span>
-        </div>
-      )}
-
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px 60px' }}>
         <div style={{ maxWidth: '760px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#111', border: '1px solid #222', borderRadius: '4px', padding: '6px 14px', marginBottom: '32px' }}>
             <Zap size={14} style={{ color: '#3b82f6' }} />
-            <span style={{ color: '#a8a8a8', fontSize: '13px', fontWeight: '500', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Built by a contractor for contractors</span>
+            <span style={{ color: '#a8a8a8', fontSize: '13px', fontWeight: '500', letterSpacing: '0.5px', textTransform: 'uppercase' }}>{config.badge}</span>
           </div>
           <h1 style={{ fontSize: 'clamp(36px, 6vw, 72px)', fontWeight: '800', lineHeight: '1.05', letterSpacing: '-2px', color: '#fff', marginBottom: '24px' }}>
-            Run your business.<br />
-            <span style={{ color: '#3b82f6' }}>Not your paperwork.</span>
+            {config.headlineLine1}<br />
+            <span style={{ color: '#3b82f6' }}>{config.headlineLine2}</span>
           </h1>
           <p style={{ fontSize: '20px', color: '#a8a8a8', lineHeight: '1.6', marginBottom: '16px', maxWidth: '560px' }}>
-            Professional UNLIMITED estimates, digital signatures, invoicing, client payments, your branded logo, job-site photo uploads, and client-ready before/during/after progress updates — everything for <strong style={{ color: '#fff' }}>$5 a month</strong>.
+            {config.subheadline}
           </p>
           <p style={{ fontSize: '15px', color: '#909090', marginBottom: '40px' }}>
             Other providers charge up to $149/month. We don't.
@@ -115,38 +131,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section style={{ background: '#0f1f3d', borderTop: '1px solid #1e3a5f', borderBottom: '1px solid #1e3a5f', padding: '60px 24px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '4px', padding: '6px 14px', marginBottom: '24px' }}>
-            <CreditCard size={14} style={{ color: '#3b82f6' }} />
-            <span style={{ color: '#3b82f6', fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Now Available</span>
-          </div>
-          <h2 style={{ fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '16px' }}>
-            Get Paid Directly From the App
-          </h2>
-          <p style={{ color: '#93c5fd', fontSize: '18px', maxWidth: '600px', lineHeight: '1.6', marginBottom: '32px' }}>
-            Send your client an invoice link. They pay by credit card. The money goes straight to your bank account — no middleman, no waiting.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', maxWidth: '700px', width: '100%' }}>
-            {['Visa & Mastercard', 'American Express', 'Apple Pay & Google Pay', 'Direct to your bank'].map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '12px 16px' }}>
-                <Check size={16} style={{ color: '#3b82f6', flexShrink: 0 }} />
-                <span style={{ color: '#e8e8e8', fontSize: '14px', fontWeight: '500' }}>{item}</span>
-              </div>
-            ))}
-          </div>
-          <p style={{ color: '#4ade80', fontSize: '15px', fontWeight: '600', marginTop: '20px' }}>
-  No additional charge — included free with your $5/month plan.
-</p>
-<p style={{ color: '#6b7280', fontSize: '13px', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
-  🔒 All payments processed securely through Stripe. Your clients' card info is never stored on our servers.
-</p>
-        </div>
-      </section>
-
       <section id="pricing" style={{ background: '#0f0f0f', borderTop: '1px solid #1a1a1a', borderBottom: '1px solid #1a1a1a', padding: '80px 24px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-<div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '12px' }}>Simple Pricing</h2>
             <p style={{ color: '#a0a0a0', fontSize: '18px' }}>One plan. Everything included. No surprises.</p>
           </div>
@@ -186,8 +173,7 @@ export default function LandingPage() {
               </div>
               <button onClick={openSignUp} style={{ width: '100%', background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', padding: '14px', borderRadius: '6px', fontSize: '16px', fontWeight: '700' }}>
                 Start Free — 30 Days
-              </
-button>
+              </button>
             </div>
           </div>
         </div>
@@ -238,11 +224,7 @@ button>
 
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-          {[
-            { quote: "I was paying $99 a month for another app. This does everything I need for $5. No brainer.", name: "Mike R.", trade: "General Contractor" },
-            { quote: "My clients love that they can sign from their phone and pay instantly. I close jobs faster now.", name: "Dave T.", trade: "Roofing Contractor" },
-            { quote: "Simple, fast, does what I need. I don't need a complicated system.", name: "Carlos M.", trade: "Electrical Contractor" },
-          ].map((t, i) => (
+          {testimonials.map((t, i) => (
             <div key={i} style={{ background: '#0f0f0f', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '28px' }}>
               <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
                 {[...Array(5)].map((_, j) => <Star key={j} size={14} style={{ color: '#3b82f6', fill: '#3b82f6' }} />)}

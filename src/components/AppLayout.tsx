@@ -19,12 +19,10 @@ import { useData, Estimate } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
 import { Menu, X, Bell, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send, HelpCircle } from 'lucide-react';
-
-const SUPPORT_EMAIL = '7echome@gmail.com';
-const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('LevelWorks Help')}`;
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { HelpModal } from './HelpModal';
 
 type View = 'dashboard' | 'clients' | 'notifications' | 'estimates' | 'photos' | 'invoices' | 'account' | 'notes';
 
@@ -38,9 +36,9 @@ export const AppLayout: React.FC = () => {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const { clients, estimates, jobs, addClient, loading } = useData();
   const { profile } = useProfile();
-  const { toast } = useToast();
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -62,10 +60,7 @@ export const AppLayout: React.FC = () => {
   const checkPushStatus = async () => { setPushEnabled(await isPushSubscribed()); };
   const handleSignOut = async () => { await supabase.auth.signOut(); };
   const handleAccountClick = () => { setCurrentView('account'); setMobileMenuOpen(false); };
-  const handleHelpClick = () => {
-    navigator.clipboard?.writeText(SUPPORT_EMAIL).catch(() => {});
-    toast({ title: 'Need help?', description: `Email us at ${SUPPORT_EMAIL} (copied to clipboard).` });
-  };
+  const handleHelpClick = () => { setShowHelpModal(true); setMobileMenuOpen(false); };
 
   const navItems = [
     { key: 'dashboard', label: 'Dashboard' },
@@ -130,9 +125,9 @@ export const AppLayout: React.FC = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <AddToHomeScreen />
-            <a href={SUPPORT_MAILTO} onClick={handleHelpClick} className="hide-mobile" title="Contact support" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex' }}>
+            <button onClick={handleHelpClick} className="hide-mobile" title="Help" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex' }}>
               <HelpCircle size={20} />
-            </a>
+            </button>
             <button onClick={() => handleNavClick('notifications')} className="hide-mobile" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', position: 'relative' }}>
               <Bell size={20} />
               {!pushEnabled && <span style={{ position: 'absolute', top: '6px', right: '6px', width: '7px', height: '7px', background: '#f97316', borderRadius: '50%' }} />}
@@ -172,7 +167,7 @@ export const AppLayout: React.FC = () => {
             ))}
             <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', marginTop: '10px', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <button onClick={handleAccountClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><User size={16} /> Account</button>
-              <a href={SUPPORT_MAILTO} onClick={handleHelpClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none' }}><HelpCircle size={16} /> Help</a>
+              <button onClick={handleHelpClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><HelpCircle size={16} /> Help</button>
               <button onClick={handleSignOut} style={{ background: 'none', color: '#71717a', border: '0.5px solid rgba(255,255,255,0.08)', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><LogOut size={16} /> Sign Out</button>
             </div>
           </div>
@@ -246,6 +241,7 @@ export const AppLayout: React.FC = () => {
           onClose={() => { setShowInvoice(false); setInvoiceInitialData(null); }}
         />
       )}
+      {showHelpModal && <HelpModal onClose={() => setShowHelpModal(false)} />}
     </div>
   );
 };

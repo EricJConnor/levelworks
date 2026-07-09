@@ -1,10 +1,9 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Loader2 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Button } from './ui/button';
-
-const SUPPORT_EMAIL = 'help@levelworks.org';
-const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('LevelWorks Help')}`;
+import { supabase } from '@/lib/supabase';
+import { toast } from '@/components/ui/use-toast';
 
 const FAQS = [
   {
@@ -34,6 +33,38 @@ interface HelpModalProps {
 }
 
 export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
+  const [showForm, setShowForm] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.email) setEmail(user.email);
+    });
+  }, []);
+
+  const handleSend = async () => {
+    if (!email.trim() || !message.trim()) {
+      toast({ title: 'Missing info', description: 'Please enter your email and a message.', variant: 'destructive' });
+      return;
+    }
+    setSending(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-contact-email', {
+        body: { name: name.trim(), email: email.trim(), message: message.trim() },
+      });
+      if (error) throw error;
+      setSent(true);
+    } catch (err: any) {
+      toast({ title: 'Failed to send', description: err.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={onClose}>
       <div
@@ -41,29 +72,78 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
         onClick={e => e.stopPropagation()}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '0.5px solid #e4e4e7' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#18181b', margin: 0 }}>Help &amp; FAQs</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#18181b', margin: 0 }}>{showForm ? 'Contact Us' : 'Help & FAQs'}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px' }}>
             <X size={20} />
           </button>
         </div>
 
-        <div style={{ padding: '8px 20px', overflowY: 'auto' }}>
-          <Accordion type="single" collapsible>
-            {FAQS.map((item, i) => (
-              <AccordionItem key={i} value={`faq-${i}`}>
-                <AccordionTrigger style={{ fontSize: '14px', color: '#18181b' }}>{item.q}</AccordionTrigger>
-                <AccordionContent style={{ fontSize: '13px' }}>{item.a}</AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
+        {!showForm && (
+          <>
+            <div style={{ padding: '8px 20px', overflowY: 'auto' }}>
+              <Accordion type="single" collapsible>
+                {FAQS.map((item, i) => (
+                  <AccordionItem key={i} value={`faq-${i}`}>
+                    <AccordionTrigger style={{ fontSize: '14px', color: '#18181b' }}>{item.q}</AccordionTrigger>
+                    <AccordionContent style={{ fontSize: '13px' }}>{item.a}</AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
 
-        <div style={{ padding: '16px 20px', borderTop: '0.5px solid #e4e4e7', textAlign: 'center' }}>
-          <p style={{ fontSize: '13px', color: '#71717a', margin: '0 0 10px' }}>Still need help?</p>
-          <Button asChild style={{ width: '100%' }}>
-            <a href={SUPPORT_MAILTO}>Contact Us</a>
-          </Button>
-        </div>
+            <div style={{ padding: '16px 20px', borderTop: '0.5px solid #e4e4e7', textAlign: 'center' }}>
+              <p style={{ fontSize: '13px', color: '#71717a', margin: '0 0 10px' }}>Still need help?</p>
+              <Button style={{ width: '100%' }} onClick={() => setShowForm(true)}>Contact Us</Button>
+            </div>
+          </>
+        )}
+
+        {showForm && (
+          <div style={{ padding: '20px' }}>
+            {sent ? (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <p style={{ fontSize: '15px', color: '#18181b', fontWeight: '500', marginBottom: '6px' }}>Message sent</p>
+                <p style={{ fontSize: '13px', color: '#71717a', marginBottom: '20px' }}>We'll get back to you as soon as we can.</p>
+                <Button style={{ width: '100%' }} onClick={onClose}>Close</Button>
+              </div>
+            ) : (
+              <>
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ fontSize: '13px', color: '#52525b', display: 'block', marginBottom: '4px' }}>Name</label>
+                  <input
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid #e4e4e7', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ fontSize: '13px', color: '#52525b', display: 'block', marginBottom: '4px' }}>Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid #e4e4e7', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '13px', color: '#52525b', display: 'block', marginBottom: '4px' }}>Message</label>
+                  <textarea
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    rows={4}
+                    style={{ width: '100%', padding: '9px 12px', border: '1px solid #e4e4e7', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', resize: 'vertical' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Button variant="outline" style={{ flex: 1 }} onClick={() => setShowForm(false)} disabled={sending}>Back</Button>
+                  <Button style={{ flex: 1 }} onClick={handleSend} disabled={sending}>
+                    {sending ? <Loader2 size={16} className="animate-spin" /> : 'Send'}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

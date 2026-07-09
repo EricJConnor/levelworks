@@ -18,7 +18,10 @@ import AuthModal from './AuthModal';
 import { useData, Estimate } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
-import { Menu, X, Bell, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send } from 'lucide-react';
+import { Menu, X, Bell, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send, HelpCircle } from 'lucide-react';
+
+const SUPPORT_EMAIL = '7echome@gmail.com';
+const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('LevelWorks Help')}`;
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -123,6 +126,9 @@ export const AppLayout: React.FC = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <AddToHomeScreen />
+            <a href={SUPPORT_MAILTO} className="hide-mobile" title="Contact support" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex' }}>
+              <HelpCircle size={20} />
+            </a>
             <button onClick={() => handleNavClick('notifications')} className="hide-mobile" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', position: 'relative' }}>
               <Bell size={20} />
               {!pushEnabled && <span style={{ position: 'absolute', top: '6px', right: '6px', width: '7px', height: '7px', background: '#f97316', borderRadius: '50%' }} />}
@@ -162,6 +168,7 @@ export const AppLayout: React.FC = () => {
             ))}
             <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', marginTop: '10px', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <button onClick={handleAccountClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><User size={16} /> Account</button>
+              <a href={SUPPORT_MAILTO} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none' }}><HelpCircle size={16} /> Help</a>
               <button onClick={handleSignOut} style={{ background: 'none', color: '#71717a', border: '0.5px solid rgba(255,255,255,0.08)', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><LogOut size={16} /> Sign Out</button>
             </div>
           </div>

@@ -16,6 +16,7 @@ status if Stripe reports a failed payment.
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS billing_enabled BOOLEAN DEFAULT false;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS billing_amount NUMERIC;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS billing_interval TEXT DEFAULT 'month';
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS billing_interval_count INTEGER DEFAULT 1;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS billing_status TEXT DEFAULT 'none';
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
@@ -46,7 +47,8 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS stripe_account_id TEXT;
 The `clients` table gains:
 - `billing_enabled` (boolean) - true once a recurring subscription is active
 - `billing_amount` (numeric) - the monthly amount charged to this client
-- `billing_interval` (text) - always `'month'` for Phase 1
+- `billing_interval` (text) - `'month'` or `'year'`
+- `billing_interval_count` (integer) - how many `billing_interval` units between charges (e.g. `3` + `'month'` = quarterly)
 - `billing_status` (text) - `none` / `current` / `past_due` / `canceled`
 - `stripe_customer_id` (text) - the Stripe Customer created on the contractor's connected account
 - `stripe_subscription_id` (text) - the Stripe Subscription id, used to match incoming webhooks

@@ -1,9 +1,9 @@
 # Recurring Billing + Payment Alerts - Setup
 
-This feature lets a LevelWorks user put a client on a monthly charge (via the
-client's connected Stripe account - the same one used for one-off invoice
-payments), and alerts the account owner by email if Stripe reports a failed
-payment.
+This feature lets a LevelWorks user put a client on a recurring charge - monthly,
+quarterly, every 4/6 months, or yearly - via the client's connected Stripe account
+(the same one used for one-off invoice payments), and alerts the account owner by
+email if Stripe reports a failed payment.
 
 ## 1. Run the SQL migration
 
@@ -60,16 +60,18 @@ and `stripe-recurring-webhook` reuse:
 
 ## How it works
 
-1. A user opens a client in the Clients tab and enters a monthly amount + card.
-   The card is confirmed via a Stripe SetupIntent scoped to the user's connected
-   Stripe account (`profiles.stripe_account_id` - the same OAuth connection used
-   for invoice payments), so the money goes straight to the contractor, not
-   LevelWorks.
-2. `manage-recurring-billing` creates a Stripe Customer + Subscription on that
-   connected account and stores `stripe_customer_id` / `stripe_subscription_id`
-   / `billing_status` on the `clients` row.
-3. Stripe charges the card monthly, retries failed payments, and emails the
-   customer reminders automatically - none of that is built here.
+1. A user opens a client in the Clients tab, picks an amount + billing schedule
+   (monthly / every 2, 3, 4, or 6 months / yearly), and enters a card. The card is
+   confirmed via a Stripe SetupIntent scoped to the user's connected Stripe account
+   (`profiles.stripe_account_id` - the same OAuth connection used for invoice
+   payments), so the money goes straight to the contractor, not LevelWorks.
+2. `manage-recurring-billing` creates a Stripe Customer + Subscription (using
+   Stripe's `interval` + `interval_count` to represent the chosen schedule) on
+   that connected account and stores `stripe_customer_id` / `stripe_subscription_id`
+   / `billing_interval` / `billing_interval_count` / `billing_status` on the
+   `clients` row.
+3. Stripe charges the card on that schedule, retries failed payments, and emails
+   the customer reminders automatically - none of that is built here.
 4. When a charge fails, `stripe-recurring-webhook` marks the client `past_due`
    in the database and emails the account owner (looked up via
    `auth.admin.getUserById`) using the existing `send-email` function. It only

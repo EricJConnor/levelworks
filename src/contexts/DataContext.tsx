@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface Job { id: string; clientName: string; projectType: string; status: 'draft' | 'sent' | 'approved' | 'in-progress' | 'completed'; total: number; date: string; }
 export interface Client {
   id: string; name: string; email: string; phone: string; address: string; totalJobs: number; totalValue: number;
-  billingEnabled?: boolean; billingAmount?: number; billingInterval?: string;
+  billingEnabled?: boolean; billingAmount?: number; billingInterval?: string; billingIntervalCount?: number;
   billingStatus?: 'none' | 'current' | 'past_due' | 'canceled'; lastPaymentFailedAt?: string;
 }
 export interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; }
@@ -196,6 +196,7 @@ const mapDbToClient = (c: any): Client => ({
   billingEnabled: !!c.billing_enabled,
   billingAmount: c.billing_amount != null ? Number(c.billing_amount) : 0,
   billingInterval: c.billing_interval || 'month',
+  billingIntervalCount: c.billing_interval_count != null ? Number(c.billing_interval_count) : 1,
   billingStatus: c.billing_status || 'none',
   lastPaymentFailedAt: c.last_payment_failed_at || undefined,
 });
@@ -508,6 +509,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (u.billingEnabled !== undefined) db.billing_enabled = u.billingEnabled;
     if (u.billingAmount !== undefined) db.billing_amount = u.billingAmount;
     if (u.billingInterval !== undefined) db.billing_interval = u.billingInterval;
+    if (u.billingIntervalCount !== undefined) db.billing_interval_count = u.billingIntervalCount;
     if (u.billingStatus !== undefined) db.billing_status = u.billingStatus;
     if (Object.keys(db).length > 0) await supabase.from('clients').update(db).eq('id', id);
     setClients(p => p.map(c => c.id === id ? { ...c, ...u } : c)); 

@@ -17,10 +17,36 @@ const cardElementOptions = {
   style: { base: { fontSize: '16px', color: '#1e293b', fontFamily: 'system-ui, sans-serif', '::placeholder': { color: '#94a3b8' } } },
 };
 
+const SCHEDULE_OPTIONS: { value: string; label: string; unit: 'month' | 'year'; count: number }[] = [
+  { value: 'month-1', label: 'Monthly', unit: 'month', count: 1 },
+  { value: 'month-2', label: 'Every 2 months', unit: 'month', count: 2 },
+  { value: 'month-3', label: 'Quarterly (every 3 months)', unit: 'month', count: 3 },
+  { value: 'month-4', label: 'Every 4 months', unit: 'month', count: 4 },
+  { value: 'month-6', label: 'Every 6 months', unit: 'month', count: 6 },
+  { value: 'year-1', label: 'Yearly', unit: 'year', count: 1 },
+];
+
+const cadenceLabel = (unit?: string, count?: number) => {
+  const u = unit || 'month';
+  const c = count || 1;
+  if (u === 'year') return 'year';
+  return c === 1 ? 'month' : `${c} months`;
+};
+
+const formatBillingLine = (amount: number, unit?: string, count?: number) => {
+  const amt = `$${amount.toFixed(2)}`;
+  const u = unit || 'month';
+  const c = count || 1;
+  if (u === 'year') return `${amt}/yr`;
+  if (c === 1) return `${amt}/mo`;
+  return `${amt} every ${c} months`;
+};
+
 function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>) {
   const stripe = useStripe();
   const elements = useElements();
   const [amount, setAmount] = useState(client.billingAmount ? String(client.billingAmount) : '');
+  const [schedule, setSchedule] = useState('month-1');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -30,9 +56,10 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
 
     const numAmount = Number(amount);
     if (!numAmount || numAmount <= 0) {
-      toast({ title: 'Enter a valid monthly amount', variant: 'destructive' });
+      toast({ title: 'Enter a valid amount', variant: 'destructive' });
       return;
     }
+    const option = SCHEDULE_OPTIONS.find((o) => o.value === schedule) || SCHEDULE_OPTIONS[0];
 
     setLoading(true);
     try {
@@ -55,7 +82,14 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
       if (!paymentMethodId) throw new Error('Could not confirm card details');
 
       const { data: subData, error: subErr } = await supabase.functions.invoke('manage-recurring-billing', {
-        body: { action: 'activate_subscription', clientId: client.id, paymentMethodId, amount: numAmount },
+        body: {
+          action: 'activate_subscription',
+          clientId: client.id,
+          paymentMethodId,
+          amount: numAmount,
+          intervalUnit: option.unit,
+          intervalCount: option.count,
+        },
       });
       if (subErr || subData?.error) throw new Error(subData?.error || subErr?.message || 'Failed to start recurring billing');
 
@@ -67,10 +101,11 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
       onUpdated({
         billingEnabled: true,
         billingAmount: numAmount,
-        billingInterval: 'month',
+        billingInterval: option.unit,
+        billingIntervalCount: option.count,
         billingStatus: subData.status === 'past_due' ? 'past_due' : 'current',
       });
-      toast({ title: 'Recurring billing set up!', description: `${client.name} will be charged $${numAmount.toFixed(2)}/month.` });
+      toast({ title: 'Recurring billing set up!', description: `${client.name} will be charged ${formatBillingLine(numAmount, option.unit, option.count)}.` });
     } catch (err: any) {
       toast({ title: 'Setup failed', description: err.message, variant: 'destructive' });
     } finally {
@@ -81,13 +116,24 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <label className="block text-sm font-semibold mb-2">Monthly amount ($)</label>
+        <label className="block text-sm font-semibold mb-2">Amount ($)</label>
         <input
           type="number" min="1" step="0.01" value={amount} required
           onChange={(e) => setAmount(e.target.value)}
           placeholder="99.00"
           className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none"
         />
+      </div>
+      <div>
+        <label className="block text-sm font-semibold mb-2">Billing schedule</label>
+        <select
+          value={schedule} onChange={(e) => setSchedule(e.target.value)}
+          className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none bg-white"
+        >
+          {SCHEDULE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
       </div>
       <div>
         <label className="block text-sm font-semibold mb-2">Card</label>
@@ -100,9 +146,9 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
         className="w-full bg-blue-600 text-white rounded-lg py-3 font-semibold hover:bg-blue-700 flex items-center justify-center gap-2 disabled:opacity-60"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-        {loading ? 'Setting up...' : 'Start Monthly Billing'}
+        {loading ? 'Setting up...' : 'Start Recurring Billing'}
       </button>
-      <p className="text-xs text-center text-gray-400">Stripe charges this card automatically every month and handles retries/reminders on failure.</p>
+      <p className="text-xs text-center text-gray-400">Stripe charges this card automatically on the schedule above and handles retries/reminders on failure.</p>
     </form>
   );
 }
@@ -136,8 +182,8 @@ export function RecurringBillingPanel({ client, stripeAccountId, onUpdated }: Pr
       <div className="bg-gray-50 rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">Monthly billing</p>
-            <p className="text-lg font-semibold">${Number(client.billingAmount || 0).toFixed(2)}/mo</p>
+            <p className="text-sm text-gray-500">Billed every {cadenceLabel(client.billingInterval, client.billingIntervalCount)}</p>
+            <p className="text-lg font-semibold">{formatBillingLine(Number(client.billingAmount || 0), client.billingInterval, client.billingIntervalCount)}</p>
           </div>
           <span className={`text-xs px-2 py-1 rounded-full font-semibold ${client.billingStatus === 'past_due' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
             {client.billingStatus === 'past_due' ? 'Past Due' : 'Current'}

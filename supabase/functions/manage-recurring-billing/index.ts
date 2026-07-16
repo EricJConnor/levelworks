@@ -15,6 +15,15 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
+// Stripe allows interval_count up to 12 for 'month' and up to 1 for 'year'.
+const normalizeInterval = (intervalUnit: unknown, intervalCount: unknown): { unit: 'month' | 'year'; count: number } | null => {
+  const unit = intervalUnit === 'year' ? 'year' : 'month'
+  const count = Math.round(Number(intervalCount) || 1)
+  if (unit === 'year') return count === 1 ? { unit, count } : null
+  if (count < 1 || count > 12) return null
+  return { unit, count }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -74,10 +83,12 @@ serve(async (req) => {
     }
 
     if (action === 'activate_subscription') {
-      const { paymentMethodId, amount } = body
+      const { paymentMethodId, amount, intervalUnit, intervalCount } = body
       const numAmount = Number(amount)
+      const interval = normalizeInterval(intervalUnit, intervalCount)
       if (!paymentMethodId) return json({ error: 'Missing payment method' }, 400)
-      if (!numAmount || numAmount <= 0) return json({ error: 'Enter a valid monthly amount' }, 400)
+      if (!numAmount || numAmount <= 0) return json({ error: 'Enter a valid amount' }, 400)
+      if (!interval) return json({ error: 'Invalid billing schedule' }, 400)
       if (!clientRow.stripe_customer_id) return json({ error: 'Set up a card for this client first' }, 400)
 
       const subscription = await stripe.subscriptions.create(
@@ -88,7 +99,7 @@ serve(async (req) => {
               price_data: {
                 currency: 'usd',
                 unit_amount: Math.round(numAmount * 100),
-                recurring: { interval: 'month' },
+                recurring: { interval: interval.unit, interval_count: interval.count },
                 product_data: { name: `${clientRow.name || 'Client'} - Recurring Billing` },
               },
             },
@@ -106,7 +117,8 @@ serve(async (req) => {
         .update({
           billing_enabled: true,
           billing_amount: numAmount,
-          billing_interval: 'month',
+          billing_interval: interval.unit,
+          billing_interval_count: interval.count,
           billing_status: billingStatus,
           stripe_subscription_id: subscription.id,
           billing_started_at: new Date().toISOString(),

@@ -33,7 +33,7 @@ export default function LandingPage() {
     { icon: FileText, title: 'Unlimited Estimates', desc: 'Create professional estimates in minutes. Send via email or text.' },
     { icon: PenTool, title: 'Digital Signatures', desc: 'Clients sign from any device. You get notified instantly.' },
     { icon: CreditCard, title: 'Accept Payments', desc: 'Clients pay invoices online by credit card. Money goes straight to your bank account.', highlight: true },
-    { icon: Repeat, title: 'Automated Recurring Billing', desc: 'Put maintenance contracts and repeat clients on autopilot. We bill them monthly and alert you the moment a payment fails.', highlight: true },
+    { icon: Repeat, title: 'Automated Recurring Billing', desc: 'Put maintenance contracts and repeat clients on autopilot — monthly, quarterly, or any schedule you set. We alert you the moment a payment fails.', highlight: true },
     { icon: Image, title: 'Custom Branding', desc: 'Upload your company logo — it shows up automatically on every estimate and invoice you send.', highlight: true },
     { icon: Camera, title: 'Photo Updates', desc: 'Snap job-site photos and send your client a clean progress update with one tap.', highlight: true },
     { icon: Users, title: 'Client Database', desc: 'Every client, every job, every detail — organized and searchable.' },
@@ -155,10 +155,10 @@ export default function LandingPage() {
             Automated Billing for Scheduled Service & Maintenance
           </h2>
           <p style={{ color: '#93c5fd', fontSize: '18px', maxWidth: '640px', lineHeight: '1.6', marginBottom: '32px' }}>
-            Set up a client on a monthly plan once — HVAC contracts, lawn care, hosting & maintenance retainers, whatever you bill on repeat. We charge their card automatically every month, so you're not re-invoicing anyone by hand.
+            Set up a client on a repeating billing schedule once — monthly, quarterly, every 4 months, yearly, whatever fits the contract. HVAC agreements, lawn care, hosting & maintenance retainers — we charge their card automatically on your schedule, so you're not re-invoicing anyone by hand.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', maxWidth: '760px', width: '100%' }}>
-            {['Bills clients monthly, automatically', 'Automatic retries on a failed card', 'Instant alert if a payment fails', 'Client marked "past due" on your dashboard'].map((item, i) => (
+            {['Bills clients on any schedule, automatically', 'Automatic retries on a failed card', 'Instant alert if a payment fails', 'Client marked "past due" on your dashboard'].map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '12px 16px' }}>
                 <Check size={16} style={{ color: '#3b82f6', flexShrink: 0 }} />
                 <span style={{ color: '#e8e8e8', fontSize: '14px', fontWeight: '500' }}>{item}</span>

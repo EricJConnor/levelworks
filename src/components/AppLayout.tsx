@@ -80,13 +80,13 @@ export const AppLayout: React.FC = () => {
   const handleNavClick = (view: View) => { setCurrentView(view); setMobileMenuOpen(false); };
 
   if (isAuthenticated === null || loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #d8dee6 0%, #b9c4d1 45%, #ccd4de 100%)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(100deg, #4a6fb5 0%, #7ba3e8 6%, #345aa0 14%, #6f95d9 20%, #23407f 30%, #86a8e0 38%, #2c4a8f 46%, #5a7fc9 54%, #1e3873 64%, #7ba3e8 72%, #345aa0 82%, #6f95d9 90%, #4a6fb5 100%)' }}>
       <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#3b82f6' }} />
     </div>
   );
 
   if (isAuthenticated === false) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #d8dee6 0%, #b9c4d1 45%, #ccd4de 100%)', padding: '16px' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(100deg, #4a6fb5 0%, #7ba3e8 6%, #345aa0 14%, #6f95d9 20%, #23407f 30%, #86a8e0 38%, #2c4a8f 46%, #5a7fc9 54%, #1e3873 64%, #7ba3e8 72%, #345aa0 82%, #6f95d9 90%, #4a6fb5 100%)', padding: '16px' }}>
       <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', maxWidth: '400px', width: '100%', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
         <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', marginBottom: '8px' }}>Sign In Required</h2>
         <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '24px' }}>Please sign in to access LevelWorks.</p>
@@ -98,7 +98,7 @@ export const AppLayout: React.FC = () => {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #d8dee6 0%, #b9c4d1 45%, #ccd4de 100%)' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(100deg, #4a6fb5 0%, #7ba3e8 6%, #345aa0 14%, #6f95d9 20%, #23407f 30%, #86a8e0 38%, #2c4a8f 46%, #5a7fc9 54%, #1e3873 64%, #7ba3e8 72%, #345aa0 82%, #6f95d9 90%, #4a6fb5 100%)' }}>
       <header style={{ background: '#1c1c1e', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 1px 0 rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
@@ -300,7 +300,7 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
         <AddToHomeScreen />
       </div>
       {!stripeConnected && (
-        <div style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ background: '#fff', border: '1px solid rgba(59,130,246,0.25)', borderRadius: '10px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <CreditCard size={17} style={{ color: '#3b82f6' }} />
@@ -345,7 +345,7 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <h3 style={{ fontSize: '17px', fontWeight: '500', color: '#18181b', margin: 0 }}>Recent Estimates</h3>
-        <button onClick={onViewEstimates} style={{ background: 'none', border: '0.5px solid #e4e4e7', color: '#52525b', padding: '6px 14px', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}>View All</button>
+        <button onClick={onViewEstimates} style={{ background: '#fff', border: '0.5px solid #e4e4e7', color: '#52525b', padding: '6px 14px', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}>View All</button>
       </div>
 
       {recentEstimates.length === 0 ? (

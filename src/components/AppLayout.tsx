@@ -80,13 +80,13 @@ export const AppLayout: React.FC = () => {
   const handleNavClick = (view: View) => { setCurrentView(view); setMobileMenuOpen(false); };
 
   if (isAuthenticated === null || loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e2ecfa' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#c5d8f2' }}>
       <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#3b82f6' }} />
     </div>
   );
 
   if (isAuthenticated === false) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e2ecfa', padding: '16px' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#c5d8f2', padding: '16px' }}>
       <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', maxWidth: '400px', width: '100%', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
         <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', marginBottom: '8px' }}>Sign In Required</h2>
         <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '24px' }}>Please sign in to access LevelWorks.</p>
@@ -98,7 +98,7 @@ export const AppLayout: React.FC = () => {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#e2ecfa' }}>
+    <div style={{ minHeight: '100vh', background: '#c5d8f2' }}>
       <header style={{ background: '#1c1c1e', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 1px 0 rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
@@ -142,11 +142,11 @@ export const AppLayout: React.FC = () => {
               {profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <User size={15} />}
               <span>{profile?.full_name?.split(' ')[0] || 'Account'}</span>
             </button>
-            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="hide-mobile" style={{ background: 'rgba(59,130,246,0.12)', border: '0.5px solid rgba(59,130,246,0.3)', color: '#93c5fd', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Plus size={14} /> Estimate
+            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="hide-mobile ghost-action" style={{ background: 'none', border: 'none', color: '#93c5fd', padding: '6px 8px', fontSize: '14px', fontWeight: '700', letterSpacing: '0.01em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Plus size={15} /> Estimate
             </button>
-            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="hide-mobile" style={{ background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.12)', color: '#e4e4e7', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Plus size={14} /> Invoice
+            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="hide-mobile ghost-action" style={{ background: 'none', border: 'none', color: '#e4e4e7', padding: '6px 8px', fontSize: '14px', fontWeight: '700', letterSpacing: '0.01em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Plus size={15} /> Invoice
             </button>
             <button onClick={handleSignOut} className="hide-mobile" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <LogOut size={15} /> Sign Out
@@ -156,12 +156,12 @@ export const AppLayout: React.FC = () => {
             </button>
           </div>
         </div>
-        <div className="mobile-quick-add mobile-only" style={{ display: 'flex', gap: '8px', padding: '10px 16px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
-          <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} style={{ flex: 1, background: '#3b82f6', color: '#fff', border: 'none', padding: '9px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-            <Plus size={14} /> Estimate
+        <div className="mobile-quick-add mobile-only" style={{ gap: '8px', padding: '10px 16px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
+          <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="ghost-action" style={{ flex: 1, background: 'none', color: '#93c5fd', border: 'none', padding: '9px', fontSize: '14px', fontWeight: '700', letterSpacing: '0.01em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+            <Plus size={15} /> Estimate
           </button>
-          <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} style={{ flex: 1, background: 'rgba(255,255,255,0.08)', color: '#fff', border: '0.5px solid rgba(255,255,255,0.15)', padding: '9px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-            <Plus size={14} /> Invoice
+          <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="ghost-action" style={{ flex: 1, background: 'none', color: '#e4e4e7', border: 'none', padding: '9px', fontSize: '14px', fontWeight: '700', letterSpacing: '0.01em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+            <Plus size={15} /> Invoice
           </button>
         </div>
         {mobileMenuOpen && (
@@ -189,10 +189,14 @@ export const AppLayout: React.FC = () => {
         @media (max-width: 1023px) {
           .hide-mobile { display: none !important; }
           .mobile-only { display: block !important; }
+          .mobile-only.mobile-quick-add { display: flex !important; }
         }
         @media (max-width: 480px) {
           .app-main { padding: 20px 14px 32px !important; }
         }
+        .ghost-action { opacity: 0.9; transition: opacity 0.15s ease; }
+        .ghost-action:hover { opacity: 1; }
+        .ghost-action:active { opacity: 0.7; }
       `}</style>
 
       <main className="app-main" style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px' }}>

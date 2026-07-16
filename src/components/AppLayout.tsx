@@ -300,38 +300,38 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
         <AddToHomeScreen />
       </div>
       {!stripeConnected && (
-        <div style={{ background: '#fff', border: '1px solid rgba(59,130,246,0.25)', borderRadius: '10px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div style={{ background: '#1c1c1e', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <CreditCard size={17} style={{ color: '#3b82f6' }} />
+            <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <CreditCard size={17} style={{ color: '#60a5fa' }} />
             </div>
             <div>
-              <p style={{ color: '#18181b', fontSize: '15px', fontWeight: '600', margin: '0 0 2px' }}>Collect Client Payments</p>
-              <p style={{ color: '#71717a', fontSize: '13px', margin: 0 }}>Accept credit cards directly. Money goes straight to your bank.</p>
+              <p style={{ color: '#fff', fontSize: '15px', fontWeight: '600', margin: '0 0 2px' }}>Collect Client Payments</p>
+              <p style={{ color: '#a1a1aa', fontSize: '13px', margin: 0 }}>Accept credit cards directly. Money goes straight to your bank.</p>
             </div>
           </div>
-          <button onClick={onConnectStripe} style={{ background: 'none', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.4)', padding: '9px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <button onClick={onConnectStripe} style={{ background: 'none', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.4)', padding: '9px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
             Set Up Payments
           </button>
         </div>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '28px' }} className="stats-grid">
-        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
-          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Total Value</p>
-          <p className="stat-value" style={{ color: '#16a34a', fontSize: '24px', fontWeight: '600', margin: 0 }}>${totalEstimateValue.toLocaleString()}</p>
+        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+          <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Total Value</p>
+          <p className="stat-value" style={{ color: '#4ade80', fontSize: '24px', fontWeight: '600', margin: 0 }}>${totalEstimateValue.toLocaleString()}</p>
         </div>
-        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7', cursor: 'pointer' }} onClick={onViewEstimates}>
-          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Estimates</p>
-          <p className="stat-value" style={{ color: '#3b82f6', fontSize: '24px', fontWeight: '600', margin: 0 }}>{estimates.length}</p>
+        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer' }} onClick={onViewEstimates}>
+          <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Estimates</p>
+          <p className="stat-value" style={{ color: '#60a5fa', fontSize: '24px', fontWeight: '600', margin: 0 }}>{estimates.length}</p>
         </div>
-        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
-          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Pending</p>
-          <p className="stat-value" style={{ color: '#eab308', fontSize: '24px', fontWeight: '600', margin: 0 }}>{pendingEstimates}</p>
+        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+          <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Pending</p>
+          <p className="stat-value" style={{ color: '#fbbf24', fontSize: '24px', fontWeight: '600', margin: 0 }}>{pendingEstimates}</p>
         </div>
-        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
-          <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Clients</p>
-          <p className="stat-value" style={{ color: '#18181b', fontSize: '24px', fontWeight: '600', margin: 0 }}>{clients.length}</p>
+        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+          <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Clients</p>
+          <p className="stat-value" style={{ color: '#fff', fontSize: '24px', fontWeight: '600', margin: 0 }}>{clients.length}</p>
         </div>
       </div>
 
@@ -345,30 +345,30 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <h3 style={{ fontSize: '17px', fontWeight: '500', color: '#18181b', margin: 0 }}>Recent Estimates</h3>
-        <button onClick={onViewEstimates} style={{ background: '#fff', border: '0.5px solid #e4e4e7', color: '#52525b', padding: '6px 14px', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}>View All</button>
+        <button onClick={onViewEstimates} style={{ background: '#1c1c1e', border: '0.5px solid rgba(255,255,255,0.1)', color: '#e4e4e7', padding: '6px 14px', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}>View All</button>
       </div>
 
       {recentEstimates.length === 0 ? (
-        <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
-          <FileText style={{ width: '40px', height: '40px', color: '#d4d4d8', margin: '0 auto 12px' }} />
-          <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '16px' }}>No estimates yet</p>
+        <div style={{ background: '#1c1c1e', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+          <FileText style={{ width: '40px', height: '40px', color: '#52525b', margin: '0 auto 12px' }} />
+          <p style={{ color: '#a1a1aa', fontSize: '15px', marginBottom: '16px' }}>No estimates yet</p>
           <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Create Your First Estimate</button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {recentEstimates.map((estimate) => (
             <div key={estimate.id} onClick={() => onViewEstimate(estimate)}
-              style={{ background: '#fff', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid #e4e4e7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#a1a1aa')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#e4e4e7')}
+              style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '15px', fontWeight: '500', color: '#18181b', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{estimate.projectName || 'Unnamed Project'}</p>
-                <p style={{ fontSize: '13px', color: '#71717a', margin: '0 0 4px' }}>{estimate.clientName}</p>
-                <p style={{ fontSize: '12px', color: '#a1a1aa', margin: 0 }}>EST-{estimate.id.slice(-6)} · {new Date(estimate.createdAt).toLocaleDateString()}</p>
+                <p style={{ fontSize: '15px', fontWeight: '500', color: '#fff', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{estimate.projectName || 'Unnamed Project'}</p>
+                <p style={{ fontSize: '13px', color: '#a1a1aa', margin: '0 0 4px' }}>{estimate.clientName}</p>
+                <p style={{ fontSize: '12px', color: '#71717a', margin: 0 }}>EST-{estimate.id.slice(-6)} · {new Date(estimate.createdAt).toLocaleDateString()}</p>
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: '16px' }}>
-                <p style={{ fontSize: '17px', fontWeight: '600', color: '#18181b', margin: '0 0 5px' }}>${(estimate.total || 0).toLocaleString()}</p>
+                <p style={{ fontSize: '17px', fontWeight: '600', color: '#fff', margin: '0 0 5px' }}>${(estimate.total || 0).toLocaleString()}</p>
                 {getStatusBadge(estimate.status)}
               </div>
             </div>
@@ -378,7 +378,7 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
 
       <div style={{ marginTop: '24px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Estimate</button>
-        <button onClick={onViewEstimates} style={{ background: '#fff', color: '#18181b', border: '0.5px solid #e4e4e7', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }}>All Estimates</button>
+        <button onClick={onViewEstimates} style={{ background: '#1c1c1e', color: '#fff', border: '0.5px solid rgba(255,255,255,0.1)', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }}>All Estimates</button>
       </div>
     </div>
   );

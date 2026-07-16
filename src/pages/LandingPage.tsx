@@ -112,7 +112,7 @@ export default function LandingPage() {
               See How It Works
             </button>
           </div>
-          <p style={{ color: '#444', fontSize: '13px', marginTop: '16px' }}>No credit card required. 30-day free trial.</p>
+          <p style={{ color: '#444', fontSize: '13px', marginTop: '16px' }}>No credit card required. 14-day free trial.</p>
         </div>
       </section>
 
@@ -289,7 +289,7 @@ button>
           <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '16px' }}>
             Ready to save $1,700 a year?
           </h2>
-          <p style={{ color: '#93c5fd', fontSize: '18px', marginBottom: '40px' }}>Start your free 30-day trial. No credit card required.</p>
+          <p style={{ color: '#93c5fd', fontSize: '18px', marginBottom: '40px' }}>Start your free 14-day trial. No credit card required.</p>
           <button onClick={openSignUp} style={{ background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer', padding: '18px 48px', borderRadius: '6px', fontSize: '18px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
             Get Started Free <ChevronRight size={20} />
           </button>

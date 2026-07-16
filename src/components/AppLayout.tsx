@@ -87,11 +87,11 @@ export const AppLayout: React.FC = () => {
 
   if (isAuthenticated === false) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(100deg, #4a6fb5 0%, #7ba3e8 6%, #345aa0 14%, #6f95d9 20%, #23407f 30%, #86a8e0 38%, #2c4a8f 46%, #5a7fc9 54%, #1e3873 64%, #7ba3e8 72%, #345aa0 82%, #6f95d9 90%, #4a6fb5 100%)', padding: '16px' }}>
-      <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', maxWidth: '400px', width: '100%', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
+      <div style={{ background: '#fff', borderRadius: '2px', padding: '40px', maxWidth: '400px', width: '100%', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
         <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', marginBottom: '8px' }}>Sign In Required</h2>
         <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '24px' }}>Please sign in to access LevelWorks.</p>
-        <button onClick={() => setShowAuthModal(true)} style={{ width: '100%', background: '#1c1c1e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '15px', fontWeight: '500', cursor: 'pointer', marginBottom: '10px' }}>Sign In</button>
-        <button onClick={() => window.location.href = '/'} style={{ width: '100%', background: 'none', color: '#71717a', border: '0.5px solid #e4e4e7', padding: '12px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }}>Back to Home</button>
+        <button onClick={() => setShowAuthModal(true)} style={{ width: '100%', background: '#1c1c1e', color: '#fff', border: 'none', padding: '12px', borderRadius: '2px', fontSize: '15px', fontWeight: '500', cursor: 'pointer', marginBottom: '10px' }}>Sign In</button>
+        <button onClick={() => window.location.href = '/'} style={{ width: '100%', background: 'none', color: '#71717a', border: '0.5px solid #e4e4e7', padding: '12px', borderRadius: '2px', fontSize: '15px', cursor: 'pointer' }}>Back to Home</button>
       </div>
       <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} onSuccess={() => window.location.reload()} />
     </div>
@@ -118,7 +118,7 @@ export const AppLayout: React.FC = () => {
                     color: currentView === item.key ? '#fff' : '#a1a1aa',
                     border: 'none',
                     padding: '6px 14px',
-                    borderRadius: '6px',
+                    borderRadius: '2px',
                     fontSize: '14px',
                     fontWeight: currentView === item.key ? '500' : '400',
                     cursor: 'pointer',
@@ -131,14 +131,14 @@ export const AppLayout: React.FC = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <AddToHomeScreen />
-            <button onClick={handleHelpClick} className="hide-mobile" title="Help" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex' }}>
+            <button onClick={handleHelpClick} className="hide-mobile" title="Help" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '2px', cursor: 'pointer', display: 'inline-flex' }}>
               <HelpCircle size={20} />
             </button>
-            <button onClick={() => handleNavClick('notifications')} className="hide-mobile" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', position: 'relative' }}>
+            <button onClick={() => handleNavClick('notifications')} className="hide-mobile" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '2px', cursor: 'pointer', position: 'relative' }}>
               <Bell size={20} />
               {!pushEnabled && <span style={{ position: 'absolute', top: '6px', right: '6px', width: '7px', height: '7px', background: '#3b82f6', borderRadius: '50%' }} />}
             </button>
-            <button onClick={handleAccountClick} className="hide-mobile" style={{ background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.12)', color: '#e4e4e7', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button onClick={handleAccountClick} className="hide-mobile" style={{ background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.12)', color: '#e4e4e7', padding: '6px 12px', borderRadius: '2px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
               {profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <User size={15} />}
               <span>{profile?.full_name?.split(' ')[0] || 'Account'}</span>
             </button>
@@ -148,7 +148,7 @@ export const AppLayout: React.FC = () => {
             <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="hide-mobile ghost-action" style={{ background: 'none', border: 'none', color: '#e4e4e7', padding: '6px 8px', fontSize: '14px', fontWeight: '700', letterSpacing: '0.01em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <Plus size={15} /> Invoice
             </button>
-            <button onClick={handleSignOut} className="hide-mobile" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <button onClick={handleSignOut} className="hide-mobile" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '6px 12px', borderRadius: '2px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <LogOut size={15} /> Sign Out
             </button>
             <button className="mobile-only" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', cursor: 'pointer' }}>
@@ -167,14 +167,14 @@ export const AppLayout: React.FC = () => {
         {mobileMenuOpen && (
           <div style={{ background: '#141416', borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '12px 16px 16px' }}>
             {navItems.map(item => (
-              <button key={item.key} onClick={() => handleNavClick(item.key as View)} style={{ display: 'block', width: '100%', textAlign: 'left', background: currentView === item.key ? 'rgba(255,255,255,0.08)' : 'none', color: currentView === item.key ? '#fff' : '#a1a1aa', border: 'none', padding: '10px 14px', borderRadius: '7px', fontSize: '15px', fontWeight: currentView === item.key ? '500' : '400', cursor: 'pointer', marginBottom: '2px' }}>
+              <button key={item.key} onClick={() => handleNavClick(item.key as View)} style={{ display: 'block', width: '100%', textAlign: 'left', background: currentView === item.key ? 'rgba(255,255,255,0.08)' : 'none', color: currentView === item.key ? '#fff' : '#a1a1aa', border: 'none', padding: '10px 14px', borderRadius: '2px', fontSize: '15px', fontWeight: currentView === item.key ? '500' : '400', cursor: 'pointer', marginBottom: '2px' }}>
                 {item.label}
               </button>
             ))}
             <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', marginTop: '10px', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <button onClick={handleAccountClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><User size={16} /> Account</button>
-              <button onClick={handleHelpClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><HelpCircle size={16} /> Help</button>
-              <button onClick={handleSignOut} style={{ background: 'none', color: '#71717a', border: '0.5px solid rgba(255,255,255,0.08)', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><LogOut size={16} /> Sign Out</button>
+              <button onClick={handleAccountClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '2px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><User size={16} /> Account</button>
+              <button onClick={handleHelpClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '2px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><HelpCircle size={16} /> Help</button>
+              <button onClick={handleSignOut} style={{ background: 'none', color: '#71717a', border: '0.5px solid rgba(255,255,255,0.08)', padding: '11px', borderRadius: '2px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><LogOut size={16} /> Sign Out</button>
             </div>
           </div>
         )}
@@ -290,7 +290,7 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
       draft: { background: '#f4f4f5', color: '#52525b' },
     };
     const s = styles[status] || styles.draft;
-    return <span style={{ ...s, fontSize: '12px', padding: '3px 10px', borderRadius: '20px', fontWeight: '500' }}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
+    return <span style={{ ...s, fontSize: '12px', padding: '3px 10px', borderRadius: '2px', fontWeight: '500' }}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
   };
 
   return (
@@ -300,9 +300,9 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
         <AddToHomeScreen />
       </div>
       {!stripeConnected && (
-        <div style={{ background: '#fff', border: '1px solid rgba(59,130,246,0.25)', borderRadius: '10px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div style={{ background: '#fff', border: '1px solid rgba(59,130,246,0.25)', borderRadius: '2px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '2px', background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <CreditCard size={17} style={{ color: '#3b82f6' }} />
             </div>
             <div>
@@ -310,26 +310,26 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
               <p style={{ color: '#71717a', fontSize: '13px', margin: 0 }}>Accept credit cards directly. Money goes straight to your bank.</p>
             </div>
           </div>
-          <button onClick={onConnectStripe} style={{ background: 'none', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.4)', padding: '9px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <button onClick={onConnectStripe} style={{ background: 'none', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.4)', padding: '9px 16px', borderRadius: '2px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
             Set Up Payments
           </button>
         </div>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '28px' }} className="stats-grid">
-        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
+        <div className="stat-card" style={{ background: '#fff', borderRadius: '2px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
           <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Total Value</p>
           <p className="stat-value" style={{ color: '#16a34a', fontSize: '24px', fontWeight: '600', margin: 0 }}>${totalEstimateValue.toLocaleString()}</p>
         </div>
-        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7', cursor: 'pointer' }} onClick={onViewEstimates}>
+        <div className="stat-card" style={{ background: '#fff', borderRadius: '2px', padding: '18px 18px', border: '0.5px solid #e4e4e7', cursor: 'pointer' }} onClick={onViewEstimates}>
           <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Estimates</p>
           <p className="stat-value" style={{ color: '#3b82f6', fontSize: '24px', fontWeight: '600', margin: 0 }}>{estimates.length}</p>
         </div>
-        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
+        <div className="stat-card" style={{ background: '#fff', borderRadius: '2px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
           <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Pending</p>
           <p className="stat-value" style={{ color: '#eab308', fontSize: '24px', fontWeight: '600', margin: 0 }}>{pendingEstimates}</p>
         </div>
-        <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
+        <div className="stat-card" style={{ background: '#fff', borderRadius: '2px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
           <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Clients</p>
           <p className="stat-value" style={{ color: '#18181b', fontSize: '24px', fontWeight: '600', margin: 0 }}>{clients.length}</p>
         </div>
@@ -345,20 +345,20 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
         <h3 style={{ fontSize: '17px', fontWeight: '500', color: '#18181b', margin: 0 }}>Recent Estimates</h3>
-        <button onClick={onViewEstimates} style={{ background: '#fff', border: '0.5px solid #e4e4e7', color: '#52525b', padding: '6px 14px', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}>View All</button>
+        <button onClick={onViewEstimates} style={{ background: '#fff', border: '0.5px solid #e4e4e7', color: '#52525b', padding: '6px 14px', borderRadius: '2px', fontSize: '13px', cursor: 'pointer' }}>View All</button>
       </div>
 
       {recentEstimates.length === 0 ? (
-        <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
+        <div style={{ background: '#fff', borderRadius: '2px', padding: '40px', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
           <FileText style={{ width: '40px', height: '40px', color: '#d4d4d8', margin: '0 auto 12px' }} />
           <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '16px' }}>No estimates yet</p>
-          <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Create Your First Estimate</button>
+          <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '2px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Create Your First Estimate</button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {recentEstimates.map((estimate) => (
             <div key={estimate.id} onClick={() => onViewEstimate(estimate)}
-              style={{ background: '#fff', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid #e4e4e7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+              style={{ background: '#fff', borderRadius: '2px', padding: '18px 20px', border: '0.5px solid #e4e4e7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
               onMouseEnter={e => (e.currentTarget.style.borderColor = '#a1a1aa')}
               onMouseLeave={e => (e.currentTarget.style.borderColor = '#e4e4e7')}
             >
@@ -377,8 +377,8 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
       )}
 
       <div style={{ marginTop: '24px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Estimate</button>
-        <button onClick={onViewEstimates} style={{ background: '#fff', color: '#18181b', border: '0.5px solid #e4e4e7', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }}>All Estimates</button>
+        <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '11px 20px', borderRadius: '2px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Estimate</button>
+        <button onClick={onViewEstimates} style={{ background: '#fff', color: '#18181b', border: '0.5px solid #e4e4e7', padding: '11px 20px', borderRadius: '2px', fontSize: '15px', cursor: 'pointer' }}>All Estimates</button>
       </div>
     </div>
   );
@@ -421,13 +421,13 @@ function BillingSettings() {
 
   return (
     <div style={{ maxWidth: '480px' }}>
-      <div style={{ background: '#fff', borderRadius: '12px', padding: '20px', border: '0.5px solid #e4e4e7' }}>
+      <div style={{ background: '#fff', borderRadius: '2px', padding: '20px', border: '0.5px solid #e4e4e7' }}>
         <p style={{ fontSize: '12px', color: '#a1a1aa', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Subscription Status</p>
         {status === 'active' && (
           <div>
             <p style={{ color: '#16a34a', fontSize: '17px', fontWeight: '500', marginBottom: '6px' }}>Active — $5/month</p>
             <p style={{ color: '#71717a', fontSize: '14px', marginBottom: '16px' }}>Your subscription is active. Thank you!</p>
-            <button onClick={handleCancel} disabled={cancelling} style={{ background: 'none', border: '0.5px solid #fca5a5', color: '#dc2626', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
+            <button onClick={handleCancel} disabled={cancelling} style={{ background: 'none', border: '0.5px solid #fca5a5', color: '#dc2626', padding: '8px 16px', borderRadius: '2px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
               {cancelling ? 'Cancelling...' : 'Cancel Subscription'}
             </button>
           </div>
@@ -454,7 +454,7 @@ function AccountView({ onBack }: { onBack: () => void }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-        <button onClick={onBack} style={{ background: '#fff', border: '0.5px solid #e4e4e7', color: '#52525b', padding: '7px 14px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <button onClick={onBack} style={{ background: '#fff', border: '0.5px solid #e4e4e7', color: '#52525b', padding: '7px 14px', borderRadius: '2px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
           <ArrowLeft size={15} /> Back
         </button>
         <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', margin: 0 }}>Account Settings</h2>

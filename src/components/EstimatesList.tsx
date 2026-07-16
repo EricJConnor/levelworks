@@ -192,7 +192,7 @@ export const EstimatesList: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-xs h-8 text-blue-300 border-blue-400/40 hover:bg-blue-400/10"
+                    className="text-xs h-8 bg-transparent text-blue-300 border-blue-400/40 hover:bg-blue-400/10"
                     onClick={() => handleViewEstimate(estimate)}
                     disabled={!estimate.viewToken}
                   >
@@ -203,7 +203,7 @@ export const EstimatesList: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-xs h-8 text-gray-200 border-white/20 hover:bg-white/10"
+                    className="text-xs h-8 bg-transparent text-gray-200 border-white/20 hover:bg-white/10"
                     onClick={() => handleCopyLink(estimate)}
                     disabled={!estimate.viewToken}
                   >
@@ -211,7 +211,7 @@ export const EstimatesList: React.FC = () => {
                     {copiedId === estimate.id ? 'Copied!' : 'Copy Link'}
                   </Button>
 
-                  <Button size="sm" variant="outline" className="text-xs h-8 text-gray-200 border-white/20 hover:bg-white/10" onClick={() => setEditEstimate(estimate)}>
+                  <Button size="sm" variant="outline" className="text-xs h-8 bg-transparent text-gray-200 border-white/20 hover:bg-white/10" onClick={() => setEditEstimate(estimate)}>
                     <Edit className="h-3 w-3 mr-1" />Edit
                   </Button>
                   {estimate.status === 'approved' && (
@@ -220,7 +220,7 @@ export const EstimatesList: React.FC = () => {
                     </Button>
                   )}
                   {(estimate.status === 'sent' || estimate.status === 'draft') && (
-                    <Button size="sm" variant="outline" className="text-xs h-8 text-gray-200 border-white/20 hover:bg-white/10" onClick={() => setResendEstimate(estimate)}>
+                    <Button size="sm" variant="outline" className="text-xs h-8 bg-transparent text-gray-200 border-white/20 hover:bg-white/10" onClick={() => setResendEstimate(estimate)}>
                       {estimate.status === 'draft' ? 'Send' : 'Resend'}
                     </Button>
                   )}

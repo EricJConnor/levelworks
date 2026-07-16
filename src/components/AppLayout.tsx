@@ -80,13 +80,13 @@ export const AppLayout: React.FC = () => {
   const handleNavClick = (view: View) => { setCurrentView(view); setMobileMenuOpen(false); };
 
   if (isAuthenticated === null || loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#c5d8f2' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #d8dee6 0%, #b9c4d1 45%, #ccd4de 100%)' }}>
       <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#3b82f6' }} />
     </div>
   );
 
   if (isAuthenticated === false) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#c5d8f2', padding: '16px' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #d8dee6 0%, #b9c4d1 45%, #ccd4de 100%)', padding: '16px' }}>
       <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', maxWidth: '400px', width: '100%', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
         <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', marginBottom: '8px' }}>Sign In Required</h2>
         <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '24px' }}>Please sign in to access LevelWorks.</p>
@@ -98,7 +98,7 @@ export const AppLayout: React.FC = () => {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#c5d8f2' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #d8dee6 0%, #b9c4d1 45%, #ccd4de 100%)' }}>
       <header style={{ background: '#1c1c1e', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 1px 0 rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>

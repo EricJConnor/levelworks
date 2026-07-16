@@ -145,22 +145,22 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section style={{ background: '#0a1f14', borderTop: '1px solid #1e4a2e', borderBottom: '1px solid #1e4a2e', padding: '60px 24px' }}>
+      <section style={{ background: '#0f1f3d', borderTop: '1px solid #1e3a5f', borderBottom: '1px solid #1e3a5f', padding: '60px 24px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.3)', borderRadius: '4px', padding: '6px 14px', marginBottom: '24px' }}>
-            <Repeat size={14} style={{ color: '#4ade80' }} />
-            <span style={{ color: '#4ade80', fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>A feature most contractor apps don't offer</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '4px', padding: '6px 14px', marginBottom: '24px' }}>
+            <Repeat size={14} style={{ color: '#3b82f6' }} />
+            <span style={{ color: '#3b82f6', fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>A feature most contractor apps don't offer</span>
           </div>
           <h2 style={{ fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '16px' }}>
             Automated Billing for Scheduled Service & Maintenance
           </h2>
-          <p style={{ color: '#a7f3d0', fontSize: '18px', maxWidth: '640px', lineHeight: '1.6', marginBottom: '32px' }}>
+          <p style={{ color: '#93c5fd', fontSize: '18px', maxWidth: '640px', lineHeight: '1.6', marginBottom: '32px' }}>
             Set up a client on a monthly plan once — HVAC contracts, lawn care, hosting & maintenance retainers, whatever you bill on repeat. We charge their card automatically every month, so you're not re-invoicing anyone by hand.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', maxWidth: '760px', width: '100%' }}>
             {['Bills clients monthly, automatically', 'Automatic retries on a failed card', 'Instant alert if a payment fails', 'Client marked "past due" on your dashboard'].map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '12px 16px' }}>
-                <Check size={16} style={{ color: '#4ade80', flexShrink: 0 }} />
+                <Check size={16} style={{ color: '#3b82f6', flexShrink: 0 }} />
                 <span style={{ color: '#e8e8e8', fontSize: '14px', fontWeight: '500' }}>{item}</span>
               </div>
             ))}

@@ -8,7 +8,7 @@ const corsHeaders = {
 }
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-  apiVersion: '2024-06-20',
+  apiVersion: '2026-06-24.dahlia',
   httpClient: Stripe.createFetchHttpClient(),
 })
 
@@ -94,7 +94,7 @@ serve(async (req) => {
             },
           ],
           default_payment_method: paymentMethodId,
-          expand: ['latest_invoice.payment_intent'],
+          expand: ['latest_invoice'],
         },
         { stripeAccount: stripeAccountId }
       )
@@ -113,16 +113,19 @@ serve(async (req) => {
         })
         .eq('id', clientId)
 
-      const latestInvoice = subscription.latest_invoice
-      const paymentIntent = typeof latestInvoice === 'object' ? latestInvoice?.payment_intent : undefined
-      const requiresAction = typeof paymentIntent === 'object' && paymentIntent?.status === 'requires_action'
+      // Newer Stripe API versions (Basil and later) put the first invoice's
+      // confirmation client_secret directly on the invoice, not on a nested
+      // payment_intent field.
+      const latestInvoice = subscription.latest_invoice as any
+      const clientSecret = typeof latestInvoice === 'object' ? latestInvoice?.confirmation_secret?.client_secret : undefined
+      const requiresAction = billingStatus !== 'current' && !!clientSecret
 
       return json({
         success: true,
         subscriptionId: subscription.id,
         status: subscription.status,
         requiresAction,
-        clientSecret: requiresAction && typeof paymentIntent === 'object' ? paymentIntent.client_secret : undefined,
+        clientSecret: requiresAction ? clientSecret : undefined,
       })
     }
 

@@ -6,7 +6,7 @@ import Stripe from 'npm:stripe@17.5.0'
 // Stripe posts here directly, so this endpoint can't require a Supabase user JWT.
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
-  apiVersion: '2024-06-20',
+  apiVersion: '2026-06-24.dahlia',
   httpClient: Stripe.createFetchHttpClient(),
 })
 const webhookSecret = Deno.env.get('STRIPE_RECURRING_WEBHOOK_SECRET') ?? ''
@@ -16,6 +16,14 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 const admin = createClient(supabaseUrl, serviceKey)
+
+// Basil and later API versions moved the subscription id off the top-level
+// invoice.subscription field and into invoice.parent.subscription_details.subscription.
+// Check both spots so this keeps working regardless of exact pinned version.
+const getInvoiceSubscriptionId = (invoice: Stripe.Invoice): string | null => {
+  const anyInvoice = invoice as any
+  return anyInvoice.parent?.subscription_details?.subscription ?? anyInvoice.subscription ?? null
+}
 
 const escapeHtml = (s: string) =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -122,13 +130,13 @@ serve(async (req) => {
     switch (event.type) {
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
-        const subscriptionId = invoice.subscription as string | null
+        const subscriptionId = getInvoiceSubscriptionId(invoice)
         if (subscriptionId) await markPastDue(subscriptionId)
         break
       }
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice
-        const subscriptionId = invoice.subscription as string | null
+        const subscriptionId = getInvoiceSubscriptionId(invoice)
         if (subscriptionId) await markCurrent(subscriptionId)
         break
       }

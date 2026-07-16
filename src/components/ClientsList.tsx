@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import { useData, Client } from '@/contexts/DataContext';
+import { useProfile } from '@/contexts/ProfileContext';
+import { RecurringBillingPanel } from './RecurringBillingPanel';
 import { toast } from '@/components/ui/use-toast';
 import { X, Mail, Phone, MapPin, Plus } from 'lucide-react';
 
@@ -11,10 +13,12 @@ interface ClientsListProps {
   onAddClient: (client: Omit<Client, 'id'>) => void;
   onViewClient?: (client: Client) => void;
   onCreateEstimate?: () => void;
+  onConnectStripe?: () => void;
 }
 
-export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, onCreateEstimate }) => {
-  const { deleteClient, updateClient, estimates } = useData();
+export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, onCreateEstimate, onConnectStripe }) => {
+  const { deleteClient, updateClient, refreshClients, estimates } = useData();
+  const { profile } = useProfile();
   const [showAddClient, setShowAddClient] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -54,6 +58,15 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
     return estimates.filter(e => e.clientName?.toLowerCase() === clientName.toLowerCase());
   };
 
+  // Pick up billing status changes that landed via the Stripe webhook since the last load.
+  useEffect(() => { refreshClients(); }, []);
+
+  const handleClientUpdated = (updates: Partial<Client>) => {
+    if (!selectedClient) return;
+    updateClient(selectedClient.id, updates);
+    setSelectedClient(prev => (prev ? { ...prev, ...updates } : prev));
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
@@ -79,7 +92,12 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#18181b', margin: '0 0 4px' }} className="truncate">{client.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#18181b', margin: '0 0 4px' }} className="truncate">{client.name}</h3>
+                    {client.billingStatus === 'past_due' && (
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 whitespace-nowrap">Past Due</span>
+                    )}
+                  </div>
                   {client.email && <p style={{ fontSize: '13px', color: '#71717a', margin: '0 0 2px' }} className="truncate">{client.email}</p>}
                   {client.phone && <p style={{ fontSize: '13px', color: '#71717a', margin: 0 }}>{client.phone}</p>}
                   <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid #e4e4e7', display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
@@ -130,6 +148,26 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
                 )}
                 {!selectedClient.email && !selectedClient.phone && !selectedClient.address && (
                   <p className="text-sm text-gray-400">No contact details saved.</p>
+                )}
+              </div>
+
+              <div>
+                <p className="text-xs text-gray-500 font-semibold uppercase mb-2">Recurring Billing</p>
+                {!selectedClient.email ? (
+                  <p className="text-sm text-gray-400 bg-gray-50 rounded-lg p-4">Add an email address for this client to enable recurring billing.</p>
+                ) : profile?.stripe_account_id ? (
+                  <RecurringBillingPanel
+                    client={selectedClient}
+                    stripeAccountId={profile.stripe_account_id}
+                    onUpdated={handleClientUpdated}
+                  />
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-500">
+                    Connect your Stripe account to enable recurring billing.
+                    {onConnectStripe && (
+                      <button onClick={onConnectStripe} className="block mt-2 text-blue-600 font-semibold hover:underline">Connect Stripe →</button>
+                    )}
+                  </div>
                 )}
               </div>
 

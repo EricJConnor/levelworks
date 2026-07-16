@@ -38,3 +38,33 @@ export const getStripePromise = async (): Promise<Stripe | null> => {
 
 // For backwards compatibility
 export const stripePromise = getStripePromise();
+
+const accountStripePromiseCache = new Map<string, Promise<Stripe | null>>();
+
+// Fetch a Stripe instance scoped to a connected account (Stripe Connect), so
+// SetupIntents/PaymentIntents created on that account can be confirmed client-side.
+export const getStripePromiseForAccount = (stripeAccountId: string): Promise<Stripe | null> => {
+  const cached = accountStripePromiseCache.get(stripeAccountId);
+  if (cached) return cached;
+
+  const promise = (async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-stripe-config', {
+        body: {}
+      });
+
+      if (error || !data?.publishableKey) {
+        console.error('Stripe config error:', error);
+        return null;
+      }
+
+      return await loadStripe(data.publishableKey, { stripeAccount: stripeAccountId });
+    } catch (err) {
+      console.error('Failed to load Stripe for connected account:', err);
+      return null;
+    }
+  })();
+
+  accountStripePromiseCache.set(stripeAccountId, promise);
+  return promise;
+};

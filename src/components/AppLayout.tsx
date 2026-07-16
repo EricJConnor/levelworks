@@ -41,6 +41,12 @@ export const AppLayout: React.FC = () => {
   const { profile } = useProfile();
   const mountedRef = useRef(true);
 
+  const handleConnectStripe = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    window.location.href = `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=ca_T3ss3sYTBR7iYQrEPRYmsQYyo8BI5XVA&scope=read_write&redirect_uri=https://levelworks.org/stripe-connect-callback&state=${user.id}`;
+  };
+
   useEffect(() => {
     mountedRef.current = true;
     const checkAuth = async () => {
@@ -206,16 +212,12 @@ export const AppLayout: React.FC = () => {
             onViewNotes={() => setCurrentView('notes')}
             onViewEstimates={() => setCurrentView('estimates')}
             onViewEstimate={(estimate) => { setSelectedEstimate(estimate); setShowEstimate(true); }}
-            onConnectStripe={async () => {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (!user) return;
-              window.location.href = `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=ca_T3ss3sYTBR7iYQrEPRYmsQYyo8BI5XVA&scope=read_write&redirect_uri=https://levelworks.org/stripe-connect-callback&state=${user.id}`;
-            }}
+            onConnectStripe={handleConnectStripe}
             stripeConnected={!!profile?.stripe_account_id}
           />
         )}
         {currentView === 'notifications' && <NotificationSettings />}
-        {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} />}
+        {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} onConnectStripe={handleConnectStripe} />}
         {currentView === 'estimates' && <EstimatesList />}
         {currentView === 'photos' && <PhotosHub onOpenEstimate={(est) => { setSelectedEstimate(est); setShowEstimate(true); }} />}
         {currentView === 'invoices' && <InvoicesList onCreateInvoice={() => { setInvoiceInitialData(null); setShowInvoice(true); }} />}

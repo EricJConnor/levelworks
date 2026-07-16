@@ -3,7 +3,11 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 
 export interface Job { id: string; clientName: string; projectType: string; status: 'draft' | 'sent' | 'approved' | 'in-progress' | 'completed'; total: number; date: string; }
-export interface Client { id: string; name: string; email: string; phone: string; address: string; totalJobs: number; totalValue: number; }
+export interface Client {
+  id: string; name: string; email: string; phone: string; address: string; totalJobs: number; totalValue: number;
+  billingEnabled?: boolean; billingAmount?: number; billingInterval?: string;
+  billingStatus?: 'none' | 'current' | 'past_due' | 'canceled'; lastPaymentFailedAt?: string;
+}
 export interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; }
 export interface Estimate { 
   id: string; clientName: string; clientEmail: string; clientPhone?: string; projectName: string; 
@@ -17,6 +21,7 @@ interface DataContextType {
   jobs: Job[]; clients: Client[]; estimates: Estimate[]; loading: boolean;
   addJob: (job: Omit<Job, 'id'>) => Promise<void>; updateJob: (id: string, job: Partial<Job>) => Promise<void>; deleteJob: (id: string) => Promise<void>;
   addClient: (client: Omit<Client, 'id'>) => Promise<void>; updateClient: (id: string, client: Partial<Client>) => Promise<void>; deleteClient: (id: string) => Promise<void>;
+  refreshClients: () => Promise<void>;
   addEstimate: (estimate: Omit<Estimate, 'id' | 'createdAt'>) => Promise<{ id: string; viewToken: string }>; updateEstimate: (id: string, updates: Partial<Estimate>) => Promise<void>; deleteEstimate: (id: string) => Promise<void>;
   refreshEstimates: () => Promise<void>;
 }
@@ -185,6 +190,16 @@ const formatLineItemsForDb = (items: any): object[] => {
 
 
 
+const mapDbToClient = (c: any): Client => ({
+  id: c.id, name: c.name, email: c.email, phone: c.phone, address: c.address,
+  totalJobs: c.total_jobs, totalValue: c.total_value,
+  billingEnabled: !!c.billing_enabled,
+  billingAmount: c.billing_amount != null ? Number(c.billing_amount) : 0,
+  billingInterval: c.billing_interval || 'month',
+  billingStatus: c.billing_status || 'none',
+  lastPaymentFailedAt: c.last_payment_failed_at || undefined,
+});
+
 const mapDbToEstimate = (e: any): Estimate => ({
   id: e.id, 
   clientName: e.client_name || '', 
@@ -224,9 +239,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         supabase.from('jobs').select('*').eq('user_id', user.id)
       ]);
       if (estRes.data) setEstimates(estRes.data.map(mapDbToEstimate));
-      if (cliRes.data) setClients(cliRes.data.map(c => ({ id: c.id, name: c.name, email: c.email, phone: c.phone, address: c.address, totalJobs: c.total_jobs, totalValue: c.total_value })));
+      if (cliRes.data) setClients(cliRes.data.map(mapDbToClient));
       if (jobRes.data) setJobs(jobRes.data.map(j => ({ id: j.id, clientName: j.client_name, projectType: j.project_type, status: j.status, total: j.total, date: j.date })));
     } catch (err) { console.error('Load error:', err); } finally { setLoading(false); }
+  };
+
+  const refreshClients = async () => {
+    const { data: { user } } = await supabase.auth.getUser(); if (!user) return;
+    const { data } = await supabase.from('clients').select('*').eq('user_id', user.id);
+    if (data) setClients(data.map(mapDbToClient));
   };
 
   const refreshEstimates = async () => {
@@ -484,7 +505,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (u.address !== undefined) db.address = u.address;
     if (u.totalJobs !== undefined) db.total_jobs = u.totalJobs;
     if (u.totalValue !== undefined) db.total_value = u.totalValue;
-    await supabase.from('clients').update(db).eq('id', id); 
+    if (u.billingEnabled !== undefined) db.billing_enabled = u.billingEnabled;
+    if (u.billingAmount !== undefined) db.billing_amount = u.billingAmount;
+    if (u.billingInterval !== undefined) db.billing_interval = u.billingInterval;
+    if (u.billingStatus !== undefined) db.billing_status = u.billingStatus;
+    if (Object.keys(db).length > 0) await supabase.from('clients').update(db).eq('id', id);
     setClients(p => p.map(c => c.id === id ? { ...c, ...u } : c)); 
   };
   
@@ -527,7 +552,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <DataContext.Provider value={{ 
       jobs, clients, estimates, loading, 
       addJob, updateJob, deleteJob, 
-      addClient, updateClient, deleteClient, 
+      addClient, updateClient, deleteClient, refreshClients, 
       addEstimate, updateEstimate, deleteEstimate, 
       refreshEstimates 
     }}>

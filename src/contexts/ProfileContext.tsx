@@ -9,6 +9,7 @@ export interface Profile {
   phone_number: string;
   business_address: string;
   profile_photo_url: string;
+  stripe_account_id?: string;
 }
 
 interface ProfileContextType {

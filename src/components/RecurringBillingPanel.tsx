@@ -116,7 +116,7 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <label className="block text-sm font-semibold mb-2">Amount ($)</label>
+        <label className="block text-sm font-semibold mb-2 text-gray-200">Amount ($)</label>
         <input
           type="number" min="1" step="0.01" value={amount} required
           onChange={(e) => setAmount(e.target.value)}
@@ -125,7 +125,7 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
         />
       </div>
       <div>
-        <label className="block text-sm font-semibold mb-2">Billing schedule</label>
+        <label className="block text-sm font-semibold mb-2 text-gray-200">Billing schedule</label>
         <select
           value={schedule} onChange={(e) => setSchedule(e.target.value)}
           className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none bg-white"
@@ -136,8 +136,8 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
         </select>
       </div>
       <div>
-        <label className="block text-sm font-semibold mb-2">Card</label>
-        <div className="border-2 border-gray-300 rounded-lg p-3 focus-within:border-blue-500">
+        <label className="block text-sm font-semibold mb-2 text-gray-200">Card</label>
+        <div className="border-2 border-gray-300 rounded-lg p-3 focus-within:border-blue-500 bg-white">
           <CardElement options={cardElementOptions} />
         </div>
       </div>
@@ -179,25 +179,25 @@ export function RecurringBillingPanel({ client, stripeAccountId, onUpdated }: Pr
 
   if (client.billingEnabled) {
     return (
-      <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+      <div className="bg-white/5 rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-500">Billed every {cadenceLabel(client.billingInterval, client.billingIntervalCount)}</p>
-            <p className="text-lg font-semibold">{formatBillingLine(Number(client.billingAmount || 0), client.billingInterval, client.billingIntervalCount)}</p>
+            <p className="text-sm text-gray-400">Billed every {cadenceLabel(client.billingInterval, client.billingIntervalCount)}</p>
+            <p className="text-lg font-semibold text-white">{formatBillingLine(Number(client.billingAmount || 0), client.billingInterval, client.billingIntervalCount)}</p>
           </div>
           <span className={`text-xs px-2 py-1 rounded-full font-semibold ${client.billingStatus === 'past_due' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
             {client.billingStatus === 'past_due' ? 'Past Due' : 'Current'}
           </span>
         </div>
         {client.billingStatus === 'past_due' && (
-          <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 rounded-lg p-3">
+          <div className="flex items-start gap-2 text-sm text-red-300 bg-red-500/10 rounded-lg p-3">
             <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <span>Stripe couldn't collect the last payment and is retrying automatically. Reach out to the customer, or cancel billing below.</span>
           </div>
         )}
         <button
           onClick={handleCancel} disabled={canceling}
-          className="w-full text-sm text-red-600 border-2 border-red-200 rounded-lg py-2 font-semibold hover:bg-red-50 disabled:opacity-60"
+          className="w-full text-sm text-red-400 border-2 border-red-400/30 rounded-lg py-2 font-semibold hover:bg-red-400/10 disabled:opacity-60"
         >
           {canceling ? 'Canceling...' : 'Cancel Recurring Billing'}
         </button>
@@ -210,7 +210,7 @@ export function RecurringBillingPanel({ client, stripeAccountId, onUpdated }: Pr
   }
 
   if (stripe === null) {
-    return <p className="text-sm text-gray-400 bg-gray-50 rounded-lg p-4">Payment processing is currently unavailable.</p>;
+    return <p className="text-sm text-gray-400 bg-white/5 rounded-lg p-4">Payment processing is currently unavailable.</p>;
   }
 
   return (

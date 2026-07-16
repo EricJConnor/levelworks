@@ -75,9 +75,9 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
       </div>
 
       {clients.length === 0 ? (
-        <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
-          <Mail style={{ width: '40px', height: '40px', color: '#d4d4d8', margin: '0 auto 12px' }} />
-          <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '16px' }}>No clients yet. Add your first client!</p>
+        <div style={{ background: '#1c1c1e', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+          <Mail style={{ width: '40px', height: '40px', color: '#52525b', margin: '0 auto 12px' }} />
+          <p style={{ color: '#a1a1aa', fontSize: '15px', marginBottom: '16px' }}>No clients yet. Add your first client!</p>
           <button onClick={() => { setEditingClient(null); setNewClient({ name: '', email: '', phone: '', address: '' }); setShowAddClient(true); }} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Add Your First Client</button>
         </div>
       ) : (
@@ -86,28 +86,28 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
             <div
               key={client.id}
               onClick={() => setSelectedClient(client)}
-              style={{ background: '#fff', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid #e4e4e7', cursor: 'pointer' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = '#a1a1aa')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#e4e4e7')}
+              style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#18181b', margin: '0 0 4px' }} className="truncate">{client.name}</h3>
+                    <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#fff', margin: '0 0 4px' }} className="truncate">{client.name}</h3>
                     {client.billingStatus === 'past_due' && (
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 whitespace-nowrap">Past Due</span>
                     )}
                   </div>
-                  {client.email && <p style={{ fontSize: '13px', color: '#71717a', margin: '0 0 2px' }} className="truncate">{client.email}</p>}
-                  {client.phone && <p style={{ fontSize: '13px', color: '#71717a', margin: 0 }}>{client.phone}</p>}
-                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid #e4e4e7', display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                    <span style={{ color: '#71717a' }}>{getClientEstimates(client.name).length} estimates</span>
-                    <span style={{ fontWeight: '600', color: '#3b82f6' }}>${client.totalValue.toLocaleString()}</span>
+                  {client.email && <p style={{ fontSize: '13px', color: '#a1a1aa', margin: '0 0 2px' }} className="truncate">{client.email}</p>}
+                  {client.phone && <p style={{ fontSize: '13px', color: '#a1a1aa', margin: 0 }}>{client.phone}</p>}
+                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                    <span style={{ color: '#a1a1aa' }}>{getClientEstimates(client.name).length} estimates</span>
+                    <span style={{ fontWeight: '600', color: '#60a5fa' }}>${client.totalValue.toLocaleString()}</span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-1 ml-3">
-                  <button onClick={(e) => handleEdit(client, e)} style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '13px', padding: '6px', cursor: 'pointer' }}>Edit</button>
-                  <button onClick={(e) => handleDelete(client.id, e)} style={{ background: 'none', border: 'none', color: '#dc2626', fontSize: '13px', padding: '6px', cursor: 'pointer' }}>Delete</button>
+                  <button onClick={(e) => handleEdit(client, e)} style={{ background: 'none', border: 'none', color: '#a1a1aa', fontSize: '13px', padding: '6px', cursor: 'pointer' }}>Edit</button>
+                  <button onClick={(e) => handleDelete(client.id, e)} style={{ background: 'none', border: 'none', color: '#f87171', fontSize: '13px', padding: '6px', cursor: 'pointer' }}>Delete</button>
                 </div>
               </div>
             </div>
@@ -117,44 +117,44 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
 
       {selectedClient && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-3">
-          <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-auto shadow-2xl">
-            <div className="text-white p-4 flex justify-between items-center rounded-t-xl sticky top-0" style={{background: '#1c1c1e'}}>
+          <div className="rounded-xl w-full max-w-lg max-h-[90vh] overflow-auto shadow-2xl" style={{ background: '#1c1c1e' }}>
+            <div className="text-white p-4 flex justify-between items-center rounded-t-xl sticky top-0" style={{background: '#1c1c1e', borderBottom: '0.5px solid rgba(255,255,255,0.1)'}}>
               <h2 className="text-lg font-bold">{selectedClient.name}</h2>
-              <button onClick={() => setSelectedClient(null)} className="p-2 hover:bg-blue-700 rounded-lg">
+              <button onClick={() => setSelectedClient(null)} className="p-2 hover:bg-white/10 rounded-lg">
                 <X size={22} />
               </button>
             </div>
 
             <div className="p-5 space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <p className="text-xs text-gray-500 font-semibold uppercase">Contact Info</p>
+              <div className="bg-white/5 rounded-lg p-4 space-y-3">
+                <p className="text-xs text-gray-400 font-semibold uppercase">Contact Info</p>
                 {selectedClient.email && (
                   <div className="flex items-center gap-3">
-                    <Mail size={16} className="text-blue-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">{selectedClient.email}</span>
+                    <Mail size={16} className="text-blue-400 flex-shrink-0" />
+                    <span className="text-sm text-gray-200">{selectedClient.email}</span>
                   </div>
                 )}
                 {selectedClient.phone && (
                   <div className="flex items-center gap-3">
-                    <Phone size={16} className="text-blue-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">{selectedClient.phone}</span>
+                    <Phone size={16} className="text-blue-400 flex-shrink-0" />
+                    <span className="text-sm text-gray-200">{selectedClient.phone}</span>
                   </div>
                 )}
                 {selectedClient.address && (
                   <div className="flex items-center gap-3">
-                    <MapPin size={16} className="text-blue-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">{selectedClient.address}</span>
+                    <MapPin size={16} className="text-blue-400 flex-shrink-0" />
+                    <span className="text-sm text-gray-200">{selectedClient.address}</span>
                   </div>
                 )}
                 {!selectedClient.email && !selectedClient.phone && !selectedClient.address && (
-                  <p className="text-sm text-gray-400">No contact details saved.</p>
+                  <p className="text-sm text-gray-500">No contact details saved.</p>
                 )}
               </div>
 
               <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase mb-2">Recurring Billing</p>
+                <p className="text-xs text-gray-400 font-semibold uppercase mb-2">Recurring Billing</p>
                 {!selectedClient.email ? (
-                  <p className="text-sm text-gray-400 bg-gray-50 rounded-lg p-4">Add an email address for this client to enable recurring billing.</p>
+                  <p className="text-sm text-gray-500 bg-white/5 rounded-lg p-4">Add an email address for this client to enable recurring billing.</p>
                 ) : profile?.stripe_account_id ? (
                   <RecurringBillingPanel
                     client={selectedClient}
@@ -162,29 +162,29 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
                     onUpdated={handleClientUpdated}
                   />
                 ) : (
-                  <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-500">
+                  <div className="bg-white/5 rounded-lg p-4 text-sm text-gray-400">
                     Connect your Stripe account to enable recurring billing.
                     {onConnectStripe && (
-                      <button onClick={onConnectStripe} className="block mt-2 text-blue-600 font-semibold hover:underline">Connect Stripe →</button>
+                      <button onClick={onConnectStripe} className="block mt-2 text-blue-400 font-semibold hover:underline">Connect Stripe →</button>
                     )}
                   </div>
                 )}
               </div>
 
               <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase mb-2">Estimates</p>
+                <p className="text-xs text-gray-400 font-semibold uppercase mb-2">Estimates</p>
                 {getClientEstimates(selectedClient.name).length === 0 ? (
-                  <p className="text-sm text-gray-400 bg-gray-50 rounded-lg p-4">No estimates yet for this client.</p>
+                  <p className="text-sm text-gray-500 bg-white/5 rounded-lg p-4">No estimates yet for this client.</p>
                 ) : (
                   <div className="space-y-2">
                     {getClientEstimates(selectedClient.name).map(est => (
-                      <div key={est.id} className="flex justify-between items-center bg-gray-50 rounded-lg p-3">
+                      <div key={est.id} className="flex justify-between items-center bg-white/5 rounded-lg p-3">
                         <div>
-                          <p className="font-medium text-sm text-gray-800">{est.projectName}</p>
-                          <p className="text-xs text-gray-500">{new Date(est.createdAt).toLocaleDateString()}</p>
+                          <p className="font-medium text-sm text-gray-200">{est.projectName}</p>
+                          <p className="text-xs text-gray-400">{new Date(est.createdAt).toLocaleDateString()}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-sm">${est.total.toFixed(2)}</p>
+                          <p className="font-semibold text-sm text-white">${est.total.toFixed(2)}</p>
                           <span className={`text-xs px-2 py-0.5 rounded-full ${
                             est.status === 'approved' ? 'bg-green-100 text-green-700' :
                             est.status === 'sent' ? 'bg-blue-100 text-blue-700' :
@@ -200,7 +200,7 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => { setSelectedClient(null); setEditingClient(selectedClient); setNewClient({ name: selectedClient.name, email: selectedClient.email, phone: selectedClient.phone, address: selectedClient.address }); setShowAddClient(true); }}
-                  className="flex-1 px-4 py-3 border-2 border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 font-semibold text-sm"
+                  className="flex-1 px-4 py-3 border-2 border-blue-400 text-blue-400 rounded-lg hover:bg-blue-400/10 font-semibold text-sm"
                 >
                   Edit Client
                 </button>
@@ -219,26 +219,26 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
       )}
 
       <Dialog open={showAddClient} onOpenChange={setShowAddClient}>
-        <DialogContent className="mx-2 max-w-md p-0 overflow-hidden">
+        <DialogContent className="mx-2 max-w-md p-0 overflow-hidden bg-[#1c1c1e] border-white/10">
           <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
             <DialogTitle className="text-lg font-bold">{editingClient ? 'Edit Client' : 'Add Client'}</DialogTitle>
             <button onClick={() => setShowAddClient(false)} className="p-1 hover:bg-blue-700 rounded"><X size={20} /></button>
           </div>
           <form onSubmit={handleSubmit} className="p-5 space-y-4">
             <div>
-              <label className="block text-sm font-semibold mb-2">Name *</label>
+              <label className="block text-sm font-semibold mb-2 text-gray-200">Name *</label>
               <input placeholder="Client name" value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})} required className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2">Email</label>
+              <label className="block text-sm font-semibold mb-2 text-gray-200">Email</label>
               <input type="email" placeholder="client@email.com" value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2">Phone</label>
+              <label className="block text-sm font-semibold mb-2 text-gray-200">Phone</label>
               <input placeholder="(555) 123-4567" value={newClient.phone} onChange={e => setNewClient({...newClient, phone: e.target.value})} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2">Address</label>
+              <label className="block text-sm font-semibold mb-2 text-gray-200">Address</label>
               <input placeholder="123 Main St" value={newClient.address} onChange={e => setNewClient({...newClient, address: e.target.value})} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none" />
             </div>
             <Button type="submit" className="w-full py-4 text-base">{editingClient ? 'Update' : 'Add Client'}</Button>

@@ -421,27 +421,27 @@ function BillingSettings() {
 
   return (
     <div style={{ maxWidth: '480px' }}>
-      <div style={{ background: '#fff', borderRadius: '12px', padding: '20px', border: '0.5px solid #e4e4e7' }}>
+      <div style={{ background: '#1c1c1e', borderRadius: '12px', padding: '20px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
         <p style={{ fontSize: '12px', color: '#a1a1aa', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Subscription Status</p>
         {status === 'active' && (
           <div>
-            <p style={{ color: '#16a34a', fontSize: '17px', fontWeight: '500', marginBottom: '6px' }}>Active — $5/month</p>
-            <p style={{ color: '#71717a', fontSize: '14px', marginBottom: '16px' }}>Your subscription is active. Thank you!</p>
-            <button onClick={handleCancel} disabled={cancelling} style={{ background: 'none', border: '0.5px solid #fca5a5', color: '#dc2626', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
+            <p style={{ color: '#4ade80', fontSize: '17px', fontWeight: '500', marginBottom: '6px' }}>Active — $5/month</p>
+            <p style={{ color: '#a1a1aa', fontSize: '14px', marginBottom: '16px' }}>Your subscription is active. Thank you!</p>
+            <button onClick={handleCancel} disabled={cancelling} style={{ background: 'none', border: '0.5px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
               {cancelling ? 'Cancelling...' : 'Cancel Subscription'}
             </button>
           </div>
         )}
         {status === 'trial' && (
           <div>
-            <p style={{ color: '#1d4ed8', fontSize: '17px', fontWeight: '500', marginBottom: '4px' }}>Free Trial</p>
-            <p style={{ color: '#71717a', fontSize: '14px' }}>{daysLeft !== null ? `${daysLeft} days remaining` : 'Trial active'}</p>
+            <p style={{ color: '#60a5fa', fontSize: '17px', fontWeight: '500', marginBottom: '4px' }}>Free Trial</p>
+            <p style={{ color: '#a1a1aa', fontSize: '14px' }}>{daysLeft !== null ? `${daysLeft} days remaining` : 'Trial active'}</p>
           </div>
         )}
         {status === 'cancelled' && (
           <div>
-            <p style={{ color: '#71717a', fontSize: '17px', fontWeight: '500', marginBottom: '4px' }}>Cancelled</p>
-            <p style={{ color: '#71717a', fontSize: '14px' }}>Your subscription has been cancelled.</p>
+            <p style={{ color: '#a1a1aa', fontSize: '17px', fontWeight: '500', marginBottom: '4px' }}>Cancelled</p>
+            <p style={{ color: '#a1a1aa', fontSize: '14px' }}>Your subscription has been cancelled.</p>
           </div>
         )}
         {status === null && <p style={{ color: '#a1a1aa', fontSize: '14px' }}>Loading...</p>}
@@ -454,7 +454,7 @@ function AccountView({ onBack }: { onBack: () => void }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-        <button onClick={onBack} style={{ background: '#fff', border: '0.5px solid #e4e4e7', color: '#52525b', padding: '7px 14px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <button onClick={onBack} style={{ background: '#1c1c1e', border: '0.5px solid rgba(255,255,255,0.1)', color: '#e4e4e7', padding: '7px 14px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
           <ArrowLeft size={15} /> Back
         </button>
         <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', margin: 0 }}>Account Settings</h2>

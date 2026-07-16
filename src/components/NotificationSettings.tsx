@@ -73,19 +73,19 @@ export function NotificationSettings() {
       </TabsList>
 
       <TabsContent value="push">
-        <Card>
+        <Card className="bg-[#1c1c1e] border-white/10 text-white">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {pushEnabled ? <Bell className="h-5 w-5 text-green-500" /> : <BellOff className="h-5 w-5" />}
+            <CardTitle className="flex items-center gap-2 text-white">
+              {pushEnabled ? <Bell className="h-5 w-5 text-green-400" /> : <BellOff className="h-5 w-5" />}
               Push Notifications
             </CardTitle>
-            <CardDescription>Get instant alerts on your device</CardDescription>
+            <CardDescription className="text-gray-400">Get instant alerts on your device</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
               <div>
-                <p className="font-medium">Enable Push Notifications</p>
-                <p className="text-sm text-muted-foreground">Receive alerts when estimates are viewed, signed, or payments received</p>
+                <p className="font-medium text-white">Enable Push Notifications</p>
+                <p className="text-sm text-gray-400">Receive alerts when estimates are viewed, signed, or payments received</p>
               </div>
               <Button onClick={togglePushNotifications} disabled={pushLoading} variant={pushEnabled ? 'destructive' : 'default'}>
                 {pushLoading ? 'Processing...' : pushEnabled ? 'Disable' : 'Enable'}
@@ -93,11 +93,11 @@ export function NotificationSettings() {
             </div>
             {pushEnabled && (
               <div className="space-y-3">
-                <h4 className="font-medium">You'll receive notifications for:</h4>
+                <h4 className="font-medium text-white">You'll receive notifications for:</h4>
                 <div className="grid gap-2">
                   {['Estimate Viewed', 'Estimate Signed', 'Payment Received', 'Invoice Paid', 'Referral Bonus', 'New Messages'].map(item => (
-                    <div key={item} className="flex items-center gap-2 text-sm">
-                      <Bell className="h-4 w-4 text-green-500" />
+                    <div key={item} className="flex items-center gap-2 text-sm text-gray-200">
+                      <Bell className="h-4 w-4 text-green-400" />
                       {item}
                       {item === 'Referral Bonus' && <Badge variant="secondary" className="text-xs ml-2">New</Badge>}
                     </div>
@@ -111,17 +111,17 @@ export function NotificationSettings() {
       </TabsContent>
 
       <TabsContent value="preferences">
-        <Card>
+        <Card className="bg-[#1c1c1e] border-white/10 text-white">
           <CardHeader>
-            <CardTitle>Email Preferences</CardTitle>
-            <CardDescription>Choose which email notifications to receive</CardDescription>
+            <CardTitle className="text-white">Email Preferences</CardTitle>
+            <CardDescription className="text-gray-400">Choose which email notifications to receive</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {preferences.map((pref) => (
-              <div key={pref.eventType} className="flex items-center justify-between p-4 border rounded-lg">
-                <Label className="text-base font-medium capitalize">{pref.eventType.replace(/_/g, ' ')}</Label>
+              <div key={pref.eventType} className="flex items-center justify-between p-4 border border-white/10 rounded-lg">
+                <Label className="text-base font-medium capitalize text-gray-200">{pref.eventType.replace(/_/g, ' ')}</Label>
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
+                  <Mail className="h-4 w-4 text-gray-400" />
                   <Switch checked={pref.emailEnabled} onCheckedChange={(v) => updatePreference(pref.eventType, 'emailEnabled', v)} />
                 </div>
               </div>

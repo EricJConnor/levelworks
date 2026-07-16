@@ -145,35 +145,35 @@ export const EstimatesList: React.FC = () => {
       </div>
 
       {filteredEstimates.length === 0 ? (
-        <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
-          <FileText style={{ width: '40px', height: '40px', color: '#d4d4d8', margin: '0 auto 12px' }} />
-          <p style={{ color: '#71717a', fontSize: '15px' }}>No estimates found.</p>
+        <div style={{ background: '#1c1c1e', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+          <FileText style={{ width: '40px', height: '40px', color: '#52525b', margin: '0 auto 12px' }} />
+          <p style={{ color: '#a1a1aa', fontSize: '15px' }}>No estimates found.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {filteredEstimates.map((estimate) => (
-            <div key={estimate.id} style={{ background: '#fff', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid #e4e4e7' }}>
+            <div key={estimate.id} style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-base md:text-lg font-semibold">EST-{estimate.id.slice(-6)}</h3>
+                  <h3 className="text-base md:text-lg font-semibold text-white">EST-{estimate.id.slice(-6)}</h3>
                   <Badge className={`${getStatusColor(estimate.status)} text-xs`}>{estimate.status.toUpperCase()}</Badge>
                   {estimate.signedAt && <Badge className="bg-green-100 text-green-700 text-xs">Signed</Badge>}
                   {estimate.viewToken && (
-                    <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">
+                    <Badge variant="outline" className="text-xs text-blue-300 border-blue-400/40">
                       <ExternalLink className="w-3 h-3 mr-1" />
                       Has Link
                     </Badge>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs md:text-sm">
-                  <div><span className="text-gray-500">Client:</span> {estimate.clientName}</div>
-                  <div><span className="text-gray-500">Amount:</span> ${estimate.total.toLocaleString()}</div>
-                  <div><span className="text-gray-500">Project:</span> {estimate.projectName}</div>
-                  <div><span className="text-gray-500">Created:</span> {new Date(estimate.createdAt).toLocaleDateString()}</div>
+                <div className="grid grid-cols-2 gap-2 text-xs md:text-sm text-gray-200">
+                  <div><span className="text-gray-400">Client:</span> {estimate.clientName}</div>
+                  <div><span className="text-gray-400">Amount:</span> ${estimate.total.toLocaleString()}</div>
+                  <div><span className="text-gray-400">Project:</span> {estimate.projectName}</div>
+                  <div><span className="text-gray-400">Created:</span> {new Date(estimate.createdAt).toLocaleDateString()}</div>
                 </div>
-                
-                <div className="pt-2 border-t">
-                  <button onClick={() => handleExpand(estimate.id)} className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600">
+
+                <div className="pt-2 border-t border-white/10">
+                  <button onClick={() => handleExpand(estimate.id)} className="flex items-center gap-2 text-sm text-gray-300 hover:text-blue-400">
                     <ImageIcon className="w-4 h-4" />Photos ({estimatePhotos[estimate.id]?.length || 0})
                     {expandedEstimate === estimate.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
@@ -187,31 +187,31 @@ export const EstimatesList: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-2 pt-2 border-t">
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-white/10">
                   {/* View Estimate Button - Opens in new tab */}
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="text-xs h-8 text-blue-600 border-blue-300 hover:bg-blue-50" 
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-8 text-blue-300 border-blue-400/40 hover:bg-blue-400/10"
                     onClick={() => handleViewEstimate(estimate)}
                     disabled={!estimate.viewToken}
                   >
                     <Eye className="h-3 w-3 mr-1" />View
                   </Button>
-                  
+
                   {/* Copy Link Button */}
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="text-xs h-8" 
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-8 text-gray-200 border-white/20 hover:bg-white/10"
                     onClick={() => handleCopyLink(estimate)}
                     disabled={!estimate.viewToken}
                   >
                     <Copy className="h-3 w-3 mr-1" />
                     {copiedId === estimate.id ? 'Copied!' : 'Copy Link'}
                   </Button>
-                  
-                  <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => setEditEstimate(estimate)}>
+
+                  <Button size="sm" variant="outline" className="text-xs h-8 text-gray-200 border-white/20 hover:bg-white/10" onClick={() => setEditEstimate(estimate)}>
                     <Edit className="h-3 w-3 mr-1" />Edit
                   </Button>
                   {estimate.status === 'approved' && (
@@ -220,7 +220,7 @@ export const EstimatesList: React.FC = () => {
                     </Button>
                   )}
                   {(estimate.status === 'sent' || estimate.status === 'draft') && (
-                    <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => setResendEstimate(estimate)}>
+                    <Button size="sm" variant="outline" className="text-xs h-8 text-gray-200 border-white/20 hover:bg-white/10" onClick={() => setResendEstimate(estimate)}>
                       {estimate.status === 'draft' ? 'Send' : 'Resend'}
                     </Button>
                   )}

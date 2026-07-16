@@ -108,9 +108,9 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
       </div>
 
       {invoices.length === 0 ? (
-        <Card className="p-6 md:p-8 text-center">
-          <FileText className="h-10 w-10 mx-auto text-gray-400 mb-3" />
-          <p className="text-sm text-gray-600 mb-4">No invoices yet. Create one directly, or convert an approved estimate.</p>
+        <Card className="p-6 md:p-8 text-center bg-[#1c1c1e] border-white/10">
+          <FileText className="h-10 w-10 mx-auto text-gray-500 mb-3" />
+          <p className="text-sm text-gray-400 mb-4">No invoices yet. Create one directly, or convert an approved estimate.</p>
           <Button onClick={onCreateInvoice} className="bg-green-600 hover:bg-green-700">Create Your First Invoice</Button>
         </Card>
       ) : (
@@ -118,21 +118,21 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
           {invoices.map(invoice => (
             <Card
               key={invoice.id}
-              className="p-3 md:p-4 cursor-pointer hover:shadow-md transition-shadow"
+              className="p-3 md:p-4 cursor-pointer hover:shadow-md transition-shadow bg-[#1c1c1e] border-white/10"
               onClick={() => setSelectedInvoice(invoice)}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h3 className="text-base font-semibold">{invoice.invoiceNumber}</h3>
+                    <h3 className="text-base font-semibold text-white">{invoice.invoiceNumber}</h3>
                     <Badge className={`${getStatusColor(invoice.status)} text-xs`}>{invoice.status.replace('_', ' ').toUpperCase()}</Badge>
                     {!invoice.sentAt && <Badge className="bg-orange-100 text-orange-800 text-xs">Not Sent</Badge>}
                   </div>
-                  <p className="text-sm text-gray-600 truncate">{invoice.clientName} — {invoice.projectName}</p>
-                  <div className="flex gap-4 mt-1 text-xs text-gray-500">
+                  <p className="text-sm text-gray-300 truncate">{invoice.clientName} — {invoice.projectName}</p>
+                  <div className="flex gap-4 mt-1 text-xs text-gray-400">
                     <span>${invoice.total.toFixed(2)} total</span>
-                    <span className="text-green-600">${invoice.amountPaid.toFixed(2)} paid</span>
-                    <span className="text-blue-600">${(invoice.total - invoice.amountPaid).toFixed(2)} due</span>
+                    <span className="text-green-400">${invoice.amountPaid.toFixed(2)} paid</span>
+                    <span className="text-blue-400">${(invoice.total - invoice.amountPaid).toFixed(2)} due</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0 ml-2">
@@ -144,7 +144,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                       <Check size={14} /> Paid
                     </button>
                   )}
-                  <ChevronDown className="h-5 w-5 text-gray-400" />
+                  <ChevronDown className="h-5 w-5 text-gray-500" />
                 </div>
               </div>
             </Card>
@@ -154,13 +154,13 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
 
       {selectedInvoice && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-3">
-          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-auto shadow-2xl">
-            <div className="text-white p-4 flex justify-between items-center rounded-t-xl sticky top-0" style={{background: '#1c1c1e'}}>
+          <div className="rounded-xl w-full max-w-2xl max-h-[90vh] overflow-auto shadow-2xl" style={{ background: '#1c1c1e' }}>
+            <div className="text-white p-4 flex justify-between items-center rounded-t-xl sticky top-0" style={{background: '#1c1c1e', borderBottom: '0.5px solid rgba(255,255,255,0.1)'}}>
               <div>
                 <h2 className="text-lg font-bold">{selectedInvoice.invoiceNumber}</h2>
-                <p className="text-blue-200 text-sm">{selectedInvoice.clientName} — {selectedInvoice.projectName}</p>
+                <p className="text-blue-300 text-sm">{selectedInvoice.clientName} — {selectedInvoice.projectName}</p>
               </div>
-              <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-blue-700 rounded-lg">
+              <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-white/10 rounded-lg">
                 <X size={22} />
               </button>
             </div>
@@ -171,46 +171,46 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                   {selectedInvoice.status.replace('_', ' ').toUpperCase()}
                 </Badge>
                 {!selectedInvoice.sentAt && <Badge className="bg-orange-100 text-orange-800 text-sm px-3 py-1">Not Sent</Badge>}
-                <span className="text-sm text-gray-500 flex items-center gap-1">
+                <span className="text-sm text-gray-400 flex items-center gap-1">
                   <Calendar className="h-3 w-3" /> Issued: {new Date(selectedInvoice.issueDate).toLocaleDateString()}
                 </span>
                 {selectedInvoice.dueDate && (
-                  <span className="text-sm text-gray-500">Due: {new Date(selectedInvoice.dueDate).toLocaleDateString()}</span>
+                  <span className="text-sm text-gray-400">Due: {new Date(selectedInvoice.dueDate).toLocaleDateString()}</span>
                 )}
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-xs text-gray-500 font-semibold uppercase mb-2">Client</p>
-                <p className="font-semibold text-gray-900">{selectedInvoice.clientName}</p>
-                {selectedInvoice.clientEmail && <p className="text-sm text-gray-600">{selectedInvoice.clientEmail}</p>}
-                {selectedInvoice.clientPhone && <p className="text-sm text-gray-600">{selectedInvoice.clientPhone}</p>}
+              <div className="bg-white/5 rounded-lg p-4">
+                <p className="text-xs text-gray-400 font-semibold uppercase mb-2">Client</p>
+                <p className="font-semibold text-white">{selectedInvoice.clientName}</p>
+                {selectedInvoice.clientEmail && <p className="text-sm text-gray-300">{selectedInvoice.clientEmail}</p>}
+                {selectedInvoice.clientPhone && <p className="text-sm text-gray-300">{selectedInvoice.clientPhone}</p>}
               </div>
 
               <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase mb-2">Line Items</p>
+                <p className="text-xs text-gray-400 font-semibold uppercase mb-2">Line Items</p>
                 <div className="space-y-2">
                   {parseLineItems(selectedInvoice.lineItems).map((item: any, idx: number) => (
-                    <div key={idx} className="flex justify-between items-start bg-gray-50 rounded-lg p-3">
+                    <div key={idx} className="flex justify-between items-start bg-white/5 rounded-lg p-3">
                       <div className="flex-1">
-                        <p className="font-medium text-gray-800 text-sm whitespace-pre-wrap">{item.description}</p>
-                        <p className="text-xs text-gray-500">Qty: {item.quantity} × ${Number(item.rate).toFixed(2)}</p>
+                        <p className="font-medium text-gray-200 text-sm whitespace-pre-wrap">{item.description}</p>
+                        <p className="text-xs text-gray-400">Qty: {item.quantity} × ${Number(item.rate).toFixed(2)}</p>
                       </div>
-                      <p className="font-semibold text-gray-900 ml-4">${Number(item.total || item.quantity * item.rate).toFixed(2)}</p>
+                      <p className="font-semibold text-white ml-4">${Number(item.total || item.quantity * item.rate).toFixed(2)}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-blue-50 rounded-lg p-4 space-y-2">
-                <div className="flex justify-between text-sm"><span className="text-gray-600">Total</span><span className="font-semibold">${selectedInvoice.total.toFixed(2)}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-green-600">Amount Paid</span><span className="font-semibold text-green-600">-${selectedInvoice.amountPaid.toFixed(2)}</span></div>
-                <div className="flex justify-between text-lg font-bold border-t pt-2"><span>Balance Due</span><span className="text-blue-600">${(selectedInvoice.total - selectedInvoice.amountPaid).toFixed(2)}</span></div>
+              <div className="bg-blue-500/10 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between text-sm"><span className="text-gray-300">Total</span><span className="font-semibold text-white">${selectedInvoice.total.toFixed(2)}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-green-400">Amount Paid</span><span className="font-semibold text-green-400">-${selectedInvoice.amountPaid.toFixed(2)}</span></div>
+                <div className="flex justify-between text-lg font-bold border-t border-white/10 pt-2"><span className="text-white">Balance Due</span><span className="text-blue-400">${(selectedInvoice.total - selectedInvoice.amountPaid).toFixed(2)}</span></div>
               </div>
 
               {selectedInvoice.notes && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 font-semibold uppercase mb-1">Notes</p>
-                  <p className="text-sm text-gray-700">{selectedInvoice.notes}</p>
+                <div className="bg-white/5 rounded-lg p-4">
+                  <p className="text-xs text-gray-400 font-semibold uppercase mb-1">Notes</p>
+                  <p className="text-sm text-gray-300">{selectedInvoice.notes}</p>
                 </div>
               )}
 
@@ -239,7 +239,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                     </button>
                     <button
                       onClick={() => copyPaymentLink(selectedInvoice)}
-                      className="flex items-center gap-2 px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 font-semibold text-sm text-gray-700"
+                      className="flex items-center gap-2 px-4 py-3 border border-white/20 rounded-lg hover:bg-white/10 font-semibold text-sm text-gray-200"
                     >
                       {copiedId === selectedInvoice.id ? <Check size={16} /> : <Link size={16} />}
                       {copiedId === selectedInvoice.id ? 'Copied!' : 'Copy Payment Link'}
@@ -259,17 +259,17 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
       )}
 
       <Dialog open={paymentDialog.open} onOpenChange={(open) => setPaymentDialog({ open, invoiceId: null })}>
-        <DialogContent className="mx-2 max-w-md p-0 overflow-hidden">
+        <DialogContent className="mx-2 max-w-md p-0 overflow-hidden bg-[#1c1c1e] border-white/10">
           <div className="bg-green-600 text-white p-4">
             <DialogTitle className="text-lg font-bold">Record Payment</DialogTitle>
           </div>
           <div className="p-5 space-y-4">
             <div>
-              <Label htmlFor="amount" className="block text-sm font-semibold mb-2">Payment Amount *</Label>
+              <Label htmlFor="amount" className="block text-sm font-semibold mb-2 text-gray-200">Payment Amount *</Label>
               <input id="amount" type="number" step="0.01" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="0.00" className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" />
             </div>
             <div>
-              <Label htmlFor="note" className="block text-sm font-semibold mb-2">Note (optional)</Label>
+              <Label htmlFor="note" className="block text-sm font-semibold mb-2 text-gray-200">Note (optional)</Label>
               <textarea id="note" value={paymentNote} onChange={(e) => setPaymentNote(e.target.value)} placeholder="Payment method, check number, etc." className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none resize-none" rows={3} />
             </div>
             <Button onClick={handleRecordPayment} className="w-full py-4 text-base">Record Payment</Button>

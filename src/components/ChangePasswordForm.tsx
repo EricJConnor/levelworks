@@ -65,19 +65,19 @@ export function ChangePasswordForm() {
   );
 
   return (
-    <Card>
+    <Card className="bg-[#1c1c1e] border-white/10 text-white">
       <CardHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <Lock className="w-5 h-5 text-orange-600" />
+          <div className="w-10 h-10 rounded-full bg-blue-500/15 flex items-center justify-center">
+            <Lock className="w-5 h-5 text-blue-400" />
           </div>
-          <div><CardTitle className="text-lg">Change Password</CardTitle><CardDescription>Update your account password</CardDescription></div>
+          <div><CardTitle className="text-lg text-white">Change Password</CardTitle><CardDescription className="text-gray-400">Update your account password</CardDescription></div>
         </div>
       </CardHeader>
       <CardContent className="p-4 pt-0">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="current">Current Password</Label>
+            <Label htmlFor="current" className="text-gray-200">Current Password</Label>
             <div className="relative">
               <Input id="current" type={showCurrent ? 'text' : 'password'} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required className="pr-10" />
               <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -86,7 +86,7 @@ export function ChangePasswordForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="new">New Password</Label>
+            <Label htmlFor="new" className="text-gray-200">New Password</Label>
             <div className="relative">
               <Input id="new" type={showNew ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className="pr-10" />
               <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -107,7 +107,7 @@ export function ChangePasswordForm() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirm">Confirm New Password</Label>
+            <Label htmlFor="confirm" className="text-gray-200">Confirm New Password</Label>
             <div className="relative">
               <Input id="confirm" type={showConfirm ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={`pr-10 ${confirmPassword && !passwordsMatch ? 'border-red-500' : ''}`} />
               <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">

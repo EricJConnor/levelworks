@@ -68,20 +68,20 @@ export const ProfileEditor: React.FC = () => {
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>;
 
   return (
-    <Card>
+    <Card className="bg-[#1c1c1e] border-white/10 text-white">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><User className="w-5 h-5" />Edit Profile</CardTitle>
-        <CardDescription>Update your personal and business information</CardDescription>
+        <CardTitle className="flex items-center gap-2 text-white"><User className="w-5 h-5" />Edit Profile</CardTitle>
+        <CardDescription className="text-gray-400">Update your personal and business information</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col items-center gap-4">
             <div className="relative">
-              <div className="w-24 h-24 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+              <div className="w-24 h-24 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden border-4 border-white/20 shadow-lg">
                 {formData.profile_photo_url ? (
                   <img src={formData.profile_photo_url} alt="Company Logo" className="w-full h-full object-contain" />
                 ) : (
-                  <Building2 className="w-12 h-12 text-gray-400" />
+                  <Building2 className="w-12 h-12 text-gray-500" />
                 )}
               </div>
               <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
@@ -90,27 +90,27 @@ export const ProfileEditor: React.FC = () => {
               </button>
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-            <p className="text-sm text-gray-500">Click the camera icon to upload your company logo</p>
+            <p className="text-sm text-gray-400">Click the camera icon to upload your company logo</p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="full_name" className="flex items-center gap-2"><User className="w-4 h-4" />Full Name</Label>
+              <Label htmlFor="full_name" className="flex items-center gap-2 text-gray-200"><User className="w-4 h-4" />Full Name</Label>
               <Input id="full_name" value={formData.full_name} onChange={e => setFormData(p => ({ ...p, full_name: e.target.value }))} placeholder="John Smith" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="company_name" className="flex items-center gap-2"><Building2 className="w-4 h-4" />Company Name</Label>
+              <Label htmlFor="company_name" className="flex items-center gap-2 text-gray-200"><Building2 className="w-4 h-4" />Company Name</Label>
               <Input id="company_name" value={formData.company_name} onChange={e => setFormData(p => ({ ...p, company_name: e.target.value }))} placeholder="Smith Contracting LLC" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone_number" className="flex items-center gap-2"><Phone className="w-4 h-4" />Phone Number</Label>
+            <Label htmlFor="phone_number" className="flex items-center gap-2 text-gray-200"><Phone className="w-4 h-4" />Phone Number</Label>
             <Input id="phone_number" type="tel" value={formData.phone_number} onChange={e => setFormData(p => ({ ...p, phone_number: e.target.value }))} placeholder="(555) 123-4567" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="business_address" className="flex items-center gap-2"><MapPin className="w-4 h-4" />Business Address</Label>
+            <Label htmlFor="business_address" className="flex items-center gap-2 text-gray-200"><MapPin className="w-4 h-4" />Business Address</Label>
             <Textarea id="business_address" value={formData.business_address} onChange={e => setFormData(p => ({ ...p, business_address: e.target.value }))} placeholder="123 Main Street&#10;City, State 12345" rows={3} />
           </div>
 

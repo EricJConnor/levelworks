@@ -45,11 +45,11 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <button
           onClick={() => { setShowEstimatePicker(!showEstimatePicker); setSearch(''); }}
-          className="flex items-center gap-4 p-5 bg-white border-2 rounded-xl text-left hover:border-orange-400 transition-colors"
-          style={{ borderColor: showEstimatePicker ? '#f97316' : '#e4e4e7' }}
+          className="flex items-center gap-4 p-5 bg-white border-2 rounded-xl text-left hover:border-blue-400 transition-colors"
+          style={{ borderColor: showEstimatePicker ? '#3b82f6' : '#e4e4e7' }}
         >
-          <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
-            <Camera className="w-5 h-5 text-orange-600" />
+          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+            <Camera className="w-5 h-5 text-blue-600" />
           </div>
           <div>
             <p className="font-semibold text-gray-900">Upload Photos</p>
@@ -80,7 +80,7 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search by client or project name..."
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
               autoFocus
             />
           </div>
@@ -92,7 +92,7 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
                 <button
                   key={est.id}
                   onClick={() => { onOpenEstimate(est); setShowEstimatePicker(false); }}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-orange-50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-blue-50 transition-colors"
                 >
                   <div>
                     <p className="font-medium text-gray-900 text-sm">{est.projectName || 'Unnamed Project'}</p>

@@ -78,7 +78,7 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
         <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
           <Mail style={{ width: '40px', height: '40px', color: '#d4d4d8', margin: '0 auto 12px' }} />
           <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '16px' }}>No clients yet. Add your first client!</p>
-          <button onClick={() => { setEditingClient(null); setNewClient({ name: '', email: '', phone: '', address: '' }); setShowAddClient(true); }} style={{ background: '#f97316', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Add Your First Client</button>
+          <button onClick={() => { setEditingClient(null); setNewClient({ name: '', email: '', phone: '', address: '' }); setShowAddClient(true); }} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Add Your First Client</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
@@ -102,7 +102,7 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
                   {client.phone && <p style={{ fontSize: '13px', color: '#71717a', margin: 0 }}>{client.phone}</p>}
                   <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid #e4e4e7', display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
                     <span style={{ color: '#71717a' }}>{getClientEstimates(client.name).length} estimates</span>
-                    <span style={{ fontWeight: '600', color: '#f97316' }}>${client.totalValue.toLocaleString()}</span>
+                    <span style={{ fontWeight: '600', color: '#3b82f6' }}>${client.totalValue.toLocaleString()}</span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-1 ml-3">

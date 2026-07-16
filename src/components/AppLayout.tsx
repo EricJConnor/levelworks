@@ -18,7 +18,7 @@ import AuthModal from './AuthModal';
 import { useData, Estimate } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
-import { Menu, X, Bell, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send, HelpCircle } from 'lucide-react';
+import { Menu, X, Bell, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send, HelpCircle, Plus, CreditCard } from 'lucide-react';
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -81,7 +81,7 @@ export const AppLayout: React.FC = () => {
 
   if (isAuthenticated === null || loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8f7f5' }}>
-      <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#f97316' }} />
+      <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#3b82f6' }} />
     </div>
   );
 
@@ -106,7 +106,7 @@ export const AppLayout: React.FC = () => {
               style={{ fontSize: '17px', fontWeight: '600', color: '#fff', cursor: 'pointer', letterSpacing: '0.04em', margin: 0 }}
               onClick={() => setCurrentView('dashboard')}
             >
-              LEVEL<span style={{ color: '#f97316' }}>WORKS</span>
+              LEVEL<span style={{ color: '#3b82f6' }}>WORKS</span>
             </h1>
             <nav style={{ display: 'none' }} className="desktop-nav">
               {navItems.map(item => (
@@ -136,17 +136,17 @@ export const AppLayout: React.FC = () => {
             </button>
             <button onClick={() => handleNavClick('notifications')} className="hide-mobile" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', position: 'relative' }}>
               <Bell size={20} />
-              {!pushEnabled && <span style={{ position: 'absolute', top: '6px', right: '6px', width: '7px', height: '7px', background: '#f97316', borderRadius: '50%' }} />}
+              {!pushEnabled && <span style={{ position: 'absolute', top: '6px', right: '6px', width: '7px', height: '7px', background: '#3b82f6', borderRadius: '50%' }} />}
             </button>
             <button onClick={handleAccountClick} className="hide-mobile" style={{ background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.12)', color: '#e4e4e7', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
               {profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <User size={15} />}
               <span>{profile?.full_name?.split(' ')[0] || 'Account'}</span>
             </button>
-            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="hide-mobile" style={{ background: '#f97316', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-              + Estimate
+            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="hide-mobile" style={{ background: 'rgba(59,130,246,0.12)', border: '0.5px solid rgba(59,130,246,0.3)', color: '#93c5fd', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Plus size={14} /> Estimate
             </button>
-            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="hide-mobile" style={{ background: '#16a34a', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-              + Invoice
+            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="hide-mobile" style={{ background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.12)', color: '#e4e4e7', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <Plus size={14} /> Invoice
             </button>
             <button onClick={handleSignOut} className="hide-mobile" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <LogOut size={15} /> Sign Out
@@ -157,11 +157,11 @@ export const AppLayout: React.FC = () => {
           </div>
         </div>
         <div className="mobile-quick-add mobile-only" style={{ display: 'flex', gap: '8px', padding: '10px 16px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
-          <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} style={{ flex: 1, background: '#f97316', color: '#fff', border: 'none', padding: '9px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-            + Estimate
+          <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} style={{ flex: 1, background: '#3b82f6', color: '#fff', border: 'none', padding: '9px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+            <Plus size={14} /> Estimate
           </button>
-          <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} style={{ flex: 1, background: '#16a34a', color: '#fff', border: 'none', padding: '9px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-            + Invoice
+          <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} style={{ flex: 1, background: 'rgba(255,255,255,0.08)', color: '#fff', border: '0.5px solid rgba(255,255,255,0.15)', padding: '9px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+            <Plus size={14} /> Invoice
           </button>
         </div>
         {mobileMenuOpen && (
@@ -296,12 +296,17 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
         <AddToHomeScreen />
       </div>
       {!stripeConnected && (
-        <div style={{ background: '#1c1c1e', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-          <div>
-            <p style={{ color: '#fff', fontSize: '16px', fontWeight: '500', margin: '0 0 3px' }}>Collect Client Payments</p>
-            <p style={{ color: '#71717a', fontSize: '14px', margin: 0 }}>Accept credit cards directly. Money goes straight to your bank.</p>
+        <div style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: 'rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <CreditCard size={17} style={{ color: '#3b82f6' }} />
+            </div>
+            <div>
+              <p style={{ color: '#18181b', fontSize: '15px', fontWeight: '600', margin: '0 0 2px' }}>Collect Client Payments</p>
+              <p style={{ color: '#71717a', fontSize: '13px', margin: 0 }}>Accept credit cards directly. Money goes straight to your bank.</p>
+            </div>
           </div>
-          <button onClick={onConnectStripe} style={{ background: '#f97316', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <button onClick={onConnectStripe} style={{ background: 'none', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.4)', padding: '9px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
             Set Up Payments
           </button>
         </div>
@@ -314,7 +319,7 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
         </div>
         <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7', cursor: 'pointer' }} onClick={onViewEstimates}>
           <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Estimates</p>
-          <p className="stat-value" style={{ color: '#f97316', fontSize: '24px', fontWeight: '600', margin: 0 }}>{estimates.length}</p>
+          <p className="stat-value" style={{ color: '#3b82f6', fontSize: '24px', fontWeight: '600', margin: 0 }}>{estimates.length}</p>
         </div>
         <div className="stat-card" style={{ background: '#fff', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid #e4e4e7' }}>
           <p style={{ color: '#71717a', fontSize: '13px', margin: '0 0 8px' }}>Pending</p>
@@ -343,7 +348,7 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
         <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
           <FileText style={{ width: '40px', height: '40px', color: '#d4d4d8', margin: '0 auto 12px' }} />
           <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '16px' }}>No estimates yet</p>
-          <button onClick={onCreateEstimate} style={{ background: '#f97316', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Create Your First Estimate</button>
+          <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Create Your First Estimate</button>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -368,7 +373,7 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
       )}
 
       <div style={{ marginTop: '24px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <button onClick={onCreateEstimate} style={{ background: '#f97316', color: '#fff', border: 'none', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Estimate</button>
+        <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Estimate</button>
         <button onClick={onViewEstimates} style={{ background: '#fff', color: '#18181b', border: '0.5px solid #e4e4e7', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }}>All Estimates</button>
       </div>
     </div>

@@ -290,7 +290,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                 onChange={(e) => updateItem(item.id, 'sectionTitle', e.target.value)}
                 onFocus={() => { setOpenTitlePicker(item.id); setShowNewTitleInput(false); }}
                 placeholder="e.g. Demo, Plumbing, Labor..."
-                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-orange-400 focus:outline-none bg-white"
+                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-400 focus:outline-none bg-white"
               />
               {openTitlePicker === item.id && (
                 <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
@@ -300,7 +300,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                       <button onClick={() => setOpenTitlePicker(null)} className="text-gray-400 hover:text-gray-600 leading-none" title="Close">✕</button>
                     </div>
                     {!showNewTitleInput ? (
-                      <button onClick={() => setShowNewTitleInput(true)} className="bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">+ New Title</button>
+                      <button onClick={() => setShowNewTitleInput(true)} className="bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">+ New Title</button>
                     ) : (
                       <div className="flex gap-2">
                         <input
@@ -309,9 +309,9 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                           onChange={e => setNewTitleInput(e.target.value)}
                           onKeyDown={e => { if (e.key === 'Enter') addNewTitle(item.id); if (e.key === 'Escape') setShowNewTitleInput(false); }}
                           placeholder="Type new title..."
-                          className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-orange-400 w-40"
+                          className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-400 w-40"
                         />
-                        <button onClick={() => addNewTitle(item.id)} className="bg-orange-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Add</button>
+                        <button onClick={() => addNewTitle(item.id)} className="bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Add</button>
                       </div>
                     )}
                   </div>
@@ -323,7 +323,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                     ) : (
                       <div className="max-h-48 overflow-y-auto p-2">
                         {matches.map((t, i) => (
-                          <button key={i} onClick={() => applyTitle(item.id, t)} className="w-full text-left px-3 py-2.5 hover:bg-orange-50 rounded-lg text-sm text-gray-800 font-medium" style={{ borderLeft: item.sectionTitle === t ? '3px solid #f97316' : '3px solid transparent' }}>
+                          <button key={i} onClick={() => applyTitle(item.id, t)} className="w-full text-left px-3 py-2.5 hover:bg-blue-50 rounded-lg text-sm text-gray-800 font-medium" style={{ borderLeft: item.sectionTitle === t ? '3px solid #3b82f6' : '3px solid transparent' }}>
                             {t}
                           </button>
                         ))}
@@ -337,7 +337,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
           {/* Read-only title */}
           {isReadOnly && item.sectionTitle && (
-            <div style={{ borderLeft: '3px solid #f97316', background: '#fff8f5', borderRadius: '0 6px 6px 0', padding: '7px 14px' }}>
+            <div style={{ borderLeft: '3px solid #3b82f6', background: '#eff6ff', borderRadius: '0 6px 6px 0', padding: '7px 14px' }}>
               <span className="font-semibold text-gray-800 text-sm">{item.sectionTitle}</span>
             </div>
           )}
@@ -423,7 +423,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                 <div className="bg-gray-50 rounded-lg overflow-hidden">
                   {(previewData.lineItems || []).map((item: any, idx: number) => (
                     <div key={idx} className="p-3 border-b border-gray-200 last:border-0">
-                      {item.sectionTitle && <p className="text-xs font-semibold text-orange-600 mb-1">{item.sectionTitle}</p>}
+                      {item.sectionTitle && <p className="text-xs font-semibold text-blue-600 mb-1">{item.sectionTitle}</p>}
                       <p className="font-medium text-gray-800 whitespace-pre-wrap">{item.description}</p>
                       <p className="text-right font-semibold">${Number(item.total || 0).toFixed(2)}</p>
                     </div>
@@ -655,7 +655,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              <button onClick={handleDone} disabled={isSaving} className="px-4 py-4 text-white rounded-lg font-semibold text-base disabled:opacity-50 bg-orange-500 hover:bg-orange-600">{isSaving ? 'Saving...' : 'Done'}</button>
+              <button onClick={handleDone} disabled={isSaving} className="px-4 py-4 text-white rounded-lg font-semibold text-base disabled:opacity-50 bg-blue-500 hover:bg-blue-600">{isSaving ? 'Saving...' : 'Done'}</button>
               <button onClick={handleSave} disabled={isSaving} className="px-4 py-4 text-white rounded-lg font-semibold text-base disabled:opacity-50" style={{ background: '#1c1c1e' }}>{isSaving ? 'Saving...' : 'Save'}</button>
               <button onClick={handleSendEstimate} disabled={isSaving} className="px-4 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-base disabled:opacity-50">{isSaving ? 'Saving...' : 'Send'}</button>
               <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-4 py-4 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-semibold text-base">Convert to Invoice</button>

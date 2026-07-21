@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, Check, FileText, Users, Briefcase, StickyNote, PenTool, Send, ChevronRight, Shield, Zap, Star, CreditCard, Image, Camera, Repeat } from 'lucide-react';
+import { Menu, X, Check, FileText, Users, Briefcase, StickyNote, PenTool, Send, ChevronRight, Shield, Zap, CreditCard, Image, Camera, Repeat } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -264,21 +264,20 @@ button>
       </section>
 
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px' }}>
+        <div style={{ maxWidth: '760px', margin: '0 auto 48px', textAlign: 'center' }}>
+          <p style={{ color: '#a8a8a8', fontSize: '18px', lineHeight: '1.7' }}>
+            Most estimating and invoicing apps charge <strong style={{ color: '#fff' }}>$19–$150 a month</strong> and bury half their features behind higher tiers. LevelWorks charges <strong style={{ color: '#3b82f6' }}>$5 flat</strong>, with everything included from day one — no upsells, no surprise paywalls.
+          </p>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
           {[
-            { quote: "I was paying $99 a month for another app. This does everything I need for $5. No brainer.", name: "Mike R.", trade: "General Contractor" },
-            { quote: "My clients love that they can sign from their phone and pay instantly. I close jobs faster now.", name: "Dave T.", trade: "Roofing Contractor" },
-            { quote: "Simple, fast, does what I need. I don't need a complicated system.", name: "Carlos M.", trade: "Electrical Contractor" },
+            { title: 'One flat price', desc: '$5/month, everything included. No tiers, no add-on fees.' },
+            { title: 'No lock-in', desc: 'Cancel anytime, no contracts. Your data stays yours.' },
+            { title: 'Built from real feedback', desc: 'Features ship because contractors asked for them, not to pad a pricing page.' },
           ].map((t, i) => (
             <div key={i} style={{ background: '#0f0f0f', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '28px' }}>
-              <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
-                {[...Array(5)].map((_, j) => <Star key={j} size={14} style={{ color: '#3b82f6', fill: '#3b82f6' }} />)}
-              </div>
-              <p style={{ color: '#a8a8a8', fontSize: '15px', lineHeight: '1.7', marginBottom: '20px', fontStyle: 'italic' }}>"{t.quote}"</p>
-              <div>
-                <p style={{ color: '#fff', fontSize: '14px', fontWeight: '700' }}>{t.name}</p>
-                <p style={{ color: '#909090', fontSize: '13px' }}>{t.trade}</p>
-              </div>
+              <h3 style={{ color: '#fff', fontSize: '17px', fontWeight: '700', marginBottom: '10px' }}>{t.title}</h3>
+              <p style={{ color: '#a8a8a8', fontSize: '15px', lineHeight: '1.7' }}>{t.desc}</p>
             </div>
           ))}
         </div>

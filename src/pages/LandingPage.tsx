@@ -263,6 +263,36 @@ button>
         </div>
       </section>
 
+      <section style={{ background: '#0f1f3d', borderTop: '1px solid #1e3a5f', borderBottom: '1px solid #1e3a5f', padding: '80px 24px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '4px', padding: '6px 14px', marginBottom: '24px' }}>
+            <Image size={14} style={{ color: '#3b82f6' }} />
+            <span style={{ color: '#3b82f6', fontSize: '13px', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Your business. Not our billboard.</span>
+          </div>
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '16px' }}>
+            Your Name. Your Logo. Your Client.
+          </h2>
+          <p style={{ color: '#93c5fd', fontSize: '18px', maxWidth: '640px', lineHeight: '1.6', marginBottom: '40px' }}>
+            Other apps put their brand on every estimate and invoice you send — turning your paperwork into their advertising. We don't. Every document you send carries your name, your logo, and nothing else. Your client deals with you. That's how it should be.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', maxWidth: '900px', width: '100%' }}>
+            {[
+              { title: 'No third-party branding', desc: 'Your estimates and invoices are 100% yours.' },
+              { title: 'Your logo front and center', desc: "Upload it once, it's on everything you send." },
+              { title: 'Built by a contractor', desc: "Because no contractor wants another company's logo on their paperwork." },
+            ].map((c, i) => (
+              <div key={i} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '24px', textAlign: 'left' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                  <Check size={16} style={{ color: '#3b82f6', flexShrink: 0 }} />
+                  <h3 style={{ color: '#fff', fontSize: '15px', fontWeight: '700', margin: 0 }}>{c.title}</h3>
+                </div>
+                <p style={{ color: '#93c5fd', fontSize: '14px', lineHeight: '1.6' }}>{c.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto 48px', textAlign: 'center' }}>
           <p style={{ color: '#a8a8a8', fontSize: '18px', lineHeight: '1.7' }}>

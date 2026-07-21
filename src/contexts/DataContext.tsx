@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { trackEvent } from '@/lib/pixel';
 import { useToast } from '@/hooks/use-toast';
 
 export interface Job { id: string; clientName: string; projectType: string; status: 'draft' | 'sent' | 'approved' | 'in-progress' | 'completed'; total: number; date: string; }
@@ -278,7 +279,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const vt = (existingToken && existingToken.trim() !== '') ? existingToken : crypto.randomUUID();
     
     console.log('[addEstimate] Using viewToken (UUID):', vt);
-    
+
+    // Check against the database (not local state, which may be stale on
+    // first load) whether this user has any estimates yet, so we can fire
+    // a one-time activation event for their first one.
+    const { count: existingEstimateCount } = await supabase
+      .from('estimates')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+    const isFirstEstimate = (existingEstimateCount ?? 0) === 0;
+
     // Format line items - this is critical for JSONB storage
     const formattedItems = formatLineItemsForDb(est.lineItems);
     
@@ -346,7 +356,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     console.log('[addEstimate] Estimate saved successfully with ID:', data.id);
     console.log('[addEstimate] Saved view_token:', data.view_token);
-    
+
+    if (isFirstEstimate) {
+      trackEvent('StartTrial');
+    }
+
     // ============================================================
     // AUTO-CREATE A JOB ENTRY FOR THIS ESTIMATE
     // This ensures the estimate appears in Dashboard and Jobs section

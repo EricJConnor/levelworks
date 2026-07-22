@@ -103,7 +103,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl md:text-2xl font-bold">Invoices</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-white">Invoices</h2>
         <Button onClick={onCreateInvoice} className="bg-green-600 hover:bg-green-700">+ New Invoice</Button>
       </div>
 

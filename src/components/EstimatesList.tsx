@@ -14,10 +14,12 @@ import { EstimateBuilder } from './EstimateBuilder';
 
 interface Photo { id: string; fileUrl: string; caption?: string; }
 
-export const EstimatesList: React.FC = () => {
+interface EstimatesListProps { initialStatusFilter?: string; }
+
+export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilter }) => {
   const { estimates, deleteEstimate } = useData();
   const { addInvoice } = useInvoices();
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>(initialStatusFilter || 'all');
   const [sortBy, setSortBy] = useState<string>('date-desc');
   const [resendEstimate, setResendEstimate] = useState<Estimate | null>(null);
   const [editEstimate, setEditEstimate] = useState<Estimate | null>(null);
@@ -120,7 +122,7 @@ export const EstimatesList: React.FC = () => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
-        <h2 className="text-xl md:text-2xl font-bold">Estimates</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-white">Estimates</h2>
         <div className="flex gap-2 w-full sm:w-auto">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full sm:w-32 text-sm"><SelectValue /></SelectTrigger>

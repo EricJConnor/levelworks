@@ -9,7 +9,7 @@ export const AddToHomeScreen: React.FC = () => {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} variant="ghost" size="sm" className="gap-2" style={{ background: 'none', border: '0.5px solid #e4e4e7', color: '#71717a', padding: '5px 12px', fontSize: '12px', height: 'auto' }}>
+      <Button onClick={() => setOpen(true)} variant="ghost" size="sm" className="gap-2" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '5px 12px', fontSize: '12px', height: 'auto' }}>
         <Smartphone size={16} />
         <span>Add to Phone</span>
       </Button>

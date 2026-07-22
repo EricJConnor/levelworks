@@ -37,8 +37,8 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">Photos</h2>
-        <p className="text-sm text-gray-500">Upload job-site photos to an estimate, or create a standalone update to send to your client.</p>
+        <h2 className="text-2xl font-bold text-white mb-1">Photos</h2>
+        <p className="text-sm text-gray-400">Upload job-site photos to an estimate, or create a standalone update to send to your client.</p>
       </div>
 
       {/* Action buttons */}
@@ -110,7 +110,7 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
       {/* Past updates */}
       {updates.length > 0 && (
         <div>
-          <h3 className="text-base font-semibold text-gray-800 mb-3">Sent Updates</h3>
+          <h3 className="text-base font-semibold text-gray-200 mb-3">Sent Updates</h3>
           <div className="space-y-2">
             {updates.map(u => (
               <div key={u.id} className="rounded-xl px-4 py-4 flex items-center justify-between gap-3" style={{ background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.1)' }}>

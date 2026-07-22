@@ -1,6 +1,6 @@
 // Meta (Facebook) Pixel — loaded and fired only on the production domain,
 // never on localhost or a local dev/preview build.
-const PIXEL_ID = '1810789876557376';
+const PIXEL_ID = '2017000758930909';
 
 declare global {
   interface Window {

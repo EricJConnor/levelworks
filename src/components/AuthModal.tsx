@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { supabase } from '@/lib/supabase';
+import { trackEvent } from '@/lib/pixel';
 import { useToast } from '@/hooks/use-toast';
 import { X, ArrowLeft, Loader2, Mail, Lock, User, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
@@ -79,6 +80,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
           console.error("Signup error:", error);
           throw error;
         }
+
+        trackEvent('CompleteRegistration');
 
         if (data?.user && !data.session) {
           toast({ title: 'Check your email', description: 'We sent you a confirmation link.', duration: 7000 });

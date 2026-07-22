@@ -1,13 +1,15 @@
 
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { DataProvider } from "@/contexts/DataContext";
 import { InvoiceProvider } from "@/contexts/InvoiceContext";
 import { ProfileProvider } from "@/contexts/ProfileContext";
+import { trackPageView } from "@/lib/pixel";
 import Index from "./pages/Index";
 import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
@@ -24,6 +26,16 @@ import StripeConnectCallback from "./pages/StripeConnectCallback";
 
 const queryClient = new QueryClient();
 
+// Meta Pixel doesn't get a fresh PageView on SPA route changes for free -
+// this fires one on mount and again on every path/query change.
+function PixelPageViewTracker() {
+  const location = useLocation();
+  useEffect(() => {
+    trackPageView();
+  }, [location.pathname, location.search]);
+  return null;
+}
+
 const App = () => (
   <ThemeProvider defaultTheme="light">
     <QueryClientProvider client={queryClient}>
@@ -34,6 +46,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <PixelPageViewTracker />
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/app" element={<Index />} />

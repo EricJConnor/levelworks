@@ -70,7 +70,7 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
-        <h2 className="text-xl md:text-2xl font-bold">Clients</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-white">Clients</h2>
         <Button size="sm" className="w-full sm:w-auto py-3" onClick={() => { setEditingClient(null); setNewClient({ name: '', email: '', phone: '', address: '' }); setShowAddClient(true); }}>+ Add Client</Button>
       </div>
 

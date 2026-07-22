@@ -28,6 +28,7 @@ type View = 'dashboard' | 'clients' | 'notifications' | 'estimates' | 'photos' |
 
 export const AppLayout: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [estimatesFilter, setEstimatesFilter] = useState<'all' | 'sent'>('all');
   const [showEstimate, setShowEstimate] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<any>(null);
   const [showInvoice, setShowInvoice] = useState(false);
@@ -49,9 +50,20 @@ export const AppLayout: React.FC = () => {
 
   useEffect(() => {
     mountedRef.current = true;
+    // On a cold PWA launch, localStorage/session rehydration can lag behind
+    // this first getSession() call - retry briefly instead of bouncing the
+    // user to the sign-in screen while a valid session is still loading.
+    const checkAuthWithRetry = async (retries = 3): Promise<boolean> => {
+      for (let i = 0; i < retries; i++) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) return true;
+        if (i < retries - 1) await new Promise(r => setTimeout(r, 500));
+      }
+      return false;
+    };
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (mountedRef.current) setIsAuthenticated(!!session?.user);
+      const authenticated = await checkAuthWithRetry();
+      if (mountedRef.current) setIsAuthenticated(authenticated);
     };
     checkAuth();
     checkPushStatus();
@@ -77,16 +89,21 @@ export const AppLayout: React.FC = () => {
     { key: 'notes', label: 'Notes' },
   ];
 
-  const handleNavClick = (view: View) => { setCurrentView(view); setMobileMenuOpen(false); };
+  const handleNavClick = (view: View) => {
+    if (view === 'estimates') setEstimatesFilter('all');
+    setCurrentView(view);
+    setMobileMenuOpen(false);
+  };
+  const goToEstimates = (filter: 'all' | 'sent' = 'all') => { setEstimatesFilter(filter); setCurrentView('estimates'); };
 
   if (isAuthenticated === null || loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(100deg, #4a6fb5 0%, #7ba3e8 6%, #345aa0 14%, #6f95d9 20%, #23407f 30%, #86a8e0 38%, #2c4a8f 46%, #5a7fc9 54%, #1e3873 64%, #7ba3e8 72%, #345aa0 82%, #6f95d9 90%, #4a6fb5 100%)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a' }}>
       <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#3b82f6' }} />
     </div>
   );
 
   if (isAuthenticated === false) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(100deg, #4a6fb5 0%, #7ba3e8 6%, #345aa0 14%, #6f95d9 20%, #23407f 30%, #86a8e0 38%, #2c4a8f 46%, #5a7fc9 54%, #1e3873 64%, #7ba3e8 72%, #345aa0 82%, #6f95d9 90%, #4a6fb5 100%)', padding: '16px' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a', padding: '16px' }}>
       <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', maxWidth: '400px', width: '100%', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
         <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', marginBottom: '8px' }}>Sign In Required</h2>
         <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '24px' }}>Please sign in to access LevelWorks.</p>
@@ -98,7 +115,7 @@ export const AppLayout: React.FC = () => {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(100deg, #4a6fb5 0%, #7ba3e8 6%, #345aa0 14%, #6f95d9 20%, #23407f 30%, #86a8e0 38%, #2c4a8f 46%, #5a7fc9 54%, #1e3873 64%, #7ba3e8 72%, #345aa0 82%, #6f95d9 90%, #4a6fb5 100%)' }}>
+    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#e8e8e8', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
       <header style={{ background: '#1c1c1e', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 1px 0 rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
@@ -214,7 +231,8 @@ export const AppLayout: React.FC = () => {
             estimates={estimates}
             onCreateEstimate={() => { setSelectedEstimate(null); setShowEstimate(true); }}
             onViewNotes={() => setCurrentView('notes')}
-            onViewEstimates={() => setCurrentView('estimates')}
+            onViewEstimates={(filter) => goToEstimates(filter)}
+            onViewClients={() => setCurrentView('clients')}
             onViewEstimate={(estimate) => { setSelectedEstimate(estimate); setShowEstimate(true); }}
             onConnectStripe={handleConnectStripe}
             stripeConnected={!!profile?.stripe_account_id}
@@ -222,7 +240,7 @@ export const AppLayout: React.FC = () => {
         )}
         {currentView === 'notifications' && <NotificationSettings />}
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} onConnectStripe={handleConnectStripe} />}
-        {currentView === 'estimates' && <EstimatesList />}
+        {currentView === 'estimates' && <EstimatesList initialStatusFilter={estimatesFilter} />}
         {currentView === 'photos' && <PhotosHub onOpenEstimate={(est) => { setSelectedEstimate(est); setShowEstimate(true); }} />}
         {currentView === 'invoices' && <InvoicesList onCreateInvoice={() => { setInvoiceInitialData(null); setShowInvoice(true); }} />}
         {currentView === 'notes' && <Notes />}
@@ -257,13 +275,14 @@ interface DashboardViewProps {
   estimates: Estimate[];
   onCreateEstimate: () => void;
   onViewNotes: () => void;
-  onViewEstimates: () => void;
+  onViewEstimates: (filter?: 'all' | 'sent') => void;
+  onViewClients: () => void;
   onViewEstimate: (estimate: any) => void;
   onConnectStripe: () => void;
   stripeConnected: boolean;
 }
 
-function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onViewEstimates, onViewEstimate, onConnectStripe, stripeConnected }: DashboardViewProps) {
+function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onViewEstimates, onViewClients, onViewEstimate, onConnectStripe, stripeConnected }: DashboardViewProps) {
   const [receiptCount, setReceiptCount] = useState(0);
 
   useEffect(() => {
@@ -295,9 +314,8 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
 
   return (
     <div>
-     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', margin: 0 }}>Dashboard</h2>
-        <AddToHomeScreen />
+     <div style={{ marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#fff', margin: 0 }}>Dashboard</h2>
       </div>
       {!stripeConnected && (
         <div style={{ background: '#1c1c1e', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
@@ -317,19 +335,19 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '28px' }} className="stats-grid">
-        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }} onClick={() => onViewEstimates()}>
           <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Total Value</p>
           <p className="stat-value" style={{ color: '#4ade80', fontSize: '24px', fontWeight: '600', margin: 0 }}>${totalEstimateValue.toLocaleString()}</p>
         </div>
-        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer' }} onClick={onViewEstimates}>
+        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }} onClick={() => onViewEstimates()}>
           <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Estimates</p>
           <p className="stat-value" style={{ color: '#60a5fa', fontSize: '24px', fontWeight: '600', margin: 0 }}>{estimates.length}</p>
         </div>
-        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }} onClick={() => onViewEstimates('sent')}>
           <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Pending</p>
           <p className="stat-value" style={{ color: '#fbbf24', fontSize: '24px', fontWeight: '600', margin: 0 }}>{pendingEstimates}</p>
         </div>
-        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }} onClick={onViewClients}>
           <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Clients</p>
           <p className="stat-value" style={{ color: '#fff', fontSize: '24px', fontWeight: '600', margin: 0 }}>{clients.length}</p>
         </div>
@@ -337,6 +355,9 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
 
       <style>{`
         .stats-grid { }
+        .stat-card { cursor: pointer; transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease; }
+        .stat-card:hover { border-color: rgba(255,255,255,0.25) !important; }
+        .stat-card:active { transform: scale(0.97); background: #232326 !important; }
         @media (min-width: 640px) {
           .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
           .stat-value { font-size: 26px !important; }
@@ -344,8 +365,8 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
       `}</style>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <h3 style={{ fontSize: '17px', fontWeight: '500', color: '#18181b', margin: 0 }}>Recent Estimates</h3>
-        <button onClick={onViewEstimates} style={{ background: '#1c1c1e', border: '0.5px solid rgba(255,255,255,0.1)', color: '#e4e4e7', padding: '6px 14px', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}>View All</button>
+        <h3 style={{ fontSize: '17px', fontWeight: '500', color: '#fff', margin: 0 }}>Recent Estimates</h3>
+        <button onClick={() => onViewEstimates()} style={{ background: '#1c1c1e', border: '0.5px solid rgba(255,255,255,0.1)', color: '#e4e4e7', padding: '6px 14px', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}>View All</button>
       </div>
 
       {recentEstimates.length === 0 ? (
@@ -378,7 +399,7 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onVi
 
       <div style={{ marginTop: '24px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Estimate</button>
-        <button onClick={onViewEstimates} style={{ background: '#1c1c1e', color: '#fff', border: '0.5px solid rgba(255,255,255,0.1)', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }}>All Estimates</button>
+        <button onClick={() => onViewEstimates()} style={{ background: '#1c1c1e', color: '#fff', border: '0.5px solid rgba(255,255,255,0.1)', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }}>All Estimates</button>
       </div>
     </div>
   );
@@ -457,7 +478,7 @@ function AccountView({ onBack }: { onBack: () => void }) {
         <button onClick={onBack} style={{ background: '#1c1c1e', border: '0.5px solid rgba(255,255,255,0.1)', color: '#e4e4e7', padding: '7px 14px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
           <ArrowLeft size={15} /> Back
         </button>
-        <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', margin: 0 }}>Account Settings</h2>
+        <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#fff', margin: 0 }}>Account Settings</h2>
       </div>
       <Tabs defaultValue="profile" className="space-y-4">
         <TabsList className="grid grid-cols-3 w-full max-w-lg">

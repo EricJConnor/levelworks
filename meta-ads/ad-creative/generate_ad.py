@@ -51,6 +51,16 @@ BOTTOM_LINE = "30 days free. No credit card."
 DASHBOARD_SCREENSHOT = ASSETS / "dashboard_screenshot.webp"
 CROP_BOX = (0, 976, 924, 1942)
 
+# The source screenshot's estimate card names a real client. These get
+# painted over the original text (same position, same card background) so
+# no real customer name/job ever appears in the ad. Coordinates are relative
+# to CROP_BOX (i.e. already cropped, pre-resize).
+CARD_JOB_NAME = "Hall Bathroom"
+CARD_CLIENT_NAME = "Mary Josephs"
+CARD_BG = (28, 28, 30)
+CARD_JOB_NAME_BOX = (60, 762, 600, 808)   # (left, top, right, bottom)
+CARD_CLIENT_NAME_BOX = (60, 819, 600, 858)
+
 # Safe margins so Instagram Stories UI (profile chip up top, reply bar/CTA
 # strip at the bottom) never overlaps the content.
 TOP_SAFE = 190
@@ -160,9 +170,24 @@ def rounded_mask(size, radius):
     return mask
 
 
+def redact_estimate_card(crop):
+    """Paints over the real client name/job from the source screenshot."""
+    draw = ImageDraw.Draw(crop)
+    draw.rectangle(CARD_JOB_NAME_BOX, fill=CARD_BG)
+    draw.rectangle(CARD_CLIENT_NAME_BOX, fill=CARD_BG)
+
+    x0, y0 = CARD_JOB_NAME_BOX[0], CARD_JOB_NAME_BOX[1]
+    draw.text((x0 + 21, y0 - 8), CARD_JOB_NAME, font=font("700", 32), fill=WHITE)
+
+    x1, y1 = CARD_CLIENT_NAME_BOX[0], CARD_CLIENT_NAME_BOX[1]
+    draw.text((x1 + 22, y1 - 4), CARD_CLIENT_NAME, font=font("500", 26), fill=MUTED_TEXT)
+    return crop
+
+
 def build_phone_mockup(frame_width):
     screenshot = Image.open(DASHBOARD_SCREENSHOT).convert("RGB")
     crop = screenshot.crop(CROP_BOX)
+    crop = redact_estimate_card(crop)
 
     inner_w = frame_width - 2 * PHONE_BEZEL
     inner_h = round(inner_w * crop.height / crop.width)

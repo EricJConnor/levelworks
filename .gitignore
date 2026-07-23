@@ -28,6 +28,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Ad creative — holds a real phone screenshot; confirm before committing
+# Ad creative — source screenshot has a real client's name/job baked in
+# (the generated output redacts it, so that's safe to commit)
 meta-ads/ad-creative/assets/dashboard_screenshot.webp
-meta-ads/ad-creative/output/

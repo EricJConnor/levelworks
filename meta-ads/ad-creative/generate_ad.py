@@ -29,6 +29,7 @@ WHITE = (255, 255, 255)
 BLUE = (37, 99, 235)             # #2563EB — LevelWorks blue
 MUTED_TEXT = (168, 174, 184)     # soft grey for secondary labels
 
+KICKER_TEXT = "ALL FOR $5/MONTH"
 HEADLINE_LINES = ["Run your business.", "Not your paperwork."]
 URL_TEXT = "LEVELWORKS.ORG"
 
@@ -124,6 +125,28 @@ def line_height(f):
     return ascent + descent
 
 
+def blend(c1, c2, t):
+    return tuple(round(a + (b - a) * t) for a, b in zip(c1, c2))
+
+
+def draw_kicker_pill(draw, center_x, y, text):
+    """Small rounded price badge — the attention-grabbing hook above the headline."""
+    f = font("800", 38)
+    tracking = 2
+    text_w = text_width(draw, text, f, tracking)
+    pad_x, pad_y = 34, 18
+    th = line_height(f)
+    pill_w = text_w + 2 * pad_x
+    pill_h = th + 2 * pad_y
+
+    box = [center_x - pill_w / 2, y, center_x + pill_w / 2, y + pill_h]
+    draw.rounded_rectangle(box, radius=pill_h / 2, fill=blend(BG_COLOR, BLUE, 0.20))
+    draw.rounded_rectangle(box, radius=pill_h / 2, outline=BLUE, width=2)
+
+    draw_tracked_text(draw, center_x, y + pad_y, text, f, BLUE, tracking=tracking)
+    return pill_h
+
+
 # ---------------------------------------------------------------------------
 # Phone mockup
 # ---------------------------------------------------------------------------
@@ -197,6 +220,10 @@ def main():
     center_x = CANVAS_W // 2
     y = TOP_SAFE
 
+    # --- Kicker (price hook) ---------------------------------------------
+    pill_h = draw_kicker_pill(draw, center_x, y, KICKER_TEXT)
+    y += pill_h + 28
+
     # --- Headline -----------------------------------------------------
     headline_font = fit_font_size(
         draw, HEADLINE_LINES, "900", max_text_width, start_size=98, min_size=56
@@ -206,12 +233,12 @@ def main():
         draw.text((center_x, y), line, font=headline_font, fill=WHITE, anchor="ma")
         y += int(hl_line_height * 1.04)
 
-    y += 26
+    y += 20
 
     # --- URL ------------------------------------------------------------
     url_font = font("700", 34)
     draw_tracked_text(draw, center_x, y, URL_TEXT, url_font, BLUE, tracking=3)
-    y += line_height(url_font) + 56
+    y += line_height(url_font) + 44
 
     # --- Feature grid (2x2) ---------------------------------------------
     grid_width = min(920, max_text_width)
@@ -221,8 +248,8 @@ def main():
 
     feature_font = font("600", 28)
     icon_d = 44
-    row_gap = 34
-    text_top_gap = 18
+    row_gap = 26
+    text_top_gap = 16
 
     positions = [
         (grid_left, col_width),
@@ -273,7 +300,7 @@ def main():
 
         row_y += row_height + row_gap
 
-    y = row_y - row_gap + 50
+    y = row_y - row_gap + 36
 
     # --- Phone mockup -----------------------------------------------------
     phone = build_phone_mockup(PHONE_FRAME_WIDTH)
@@ -290,7 +317,7 @@ def main():
     img = base_rgba.convert("RGB")
     draw = ImageDraw.Draw(img)
 
-    y = phone_y + phone.height + 64
+    y = phone_y + phone.height + 48
 
     # --- Bottom line --------------------------------------------------
     bottom_font = fit_font_size(

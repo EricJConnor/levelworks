@@ -131,17 +131,17 @@ def blend(c1, c2, t):
 
 def draw_kicker_pill(draw, center_x, y, text):
     """Small rounded price badge — the attention-grabbing hook above the headline."""
-    f = font("800", 38)
+    f = font("800", 56)
     tracking = 2
     text_w = text_width(draw, text, f, tracking)
-    pad_x, pad_y = 34, 18
+    pad_x, pad_y = 44, 26
     th = line_height(f)
     pill_w = text_w + 2 * pad_x
     pill_h = th + 2 * pad_y
 
     box = [center_x - pill_w / 2, y, center_x + pill_w / 2, y + pill_h]
     draw.rounded_rectangle(box, radius=pill_h / 2, fill=blend(BG_COLOR, BLUE, 0.20))
-    draw.rounded_rectangle(box, radius=pill_h / 2, outline=BLUE, width=2)
+    draw.rounded_rectangle(box, radius=pill_h / 2, outline=BLUE, width=3)
 
     draw_tracked_text(draw, center_x, y + pad_y, text, f, BLUE, tracking=tracking)
     return pill_h
@@ -222,11 +222,11 @@ def main():
 
     # --- Kicker (price hook) ---------------------------------------------
     pill_h = draw_kicker_pill(draw, center_x, y, KICKER_TEXT)
-    y += pill_h + 28
+    y += pill_h + 22
 
     # --- Headline -----------------------------------------------------
     headline_font = fit_font_size(
-        draw, HEADLINE_LINES, "900", max_text_width, start_size=98, min_size=56
+        draw, HEADLINE_LINES, "900", max_text_width, start_size=80, min_size=56
     )
     hl_line_height = line_height(headline_font)
     for line in HEADLINE_LINES:
@@ -317,7 +317,7 @@ def main():
     img = base_rgba.convert("RGB")
     draw = ImageDraw.Draw(img)
 
-    y = phone_y + phone.height + 48
+    y = phone_y + phone.height + 32
 
     # --- Bottom line --------------------------------------------------
     bottom_font = fit_font_size(

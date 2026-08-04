@@ -651,25 +651,25 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
           )}
         </div>
 
-        <div className="p-4 md:p-6 border-t bg-white flex-shrink-0">
+        <div className="p-2 md:p-3 border-t bg-white flex-shrink-0">
           {isReadOnly ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <button onClick={() => setIsReadOnly(false)} className="px-4 py-4 text-white rounded-lg font-semibold text-base flex items-center justify-center gap-2" style={{ background: '#1c1c1e' }}>
-                <Edit size={18} /> Edit
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              <button onClick={() => setIsReadOnly(false)} className="px-3 py-2 text-white rounded-lg font-semibold text-sm flex items-center justify-center gap-1.5" style={{ background: '#1c1c1e' }}>
+                <Edit size={14} /> Edit
               </button>
-              <button onClick={handleSendEstimate} disabled={isSaving} className="px-4 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-base disabled:opacity-50">Send</button>
+              <button onClick={handleSendEstimate} disabled={isSaving} className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm disabled:opacity-50">Send</button>
               {(existingEstimate?.status === 'approved' || existingEstimate?.status === 'sent') && (
-                <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-4 py-4 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-semibold text-base">Convert to Invoice</button>
+                <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-semibold text-sm">Convert to Invoice</button>
               )}
-              <button onClick={onClose} className="px-4 py-4 border-2 rounded-lg hover:bg-gray-50 font-semibold text-base">Close</button>
+              <button onClick={onClose} className="px-3 py-2 border-2 rounded-lg hover:bg-gray-50 font-semibold text-sm">Close</button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              <button onClick={handleDone} disabled={isSaving} className="px-4 py-4 text-white rounded-lg font-semibold text-base disabled:opacity-50 bg-blue-500 hover:bg-blue-600">{isSaving ? 'Saving...' : 'Done'}</button>
-              <button onClick={handleSave} disabled={isSaving} className="px-4 py-4 text-white rounded-lg font-semibold text-base disabled:opacity-50" style={{ background: '#1c1c1e' }}>{isSaving ? 'Saving...' : 'Save'}</button>
-              <button onClick={handleSendEstimate} disabled={isSaving} className="px-4 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-base disabled:opacity-50">{isSaving ? 'Saving...' : 'Send'}</button>
-              <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-4 py-4 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-semibold text-base">Convert to Invoice</button>
-              <button onClick={onClose} className="px-4 py-4 border-2 rounded-lg hover:bg-gray-50 font-semibold text-base">Cancel</button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+              <button onClick={handleDone} disabled={isSaving} className="px-3 py-2 text-white rounded-lg font-semibold text-sm disabled:opacity-50 bg-blue-500 hover:bg-blue-600">{isSaving ? 'Saving...' : 'Done'}</button>
+              <button onClick={handleSave} disabled={isSaving} className="px-3 py-2 text-white rounded-lg font-semibold text-sm disabled:opacity-50" style={{ background: '#1c1c1e' }}>{isSaving ? 'Saving...' : 'Save'}</button>
+              <button onClick={handleSendEstimate} disabled={isSaving} className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm disabled:opacity-50">{isSaving ? 'Saving...' : 'Send'}</button>
+              <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-semibold text-sm">Convert to Invoice</button>
+              <button onClick={onClose} className="px-3 py-2 border-2 rounded-lg hover:bg-gray-50 font-semibold text-sm">Cancel</button>
             </div>
           )}
         </div>

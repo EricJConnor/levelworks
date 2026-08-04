@@ -7,6 +7,7 @@ import { Plus, Trash2, Send, X, FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { sendInvoiceEmail } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
+import { autoGrowTextarea } from '@/lib/utils';
 
 interface InvoiceBuilderProps {
   estimateId?: string;
@@ -264,12 +265,12 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 md:p-4">
-      <Card className="w-full max-w-4xl max-h-[95vh] overflow-auto">
-        <div className="sticky top-0 text-white p-3 md:p-4 flex justify-between items-center z-10" style={{background: '#1c1c1e'}}>
+      <Card className="w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
+        <div className="text-white p-3 md:p-4 flex justify-between items-center z-10 flex-shrink-0" style={{background: '#1c1c1e'}}>
           <h2 className="text-lg md:text-xl font-bold">{isConversion ? 'Convert to Invoice' : 'Create Invoice'}</h2>
           <button onClick={() => { onClose?.(); onComplete?.(); }} className="p-2 hover:bg-green-700 rounded"><X size={24} /></button>
         </div>
-        <div className="p-4 md:p-6 space-y-4">
+        <div className="p-4 md:p-6 space-y-4 overflow-y-auto flex-1">
           <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
             <div className="relative">
               <label className="block text-sm font-semibold mb-2">Client Name *</label>
@@ -343,7 +344,13 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
                     <span className="text-sm font-semibold text-gray-600">Item {index + 1}</span>
                     <button onClick={() => removeLineItem(index)} className="text-red-600 p-1"><Trash2 size={18} /></button>
                   </div>
-                  <textarea placeholder="Description" value={item.description} onChange={(e) => updateLineItem(index, 'description', e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none resize-none" rows={2} />
+                  <textarea
+                    ref={autoGrowTextarea}
+                    placeholder="Description"
+                    value={item.description}
+                    onChange={(e) => { updateLineItem(index, 'description', e.target.value); autoGrowTextarea(e.target); }}
+                    className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none resize-none min-h-[7.75rem] md:min-h-[10.75rem] max-h-[31.75rem] overflow-y-auto"
+                  />
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">Qty</label>
@@ -368,6 +375,8 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
           <div className="bg-green-50 p-4 rounded-lg">
             <div className="text-right text-2xl font-bold text-green-700">Total: ${calculateTotal().toFixed(2)}</div>
           </div>
+        </div>
+        <div className="p-4 md:p-6 border-t bg-background flex-shrink-0">
           <Button onClick={handleSubmit} disabled={sending} className="w-full py-4 text-base bg-green-600 hover:bg-green-700">
             {buttonIcon}{buttonText}
           </Button>

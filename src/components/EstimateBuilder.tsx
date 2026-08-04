@@ -6,6 +6,7 @@ import { SendEstimateModal } from './SendEstimateModal';
 import { supabase } from '@/lib/supabase';
 import { X, Plus, Trash2, Users, Edit, ImageIcon } from 'lucide-react';
 import { PhotoUpload } from './PhotoUpload';
+import { autoGrowTextarea } from '@/lib/utils';
 
 interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; sectionTitle?: string; }
 interface Props { onClose: () => void; onConvertToInvoice?: (data: any) => void; existingEstimate?: any; }
@@ -345,7 +346,14 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
           {/* Description */}
           <div>
             <label className="block text-xs text-gray-500 mb-1">Description</label>
-            <textarea value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none resize-none disabled:bg-gray-100" placeholder="Description" rows={2} disabled={isReadOnly} />
+            <textarea
+              ref={autoGrowTextarea}
+              value={item.description}
+              onChange={(e) => { updateItem(item.id, 'description', e.target.value); autoGrowTextarea(e.target); }}
+              className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none resize-none disabled:bg-gray-100 min-h-[7.75rem] md:min-h-[10.75rem] max-h-[31.75rem] overflow-y-auto"
+              placeholder="Description"
+              disabled={isReadOnly}
+            />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -482,9 +490,9 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 md:p-4">
-      <div className="bg-white rounded-lg w-full max-w-6xl max-h-[95vh] overflow-auto">
+      <div className="bg-white rounded-lg w-full max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
 
-        <div className="sticky top-0 text-white p-3 md:p-4 flex justify-between items-center z-10" style={{ background: '#1c1c1e' }}>
+        <div className="text-white p-3 md:p-4 flex justify-between items-center z-10 flex-shrink-0" style={{ background: '#1c1c1e' }}>
           <h2 className="text-lg md:text-2xl font-bold">
             {isReadOnly ? 'View Estimate' : existingEstimate ? 'Edit Estimate' : 'Create Estimate'}
           </h2>
@@ -498,7 +506,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
           </div>
         </div>
 
-        <div className="p-4 md:p-6">
+        <div className="p-4 md:p-6 overflow-y-auto flex-1">
           <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
             {!isReadOnly && clients.length > 0 && (
               <div className="md:col-span-3 mb-2">
@@ -641,7 +649,9 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
               )}
             </div>
           )}
+        </div>
 
+        <div className="p-4 md:p-6 border-t bg-white flex-shrink-0">
           {isReadOnly ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <button onClick={() => setIsReadOnly(false)} className="px-4 py-4 text-white rounded-lg font-semibold text-base flex items-center justify-center gap-2" style={{ background: '#1c1c1e' }}>

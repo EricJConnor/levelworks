@@ -18,7 +18,7 @@ import AuthModal from './AuthModal';
 import { useData, Estimate } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
-import { Menu, X, Bell, Loader2, User, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send, HelpCircle, Plus, CreditCard } from 'lucide-react';
+import { Menu, Bell, Loader2, User, Users, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send, HelpCircle, Plus, CreditCard, Home } from 'lucide-react';
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -168,9 +168,6 @@ export const AppLayout: React.FC = () => {
             <button onClick={handleSignOut} className="hide-mobile" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <LogOut size={15} /> Sign Out
             </button>
-            <button className="mobile-only" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', cursor: 'pointer' }}>
-              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
           </div>
         </div>
         <div className="mobile-quick-add mobile-only" style={{ gap: '8px', padding: '10px 16px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
@@ -181,20 +178,6 @@ export const AppLayout: React.FC = () => {
             <Plus size={15} /> Invoice
           </button>
         </div>
-        {mobileMenuOpen && (
-          <div style={{ background: '#141416', borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '12px 16px 16px' }}>
-            {navItems.map(item => (
-              <button key={item.key} onClick={() => handleNavClick(item.key as View)} style={{ display: 'block', width: '100%', textAlign: 'left', background: currentView === item.key ? 'rgba(255,255,255,0.08)' : 'none', color: currentView === item.key ? '#fff' : '#a1a1aa', border: 'none', padding: '10px 14px', borderRadius: '7px', fontSize: '15px', fontWeight: currentView === item.key ? '500' : '400', cursor: 'pointer', marginBottom: '2px' }}>
-                {item.label}
-              </button>
-            ))}
-            <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', marginTop: '10px', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <button onClick={handleAccountClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><User size={16} /> Account</button>
-              <button onClick={handleHelpClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><HelpCircle size={16} /> Help</button>
-              <button onClick={handleSignOut} style={{ background: 'none', color: '#71717a', border: '0.5px solid rgba(255,255,255,0.08)', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><LogOut size={16} /> Sign Out</button>
-            </div>
-          </div>
-        )}
       </header>
 
       <style>{`
@@ -202,14 +185,19 @@ export const AppLayout: React.FC = () => {
           .desktop-nav { display: flex !important; gap: 2px; }
           .hide-mobile { display: inline !important; }
           .mobile-only { display: none !important; }
+          .bottom-nav { display: none !important; }
+          .mobile-sheet { display: none !important; }
         }
         @media (max-width: 1023px) {
           .hide-mobile { display: none !important; }
           .mobile-only { display: block !important; }
           .mobile-only.mobile-quick-add { display: flex !important; }
+          .bottom-nav { display: flex !important; }
+          .mobile-sheet { display: block !important; }
+          .app-main { padding-bottom: 88px !important; }
         }
         @media (max-width: 480px) {
-          .app-main { padding: 20px 14px 32px !important; }
+          .app-main { padding: 20px 14px 88px !important; }
         }
         .ghost-action { opacity: 0.9; transition: opacity 0.15s ease; }
         .ghost-action:hover { opacity: 1; }
@@ -246,6 +234,52 @@ export const AppLayout: React.FC = () => {
         {currentView === 'notes' && <Notes />}
         {currentView === 'account' && <AccountView onBack={() => setCurrentView('dashboard')} />}
       </main>
+
+      {mobileMenuOpen && (
+        <>
+          <div className="mobile-sheet" onClick={() => setMobileMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 39 }} />
+          <div className="mobile-sheet" style={{ position: 'fixed', bottom: '64px', left: 0, right: 0, background: '#141416', borderTop: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '14px 14px 0 0', padding: '12px 16px calc(16px + env(safe-area-inset-bottom))', zIndex: 41, boxShadow: '0 -4px 20px rgba(0,0,0,0.3)' }}>
+            {navItems.map(item => (
+              <button key={item.key} onClick={() => handleNavClick(item.key as View)} style={{ display: 'block', width: '100%', textAlign: 'left', background: currentView === item.key ? 'rgba(255,255,255,0.08)' : 'none', color: currentView === item.key ? '#fff' : '#a1a1aa', border: 'none', padding: '10px 14px', borderRadius: '7px', fontSize: '15px', fontWeight: currentView === item.key ? '500' : '400', cursor: 'pointer', marginBottom: '2px' }}>
+                {item.label}
+              </button>
+            ))}
+            <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', marginTop: '10px', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <button onClick={handleAccountClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><User size={16} /> Account</button>
+              <button onClick={handleHelpClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><HelpCircle size={16} /> Help</button>
+              <button onClick={handleSignOut} style={{ background: 'none', color: '#71717a', border: '0.5px solid rgba(255,255,255,0.08)', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><LogOut size={16} /> Sign Out</button>
+            </div>
+          </div>
+        </>
+      )}
+
+      <nav className="bottom-nav" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#1c1c1e', borderTop: '0.5px solid rgba(255,255,255,0.1)', zIndex: 40, paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {[
+          { key: 'dashboard' as View, label: 'Dashboard', icon: Home },
+          { key: 'estimates' as View, label: 'Estimates', icon: FileText },
+          { key: 'invoices' as View, label: 'Invoices', icon: Receipt },
+          { key: 'clients' as View, label: 'Clients', icon: Users },
+        ].map(({ key, label, icon: Icon }) => {
+          const active = currentView === key;
+          return (
+            <button
+              key={key}
+              onClick={() => handleNavClick(key)}
+              style={{ flex: 1, background: 'none', border: 'none', padding: '8px 4px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', color: active ? '#60a5fa' : '#71717a', cursor: 'pointer' }}
+            >
+              <Icon size={22} />
+              <span style={{ fontSize: '11px', fontWeight: active ? 600 : 400 }}>{label}</span>
+            </button>
+          );
+        })}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          style={{ flex: 1, background: 'none', border: 'none', padding: '8px 4px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', color: (mobileMenuOpen || !['dashboard', 'estimates', 'invoices', 'clients'].includes(currentView)) ? '#60a5fa' : '#71717a', cursor: 'pointer' }}
+        >
+          <Menu size={22} />
+          <span style={{ fontSize: '11px', fontWeight: (mobileMenuOpen || !['dashboard', 'estimates', 'invoices', 'clients'].includes(currentView)) ? 600 : 400 }}>More</span>
+        </button>
+      </nav>
 
       {showEstimate && (
         <EstimateBuilder

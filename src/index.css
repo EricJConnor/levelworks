@@ -114,15 +114,24 @@
     @apply text-base; /* Prevents iOS zoom on focus */
     font-size: 16px !important; /* Ensures no zoom on iOS */
     color: hsl(var(--foreground));
+    background-color: #fff;
+    color-scheme: light;
   }
 
   /* Typed value color must be set explicitly above: form controls use
      color: inherit (Tailwind preflight), so without this they pick up
      whatever text color the surrounding layout happens to have (e.g. the
      app shell's light-on-dark theme), which reads as pale/illegible on a
-     white input. Placeholder and disabled/readonly states get their own
-     distinct, still-accessible colors below so they can't drift back to
-     that inherited value. */
+     white input. The background-color and color-scheme are just as load
+     bearing on mobile: most of these fields never set their own
+     background, so on a phone with system dark mode on, the browser's
+     auto-dark heuristic (Android Chrome, Samsung Internet, etc.) repaints
+     the input background dark while leaving our dark text alone -
+     producing dark-on-dark that's just as unreadable as the original
+     pale-on-white bug. Declaring both explicitly opts these fields out of
+     that heuristic. Placeholder and disabled/readonly states get their
+     own distinct, still-accessible colors below so they can't drift back
+     to an inherited or auto-darkened value. */
   input::placeholder,
   textarea::placeholder {
     color: hsl(var(--muted-foreground));
@@ -136,6 +145,7 @@
   textarea[readonly] {
     color: hsl(var(--muted-foreground));
     -webkit-text-fill-color: hsl(var(--muted-foreground));
+    background-color: #f3f4f6;
     opacity: 1;
   }
 

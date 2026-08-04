@@ -100,6 +100,16 @@
     @apply font-mono;
   }
 
+  /* Form labels have the same inheritance problem as the inputs below:
+     no explicit color of their own, so they pick up whatever the
+     surrounding layout happens to set (e.g. a modal rendered inside the
+     app shell's light-on-dark chrome), reading as washed-out gray next to
+     text that does set its own color. This is a low-specificity fallback,
+     so any component that already sets its own label color keeps it. */
+  label {
+    color: hsl(var(--foreground));
+  }
+
   /* Mobile-optimized form inputs */
   input[type="text"],
   input[type="email"],
@@ -109,6 +119,7 @@
   input[type="password"],
   input[type="search"],
   input[type="url"],
+  input:not([type]),
   textarea,
   select {
     @apply text-base; /* Prevents iOS zoom on focus */
@@ -129,9 +140,14 @@
      the input background dark while leaving our dark text alone -
      producing dark-on-dark that's just as unreadable as the original
      pale-on-white bug. Declaring both explicitly opts these fields out of
-     that heuristic. Placeholder and disabled/readonly states get their
-     own distinct, still-accessible colors below so they can't drift back
-     to an inherited or auto-darkened value. */
+     that heuristic. `input:not([type])` matters just as much as the
+     type-qualified selectors above: most plain-text fields in this app
+     (client name, project name, section titles, search boxes, etc.) never
+     set a type attribute at all, so `input[type="text"]` alone silently
+     skips them and they'd keep the original bug. Placeholder and
+     disabled/readonly states get their own distinct, still-accessible
+     colors below so they can't drift back to an inherited or
+     auto-darkened value. */
   input::placeholder,
   textarea::placeholder {
     color: hsl(var(--muted-foreground));

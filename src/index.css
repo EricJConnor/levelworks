@@ -107,10 +107,36 @@
   input[type="number"],
   input[type="date"],
   input[type="password"],
+  input[type="search"],
+  input[type="url"],
   textarea,
   select {
     @apply text-base; /* Prevents iOS zoom on focus */
     font-size: 16px !important; /* Ensures no zoom on iOS */
+    color: hsl(var(--foreground));
+  }
+
+  /* Typed value color must be set explicitly above: form controls use
+     color: inherit (Tailwind preflight), so without this they pick up
+     whatever text color the surrounding layout happens to have (e.g. the
+     app shell's light-on-dark theme), which reads as pale/illegible on a
+     white input. Placeholder and disabled/readonly states get their own
+     distinct, still-accessible colors below so they can't drift back to
+     that inherited value. */
+  input::placeholder,
+  textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 1;
+  }
+
+  input:disabled,
+  textarea:disabled,
+  select:disabled,
+  input[readonly],
+  textarea[readonly] {
+    color: hsl(var(--muted-foreground));
+    -webkit-text-fill-color: hsl(var(--muted-foreground));
+    opacity: 1;
   }
 
   /* Better touch targets on mobile */

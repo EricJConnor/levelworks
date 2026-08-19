@@ -9,8 +9,17 @@ export interface Profile {
   phone_number: string;
   business_address: string;
   profile_photo_url: string;
+  business_email?: string;
   stripe_account_id?: string;
 }
+
+// Columns added after the original profiles table shipped. If a deployment
+// hasn't run the migration yet, Postgres/PostgREST rejects the whole upsert -
+// drop them and retry so saving a profile never hard-fails.
+const OPTIONAL_COLUMNS = ['business_email'] as const;
+const isUnknownColumnError = (err: { code?: string; message?: string }) =>
+  err?.code === '42703' || err?.code === 'PGRST204' ||
+  /column .* does not exist|could not find the .* column/i.test(err?.message || '');
 
 interface ProfileContextType {
   profile: Profile | null;
@@ -58,12 +67,19 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return false;
 
-      const profileData = { ...data, user_id: session.user.id, updated_at: new Date().toISOString() };
-      
-      const { error: upsertError } = await supabase
+      const profileData: Record<string, unknown> = { ...data, user_id: session.user.id, updated_at: new Date().toISOString() };
+
+      let { error: upsertError } = await supabase
         .from('profiles')
         .upsert(profileData, { onConflict: 'user_id' });
-      
+
+      if (upsertError && isUnknownColumnError(upsertError)) {
+        OPTIONAL_COLUMNS.forEach(column => delete profileData[column]);
+        ({ error: upsertError } = await supabase
+          .from('profiles')
+          .upsert(profileData, { onConflict: 'user_id' }));
+      }
+
       if (upsertError) throw upsertError;
       await refreshProfile();
       return true;

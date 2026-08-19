@@ -25,7 +25,11 @@ export default function LandingPage() {
     setMobileMenu(false);
   };
 
-  const handleAuthSuccess = () => { window.location.href = '/app'; };
+  // New signups get the business setup step first; returning users go
+  // straight into the app.
+  const handleAuthSuccess = (result?: { isNewUser?: boolean }) => {
+    window.location.href = result?.isNewUser ? '/welcome' : '/app';
+  };
   const openSignIn = () => { setAuthMode('signin'); setShowAuth(true); };
   const openSignUp = () => { setAuthMode('signup'); setShowAuth(true); };
 

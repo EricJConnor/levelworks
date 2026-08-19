@@ -75,6 +75,19 @@ export const AppLayout: React.FC = () => {
     return () => { mountedRef.current = false; subscription.unsubscribe(); };
   }, []);
 
+  // Handoff from onboarding: /app?new=estimate opens the estimate builder
+  // right away, then drops the param so a refresh doesn't reopen it.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('new') === 'estimate') {
+      setSelectedEstimate(null);
+      setShowEstimate(true);
+      params.delete('new');
+      const query = params.toString();
+      window.history.replaceState({}, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+    }
+  }, []);
+
   const checkPushStatus = async () => { setPushEnabled(await isPushSubscribed()); };
   const handleSignOut = async () => { await supabase.auth.signOut(); };
   const handleAccountClick = () => { setCurrentView('account'); setMobileMenuOpen(false); };

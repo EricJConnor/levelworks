@@ -40,7 +40,7 @@ export function PricingCountdown({ variant = 'landing', className = '' }: Pricin
           <div className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-green-400" />
             <span className="text-sm font-medium text-green-200">
-              30-day free trial. No credit card required.
+              14-day free trial. No credit card required.
             </span>
           </div>
         </div>

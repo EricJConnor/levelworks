@@ -99,7 +99,7 @@ export function StripePaymentForm({ onSuccess, isUpdate = false }: { onSuccess?:
       // Try to sign in (in case signup didn't auto-login)
       await supabase.auth.signInWithPassword({ email, password });
       
-      const trialDays = data.referralApplied ? 60 : 30;
+      const trialDays = data.referralApplied ? 60 : 14;
       toast({ title: 'Success!', description: `Your ${trialDays}-day free trial has started!` });
       window.location.href = '/app';
     } catch (err: any) {
@@ -130,7 +130,7 @@ export function StripePaymentForm({ onSuccess, isUpdate = false }: { onSuccess?:
             <AlertCircle className="w-4 h-4" /><span>{errorMsg}</span>
           </div>
         )}
-        <p className="text-sm text-slate-600 mb-4">{referralCode ? '60' : '30'} days free, then {priceText}. Cancel anytime.</p>
+        <p className="text-sm text-slate-600 mb-4">{referralCode ? '60' : '14'} days free, then {priceText}. Cancel anytime.</p>
         <input placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="w-full border-2 rounded-lg px-4 py-4 text-base mb-3 focus:border-blue-500 focus:outline-none" required />
         <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border-2 rounded-lg px-4 py-4 text-base mb-3 focus:border-blue-500 focus:outline-none" required />
         <input type="password" placeholder="Create Password (min 6 chars)" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border-2 rounded-lg px-4 py-4 text-base mb-3 focus:border-blue-500 focus:outline-none" required minLength={6} />
@@ -149,7 +149,7 @@ export function StripePaymentForm({ onSuccess, isUpdate = false }: { onSuccess?:
       <button type="button" onClick={() => setStep(1)} className="flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 mb-4 py-2"><ArrowLeft className="w-4 h-4" /> Back</button>
       <h3 className="text-xl md:text-2xl font-bold text-slate-900 mb-2">Payment Information</h3>
       {referralCode && <p className="text-sm text-purple-700 font-semibold mb-2">Referral bonus: 60 days free!</p>}
-      <p className="text-sm text-green-700 font-semibold mb-4">Card NOT charged for {referralCode ? '60' : '30'} days</p>
+      <p className="text-sm text-green-700 font-semibold mb-4">Card NOT charged for {referralCode ? '60' : '14'} days</p>
       
       {errorMsg && (
         <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">

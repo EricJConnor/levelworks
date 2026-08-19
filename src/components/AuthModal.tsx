@@ -9,7 +9,7 @@ import { X, ArrowLeft, Loader2, Mail, Lock, User, CheckCircle2, Eye, EyeOff } fr
 interface AuthModalProps {
   open: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (result?: { isNewUser?: boolean }) => void;
   defaultMode?: 'signin' | 'signup';
 }
 
@@ -106,7 +106,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
       
       toast({ title: isSignUp ? 'Account created!' : 'Welcome back!' });
       handleClose();
-      onSuccess();
+      onSuccess({ isNewUser: isSignUp });
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {

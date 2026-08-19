@@ -19,6 +19,7 @@ import PublicInvoiceView from "./pages/PublicInvoiceView";
 import PublicJobView from "./pages/PublicJobView";
 import PublicUpdateView from "./pages/PublicUpdateView";
 import Dashboard from "./pages/Dashboard";
+import Onboarding from "./pages/Onboarding";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import ResetPassword from "./pages/ResetPassword";
@@ -50,6 +51,7 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/app" element={<Index />} />
+                  <Route path="/welcome" element={<Onboarding />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/estimate/:id" element={<EstimateView />} />
                   <Route path="/view-estimate/:token" element={<PublicEstimateView />} />

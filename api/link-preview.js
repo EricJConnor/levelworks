@@ -44,6 +44,7 @@ module.exports = async (req, res) => {
 <meta charset="UTF-8" />
 <title>${escapeHtml(title)}</title>
 <meta property="og:title" content="${escapeHtml(title)}" />
+<meta name="robots" content="noindex, nofollow" />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="${escapeHtml(image)}" />
 <meta property="og:url" content="${escapeHtml(destination)}" />

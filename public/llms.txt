@@ -1,0 +1,36 @@
+# LevelWorks
+
+> LevelWorks (levelworks.org) is a $5/month web app for contractors and trades businesses: estimates, digital signatures, invoices, online card payments, automated recurring billing, client records, job notes and job-site photo updates, all in one place. Built by a working contractor for his own business first.
+
+## What it does
+
+- Unlimited professional estimates, sent by email or text as a link.
+- Clients review and sign from any phone, tablet or computer; you are notified instantly.
+- One-tap conversion of an estimate to an invoice.
+- Clients pay invoices online by Visa, Mastercard, American Express, Apple Pay or Google Pay; funds go straight to the contractor's bank account (processed by Stripe).
+- Automated recurring billing for maintenance and service contracts on any schedule (monthly, quarterly, every four months, yearly), with automatic retries and instant alerts on a failed card.
+- Your logo on every estimate and invoice.
+- Job-site photo updates: before, during and after progress reports sent to the client with one tap.
+- Client database, job management and job notes synced across devices.
+- Push notifications when a client views or signs.
+- Runs in the browser on iPhone, Android and desktop; installable to the home screen as a progressive web app. No app store download required.
+
+## Pricing
+
+- $5 per month, flat. Every feature included. No tiers, no add-ons, no contracts. Cancel anytime.
+- 30-day free trial with full access, no credit card required. 60 days when signing up through a referral link.
+- For comparison, most contractor estimating and invoicing apps charge $19 to $150 per month.
+
+## Who it is for
+
+Contractors, remodelers, painters, handymen, HVAC, plumbing, electrical, landscaping, cleaning and any service business that sends estimates and invoices. Company: Level Works LLC, United States.
+
+## Pages
+
+- [Home](https://levelworks.org/): features, pricing, how it works, FAQ.
+- [Terms of Service](https://levelworks.org/terms)
+- [Privacy Policy](https://levelworks.org/privacy)
+
+## Contact
+
+- support@levelworks.org

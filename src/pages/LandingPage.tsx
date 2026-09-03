@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, Check, FileText, Users, Briefcase, StickyNote, PenTool, Send, ChevronRight, Shield, Zap, CreditCard, Image, Camera, Repeat } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { FAQS } from '@/site';
 import { supabase } from '@/lib/supabase';
 
 export default function LandingPage() {
@@ -317,6 +318,21 @@ button>
         </div>
       </section>
 
+      <section id="faq" style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px' }}>
+        <div style={{ marginBottom: '48px' }}>
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '12px' }}>Questions, Answered</h2>
+          <p style={{ color: '#a0a0a0', fontSize: '18px' }}>The things contractors ask before they sign up.</p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1px', background: '#1a1a1a', border: '1px solid #1a1a1a', borderRadius: '12px', overflow: 'hidden' }}>
+          {FAQS.map((f, i) => (
+            <div key={i} style={{ background: '#0a0a0a', padding: '32px' }}>
+              <h3 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', marginBottom: '10px' }}>{f.q}</h3>
+              <p style={{ color: '#a0a0a0', fontSize: '14px', lineHeight: '1.7', margin: 0 }}>{f.a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section style={{ background: '#0f1f3d', borderTop: '1px solid #1e3a5f', padding: '80px 24px', textAlign: 'center' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: '800', color: '#fff', letterSpacing: '-1px', marginBottom: '16px' }}>
@@ -337,8 +353,8 @@ button>
             <p style={{ color: '#444', fontSize: '13px' }}>Professional tools for contractors.</p>
           </div>
           <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-            <button onClick={() => navigate('/terms')} style={{ color: '#444', fontSize: '13px', background: 'none', border: 'none', cursor: 'pointer' }}>Terms</button>
-            <button onClick={() => navigate('/privacy')} style={{ color: '#444', fontSize: '13px', background: 'none', border: 'none', cursor: 'pointer' }}>Privacy</button>
+            <Link to="/terms" style={{ color: '#444', fontSize: '13px', textDecoration: 'none' }}>Terms</Link>
+            <Link to="/privacy" style={{ color: '#444', fontSize: '13px', textDecoration: 'none' }}>Privacy</Link>
             <a href="mailto:support@levelworks.org" style={{ color: '#444', fontSize: '13px', textDecoration: 'none' }}>support@levelworks.org</a>
           </div>
           <p style={{ color: '#333', fontSize: '12px' }}>© 2025 LevelWorks. Built for the trades.</p>

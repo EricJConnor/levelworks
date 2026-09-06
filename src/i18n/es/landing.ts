@@ -68,7 +68,7 @@ export const landing: Record<string, string> = {
   'lp.tradeHvac': 'Aire y calefacción',
   'lp.tradeLandscapers': 'Jardineros',
   'lp.tradeRoofers': 'Techadores',
-  'lp.tradeHandymen': 'Manitas',
+  'lp.tradeHandymen': 'Handyman',
   'lp.tradeFlooring': 'Pisos',
   'lp.tradeCleaning': 'Servicios de limpieza',
 
@@ -78,7 +78,7 @@ export const landing: Record<string, string> = {
   'lp.featLead': 'Las mismas herramientas que las plataformas grandes venden por partes. Aquí van juntas, a un solo precio.',
   'lp.featTablistAria': 'Funciones',
   'lp.tabEstimates': 'Presupuestos',
-  'lp.tabEstimatesBlurb': 'Partidas, secciones, anticipos y tu logotipo. Haz uno en el teléfono afuera de la casa y envíalo antes de arrancar la troca.',
+  'lp.tabEstimatesBlurb': 'Partidas, secciones, anticipos y tu logotipo. Haz uno en el teléfono afuera de la casa y envíalo antes de irte.',
   'lp.tabSign': 'Firmas digitales',
   'lp.tabSignBlurb': 'El cliente aprueba y firma desde un enlace, en cualquier dispositivo, sin instalar nada. Te llega un aviso en el momento en que lo hace.',
   'lp.tabInvoices': 'Facturas y pagos con tarjeta',

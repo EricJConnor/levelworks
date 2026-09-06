@@ -1,6 +1,7 @@
 import { CreditCard, RefreshCw } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Mark } from './Mark';
+import { useT } from '@/i18n';
 
 interface SubscriptionBlockerProps {
   status: string;
@@ -8,6 +9,7 @@ interface SubscriptionBlockerProps {
 }
 
 export function SubscriptionBlocker({ status, onRetry }: SubscriptionBlockerProps) {
+  const t = useT();
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = '/';
@@ -20,17 +22,17 @@ export function SubscriptionBlocker({ status, onRetry }: SubscriptionBlockerProp
   const getStatusMessage = () => {
     switch (status) {
       case 'canceled':
-        return { title: 'Your subscription is cancelled', label: 'Cancelled', desc: 'Start it again whenever you like. Your estimates, invoices and clients are all still here.' };
+        return { title: t('mod.subscriptionCancelledTitle'), label: t('s.cancelled'), desc: t('mod.subscriptionCancelledDesc') };
       case 'past_due':
-        return { title: 'Your payment is past due', label: 'Past due', desc: 'Update your card and everything switches back on.' };
+        return { title: t('mod.paymentPastDueTitle'), label: t('s.pastDue'), desc: t('mod.updateCardDesc') };
       case 'unpaid':
-        return { title: 'Your last payment did not go through', label: 'Payment needed', desc: 'Update your card and everything switches back on.' };
+        return { title: t('mod.paymentDidNotGoThroughTitle'), label: t('mod.paymentNeeded'), desc: t('mod.updateCardDesc') };
       case 'incomplete':
-        return { title: 'Your setup is not finished', label: 'Setup incomplete', desc: 'Finish the payment step to open your account.' };
+        return { title: t('mod.setupNotFinishedTitle'), label: t('mod.setupIncomplete'), desc: t('mod.finishPaymentStep') };
       case 'incomplete_expired':
-        return { title: 'Your free trial has ended', label: 'Trial ending', desc: 'Subscribe to keep using LevelWorks. Your estimates, invoices and clients are all still here.' };
+        return { title: t('mod.freeTrialHasEnded'), label: t('mod.trialEnding'), desc: t('mod.subscribeToKeepUsing') };
       default:
-        return { title: 'A subscription is needed', label: 'Subscription', desc: 'Subscribe to open your account again. Your estimates, invoices and clients are all still here.' };
+        return { title: t('mod.subscriptionNeededTitle'), label: t('mod.subscription'), desc: t('mod.subscribeToOpenAgain') };
     }
   };
 
@@ -53,17 +55,17 @@ export function SubscriptionBlocker({ status, onRetry }: SubscriptionBlockerProp
 
         <h2 className="lv-h2" style={{ marginTop: 18 }}>{title}</h2>
         <p className="lv-sub" style={{ marginTop: 8 }}>{desc}</p>
-        <p className="lv-sub" style={{ marginTop: 8 }}>LevelWorks is $5 a month.</p>
+        <p className="lv-sub" style={{ marginTop: 8 }}>{t('mod.levelWorksIsFiveAMonth')}</p>
 
         <div className="lv-stack" style={{ gap: 8, marginTop: 20 }}>
           <button className="lv-btn pri wide" onClick={handleManageSubscription}>
             <CreditCard size={16} />
-            {needsCard ? 'Update your card' : 'Manage your subscription'}
+            {needsCard ? t('mod.updateYourCard') : t('mod.manageYourSubscription')}
           </button>
           <button className="lv-btn sec wide" onClick={onRetry}>
-            <RefreshCw size={15} /> Check again
+            <RefreshCw size={15} /> {t('mod.checkAgain')}
           </button>
-          <button className="lv-btn quiet wide" onClick={handleSignOut}>Sign out</button>
+          <button className="lv-btn quiet wide" onClick={handleSignOut}>{t('a.signOut')}</button>
         </div>
       </div>
     </div>

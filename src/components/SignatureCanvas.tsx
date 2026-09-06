@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import { useT } from '@/i18n';
 
 interface SignatureCanvasProps {
   onSave?: (signature: string) => void;
@@ -65,6 +66,7 @@ const compressSignature = (dataUrl: string, maxWidth: number = 400, quality: num
 
 export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasProps>(
   ({ onSave, onChange, showButtons = true }, ref) => {
+    const t = useT();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [hasDrawn, setHasDrawn] = useState(false);
@@ -192,11 +194,11 @@ export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasPro
           />
           {!hasDrawn && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <p className="text-gray-400 text-lg">Sign here</p>
+              <p className="text-gray-400 text-lg">{t('pg.sig.here')}</p>
             </div>
           )}
         </div>
-        <p className="text-sm text-gray-500 text-center">Draw your signature above using your finger or mouse</p>
+        <p className="text-sm text-gray-500 text-center">{t('pg.sig.hint')}</p>
         {showButtons && (
           <div className="flex gap-3">
             <button 
@@ -204,7 +206,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasPro
               type="button" 
               className="px-4 py-2 border rounded-lg hover:bg-gray-50 transition-colors"
             >
-              Clear
+              {t('pg.sig.clear')}
             </button>
             {onSave && (
               <button 
@@ -213,7 +215,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasPro
                 disabled={!hasDrawn} 
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Save Signature
+                {t('pg.sig.save')}
               </button>
             )}
           </div>

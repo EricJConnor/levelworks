@@ -4,6 +4,7 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 import { Card } from '@/components/ui/card';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { Loader2, FileText, Camera } from 'lucide-react';
+import { useT } from '@/i18n';
 
 interface JobDetails { client_name?: string; project_type?: string; update_summary?: string; update_sent_at?: string; date?: string; }
 interface Branding { company_name?: string; profile_photo_url?: string; }
@@ -11,6 +12,7 @@ interface Photo { id: string; fileUrl: string; caption?: string; }
 
 export default function PublicJobView() {
   const { token } = useParams();
+  const t = useT();
   const [job, setJob] = useState<JobDetails | null>(null);
   const [branding, setBranding] = useState<Branding | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -28,11 +30,11 @@ export default function PublicJobView() {
   };
 
   const loadJob = async () => {
-    if (!token) { setError('No link provided'); setLoading(false); return; }
+    if (!token) { setError(t('pg.pub.noLink')); setLoading(false); return; }
     try {
       const rows = await fetchJson(`public_job_details?view_token=eq.${encodeURIComponent(token)}&select=*`);
       if (!rows || rows.length === 0) {
-        setError('Update not found. The link may have expired or is invalid.');
+        setError(t('pg.upd.notFoundLong'));
         setLoading(false);
         return;
       }
@@ -44,7 +46,7 @@ export default function PublicJobView() {
       const photoRows = await fetchJson(`public_job_photos?view_token=eq.${encodeURIComponent(token)}&select=id,file_url,caption`);
       if (photoRows) setPhotos(photoRows.map((p: any) => ({ id: p.id, fileUrl: p.file_url, caption: p.caption })));
     } catch {
-      setError('An unexpected error occurred');
+      setError(t('pg.pub.unexpected'));
     } finally {
       setLoading(false);
     }
@@ -54,7 +56,7 @@ export default function PublicJobView() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-        <p className="text-gray-600">Loading update...</p>
+        <p className="text-gray-600">{t('pg.upd.loading')}</p>
       </div>
     );
   }
@@ -63,7 +65,7 @@ export default function PublicJobView() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
         <FileText className="h-16 w-16 text-gray-400 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">Update Not Found</h2>
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">{t('pg.upd.notFound')}</h2>
         <p className="text-gray-500 text-center max-w-md">{error}</p>
       </div>
     );
@@ -76,11 +78,11 @@ export default function PublicJobView() {
           <div className="border-b pb-6 mb-6">
             <div className="flex items-start gap-3">
               {branding?.profile_photo_url && (
-                <img src={branding.profile_photo_url} alt="Logo" className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
+                <img src={branding.profile_photo_url} alt={t('pg.pub.logoAlt')} className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
               )}
               <div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2"><Camera className="w-5 h-5 text-blue-600" /> Project Update</h2>
-                <p className="text-sm text-gray-500">{job.project_type || 'Project Update'}</p>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2"><Camera className="w-5 h-5 text-blue-600" /> {t('pg.upd.projectUpdate')}</h2>
+                <p className="text-sm text-gray-500">{job.project_type || t('pg.upd.projectUpdate')}</p>
                 {branding?.company_name && <p className="text-sm font-medium text-gray-700 mt-1">{branding.company_name}</p>}
               </div>
             </div>
@@ -95,10 +97,10 @@ export default function PublicJobView() {
           {photos.length > 0 ? (
             <PhotoGallery photos={photos} readOnly />
           ) : (
-            <p className="text-gray-500 text-center py-6">No photos yet.</p>
+            <p className="text-gray-500 text-center py-6">{t('pg.upd.noPhotosYet')}</p>
           )}
         </Card>
-        <p className="text-center text-xs text-gray-400 mt-4">Powered by levelworks.org</p>
+        <p className="text-center text-xs text-gray-400 mt-4">{t('pg.pub.poweredBy')}</p>
       </div>
     </div>
   );

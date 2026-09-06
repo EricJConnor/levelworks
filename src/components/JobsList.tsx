@@ -6,6 +6,7 @@ import { PhotoUpload } from './PhotoUpload';
 import { PhotoGallery } from './PhotoGallery';
 import { SendJobUpdateModal } from './SendJobUpdateModal';
 import { ImageIcon, ChevronDown, ChevronUp, Send, Plus, Hammer } from 'lucide-react';
+import { useT } from '@/i18n';
 
 interface Job {
   id: string;
@@ -28,16 +29,18 @@ interface JobsListProps {
   onViewJob: (job: Job) => void;
 }
 
-const STATUSES: { key: Job['status']; label: string }[] = [
-  { key: 'draft', label: 'Draft' },
-  { key: 'sent', label: 'Sent' },
-  { key: 'approved', label: 'Approved' },
-  { key: 'in-progress', label: 'In progress' },
-  { key: 'completed', label: 'Completed' },
+/* Labels are resolved at render time, so `t` is never called at module scope. */
+const STATUSES: { key: Job['status']; labelKey: string }[] = [
+  { key: 'draft', labelKey: 's.draft' },
+  { key: 'sent', labelKey: 's.sent' },
+  { key: 'approved', labelKey: 's.approved' },
+  { key: 'in-progress', labelKey: 'lst.statusInProgress' },
+  { key: 'completed', labelKey: 'lst.statusCompleted' },
 ];
 
 export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onViewJob }) => {
   const { updateJob, deleteJob } = useData();
+  const t = useT();
   const [showActions, setShowActions] = useState<string | null>(null);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [jobPhotos, setJobPhotos] = useState<Record<string, Photo[]>>({});
@@ -54,7 +57,10 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onVi
     }
   };
 
-  const statusLabel = (status: string) => STATUSES.find(s => s.key === status)?.label || status;
+  const statusLabel = (status: string) => {
+    const found = STATUSES.find(s => s.key === status);
+    return found ? t(found.labelKey) : status;
+  };
 
   const loadJobPhotos = async (jobId: string) => {
     try {
@@ -97,14 +103,14 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onVi
 
   const handleStatusChange = (jobId: string, newStatus: Job['status']) => {
     updateJob(jobId, { status: newStatus });
-    toast({ title: 'Success', description: 'Job status updated!' });
+    toast({ title: t('lst.jobStatusUpdated'), description: t('lst.jobStatusUpdatedBody') });
     setShowActions(null);
   };
 
   const handleDelete = (jobId: string) => {
-    if (confirm('Are you sure you want to delete this job?')) {
+    if (confirm(t('lst.confirmDeleteJob'))) {
       deleteJob(jobId);
-      toast({ title: 'Success', description: 'Job deleted!' });
+      toast({ title: t('lst.jobDeleted'), description: t('lst.jobDeletedBody') });
     }
   };
 
@@ -153,18 +159,18 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onVi
 
       <div className="lv-page-head">
         <div>
-          <h1 className="lv-h1">Jobs</h1>
-          <p className="lv-sub">Where each job stands, and the photos from site.</p>
+          <h1 className="lv-h1">{t('lst.jobs')}</h1>
+          <p className="lv-sub">{t('lst.jobsSub')}</p>
         </div>
-        <button className="lv-btn pri" onClick={() => onCreateEstimate()}><Plus size={16} /> New estimate</button>
+        <button className="lv-btn pri" onClick={() => onCreateEstimate()}><Plus size={16} /> {t('nav.newEstimate')}</button>
       </div>
 
       {jobs.length === 0 ? (
         <div className="lv-empty">
           <Hammer size={30} />
-          <h3>No jobs yet</h3>
-          <p>Write an estimate to start a job. Once it is running, its site photos live here.</p>
-          <button className="lv-btn pri" onClick={() => onCreateEstimate()}><Plus size={16} /> New estimate</button>
+          <h3>{t('lst.noJobsYet')}</h3>
+          <p>{t('lst.noJobsBody')}</p>
+          <button className="lv-btn pri" onClick={() => onCreateEstimate()}><Plus size={16} /> {t('nav.newEstimate')}</button>
         </div>
       ) : (
         <div className="lv-card">
@@ -193,9 +199,9 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onVi
                       {showActions === job.id && (
                         <div className="lv-pop jl-pop" onPointerDown={(e) => e.stopPropagation()}>
                           {STATUSES.map(s => (
-                            <button key={s.key} onClick={() => handleStatusChange(job.id, s.key)}>{s.label}</button>
+                            <button key={s.key} onClick={() => handleStatusChange(job.id, s.key)}>{t(s.labelKey)}</button>
                           ))}
-                          <button className="jl-del" onClick={() => handleDelete(job.id)}>Delete job</button>
+                          <button className="jl-del" onClick={() => handleDelete(job.id)}>{t('lst.deleteJob')}</button>
                         </div>
                       )}
                     </div>
@@ -205,7 +211,7 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onVi
                 <div className="jl-photos">
                   <button className="jl-toggle" onClick={() => handleExpandJob(job.id)} aria-expanded={expanded}>
                     <ImageIcon size={15} />
-                    Photos ({photos.length})
+                    {t('lst.photosCount', { count: photos.length })}
                     {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                   </button>
 
@@ -215,14 +221,14 @@ export const JobsList: React.FC<JobsListProps> = ({ jobs, onCreateEstimate, onVi
                         <PhotoUpload jobId={job.id} onPhotoUploaded={(photo) => handlePhotoUploaded(job.id, photo)} />
                         {photos.length > 0 && (
                           <button className="lv-btn sec sm" onClick={() => setSendUpdateJob(job)}>
-                            <Send size={15} /> Send photo update
+                            <Send size={15} /> {t('lst.sendPhotoUpdate')}
                           </button>
                         )}
                       </div>
                       {photos.length > 0 ? (
                         <PhotoGallery photos={photos} onPhotoDeleted={(photoId) => handlePhotoDeleted(job.id, photoId)} />
                       ) : (
-                        <p className="lv-small">No photos on this job yet.</p>
+                        <p className="lv-small">{t('lst.noPhotosOnJob')}</p>
                       )}
                     </div>
                   )}

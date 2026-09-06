@@ -3,28 +3,16 @@ import { X, Loader2, CheckCircle, Send } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
+import { useT } from '@/i18n';
 
-const FAQS = [
-  {
-    q: 'How do I create an estimate?',
-    a: 'From the Dashboard or Estimates tab, click "+ Estimate", pick or add a client, and add your line items. You can send it to the client by email or text as soon as it\'s ready.',
-  },
-  {
-    q: 'How do I turn an estimate into an invoice?',
-    a: 'Open an approved estimate and use "Convert to Invoice" — it carries over the client and line items so you don\'t have to re-enter anything.',
-  },
-  {
-    q: 'How do clients pay me?',
-    a: 'Connect your bank account under Dashboard > Set Up Payments (powered by Stripe). Once connected, clients can pay invoices online and funds go straight to your account.',
-  },
-  {
-    q: 'How do I send job photos or progress updates?',
-    a: 'Use the Photos tab to upload photos to a job, then send an update to your client by email or text with a link to view them.',
-  },
-  {
-    q: 'How does billing work?',
-    a: 'LevelWorks is $5/month after your free trial. You can view your plan status or cancel anytime from Account > Billing.',
-  },
+type T = (key: string, vars?: Record<string, string | number>) => string;
+
+const faqs = (t: T) => [
+  { q: t('mod.faqCreateEstimateQ'), a: t('mod.faqCreateEstimateA') },
+  { q: t('mod.faqConvertToInvoiceQ'), a: t('mod.faqConvertToInvoiceA') },
+  { q: t('mod.faqHowClientsPayQ'), a: t('mod.faqHowClientsPayA') },
+  { q: t('mod.faqJobPhotosQ'), a: t('mod.faqJobPhotosA') },
+  { q: t('mod.faqBillingQ'), a: t('mod.faqBillingA') },
 ];
 
 interface HelpModalProps {
@@ -32,6 +20,7 @@ interface HelpModalProps {
 }
 
 export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
+  const t = useT();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -47,7 +36,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
 
   const handleSend = async () => {
     if (!email.trim() || !message.trim()) {
-      toast({ title: 'Missing info', description: 'Please enter your email and a message.', variant: 'destructive' });
+      toast({ title: t('mod.missingInfo'), description: t('mod.enterEmailAndMessage'), variant: 'destructive' });
       return;
     }
     setSending(true);
@@ -58,7 +47,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
       if (error) throw error;
       setSent(true);
     } catch (err: any) {
-      toast({ title: 'Failed to send', description: err.message || 'Please try again.', variant: 'destructive' });
+      toast({ title: t('mod.failedToSend'), description: err.message || t('e.tryAgain'), variant: 'destructive' });
     } finally {
       setSending(false);
     }
@@ -70,10 +59,10 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
 
         <div className="lv-modal-head">
           <div>
-            <span className="lv-eyebrow">Support</span>
-            <h2 className="lv-h2">{showForm ? 'Contact us' : 'Help and FAQs'}</h2>
+            <span className="lv-eyebrow">{t('mod.support')}</span>
+            <h2 className="lv-h2">{showForm ? t('mod.contactUs') : t('mod.helpAndFaqs')}</h2>
           </div>
-          <button className="lv-icon-btn" onClick={onClose} aria-label="Close">
+          <button className="lv-icon-btn" onClick={onClose} aria-label={t('a.close')}>
             <X size={20} />
           </button>
         </div>
@@ -82,7 +71,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
           {!showForm && (
             <>
               <Accordion type="single" collapsible>
-                {FAQS.map((item, i) => (
+                {faqs(t).map((item, i) => (
                   <AccordionItem key={i} value={`faq-${i}`}>
                     <AccordionTrigger className="lv-h3">{item.q}</AccordionTrigger>
                     <AccordionContent className="lv-sub">{item.a}</AccordionContent>
@@ -90,28 +79,28 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                 ))}
               </Accordion>
               <p className="lv-small" style={{ marginTop: 18 }}>
-                Still need help? Send us a message and we'll get back to you.
+                {t('mod.stillNeedHelp')}
               </p>
             </>
           )}
 
           {showForm && !sent && (
             <div className="lv-stack">
-              <p className="lv-sub">Tell us what's going on and we'll come back to you by email.</p>
+              <p className="lv-sub">{t('mod.tellUsWhatsGoingOn')}</p>
               <div>
                 <label className="lv-field">
-                  <span className="lv-label">Your name</span>
+                  <span className="lv-label">{t('mod.yourName')}</span>
                   <input
                     className="lv-input"
                     value={name}
                     onChange={e => setName(e.target.value)}
                     autoComplete="name"
-                    placeholder="Eric Connor"
+                    placeholder={t('mod.yourNamePlaceholder')}
                     disabled={sending}
                   />
                 </label>
                 <label className="lv-field">
-                  <span className="lv-label">Your email</span>
+                  <span className="lv-label">{t('mod.yourEmail')}</span>
                   <input
                     className="lv-input"
                     type="email"
@@ -119,18 +108,18 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                     autoComplete="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    placeholder="you@email.com"
+                    placeholder={t('mod.emailPlaceholder')}
                     disabled={sending}
                   />
                 </label>
                 <label className="lv-field">
-                  <span className="lv-label">Message</span>
+                  <span className="lv-label">{t('mod.message')}</span>
                   <textarea
                     className="lv-textarea"
                     value={message}
                     onChange={e => setMessage(e.target.value)}
                     rows={5}
-                    placeholder="What can we help with?"
+                    placeholder={t('mod.whatCanWeHelpWith')}
                     disabled={sending}
                   />
                 </label>
@@ -141,8 +130,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
           {showForm && sent && (
             <div className="lv-empty">
               <CheckCircle size={40} style={{ color: 'var(--lv-green)' }} />
-              <h3>Message sent</h3>
-              <p>We'll get back to you at {email.trim() || 'your email'} as soon as we can.</p>
+              <h3>{t('mod.messageSent')}</h3>
+              <p>{t('mod.weWillGetBackToYouAt', { email: email.trim() || t('mod.yourEmailFallback') })}</p>
             </div>
           )}
         </div>
@@ -150,23 +139,23 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
         <div className="lv-modal-foot">
           {!showForm ? (
             <div className="lv-actions">
-              <button className="lv-btn quiet" onClick={onClose}>Close</button>
+              <button className="lv-btn quiet" onClick={onClose}>{t('a.close')}</button>
               <span className="spacer" />
-              <button className="lv-btn pri" onClick={() => setShowForm(true)}>Contact us</button>
+              <button className="lv-btn pri" onClick={() => setShowForm(true)}>{t('mod.contactUs')}</button>
             </div>
           ) : sent ? (
             <div className="lv-actions">
               <span className="spacer" />
-              <button className="lv-btn pri span" onClick={onClose}>Close</button>
+              <button className="lv-btn pri span" onClick={onClose}>{t('a.close')}</button>
             </div>
           ) : (
             <div className="lv-actions">
-              <button className="lv-btn quiet" onClick={() => setShowForm(false)} disabled={sending}>Back</button>
+              <button className="lv-btn quiet" onClick={() => setShowForm(false)} disabled={sending}>{t('a.back')}</button>
               <span className="spacer" />
               <button className="lv-btn pri" onClick={handleSend} disabled={sending}>
                 {sending
-                  ? <><Loader2 size={16} className="animate-spin" /> Sending…</>
-                  : <><Send size={16} /> Send message</>}
+                  ? <><Loader2 size={16} className="animate-spin" /> {t('a.sending')}</>
+                  : <><Send size={16} /> {t('mod.sendMessage')}</>}
               </button>
             </div>
           )}

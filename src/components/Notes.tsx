@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, ChevronRight, Search, StickyNote, ArrowLeft, Trash2 } from 'lucide-react';
+import { useT } from '@/i18n';
 
 interface Note {
   id: string;
@@ -13,6 +14,7 @@ interface Note {
 
 export const Notes: React.FC = () => {
   const { toast } = useToast();
+  const t = useT();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -62,7 +64,7 @@ export const Notes: React.FC = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const noteTitle = title.trim() || content.trim().split('\n')[0].slice(0, 50) || 'New Note';
+      const noteTitle = title.trim() || content.trim().split('\n')[0].slice(0, 50) || t('lst.newNoteTitle');
       if (selectedNote) {
         const { error } = await supabase
           .from('notes')
@@ -81,14 +83,14 @@ export const Notes: React.FC = () => {
       setTitle('');
       setContent('');
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Failed to save note', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: err.message || t('lst.noteSaveFailed'), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (noteId: string) => {
-    if (!confirm('Delete this note?')) return;
+    if (!confirm(t('lst.confirmDeleteNote'))) return;
     try {
       await supabase.from('notes').delete().eq('id', noteId);
       setNotes(notes.filter(n => n.id !== noteId));
@@ -99,7 +101,7 @@ export const Notes: React.FC = () => {
         setIsNew(false);
       }
     } catch (err: any) {
-      toast({ title: 'Error', description: 'Failed to delete note', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: t('lst.noteDeleteFailed'), variant: 'destructive' });
     }
   };
 
@@ -166,10 +168,10 @@ export const Notes: React.FC = () => {
 
       <div className="lv-page-head">
         <div>
-          <h1 className="lv-h1">Notes</h1>
-          <p className="lv-sub">Measurements, punch lists and anything you need to remember on site.</p>
+          <h1 className="lv-h1">{t('nav.notes')}</h1>
+          <p className="lv-sub">{t('lst.notesSub')}</p>
         </div>
-        <button className="lv-btn pri" onClick={handleNew}><Plus size={16} /> New note</button>
+        <button className="lv-btn pri" onClick={handleNew}><Plus size={16} /> {t('lst.newNote')}</button>
       </div>
 
       <div className="lv-card nt-shell">
@@ -181,21 +183,21 @@ export const Notes: React.FC = () => {
                 className="lv-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search notes"
+                placeholder={t('lst.searchNotes')}
               />
             </div>
           </div>
           <div className="nt-list-body">
             {loading ? (
-              <p className="lv-small" style={{ padding: 18, textAlign: 'center' }}>Loading…</p>
+              <p className="lv-small" style={{ padding: 18, textAlign: 'center' }}>{t('a.loading')}</p>
             ) : filteredNotes.length === 0 ? (
               <div style={{ padding: 24, textAlign: 'center' }}>
                 <StickyNote size={26} style={{ color: 'var(--lv-faint)', marginBottom: 10 }} />
-                <p className="lv-h3" style={{ marginBottom: 6 }}>{searchQuery ? 'Nothing matches' : 'No notes yet'}</p>
+                <p className="lv-h3" style={{ marginBottom: 6 }}>{searchQuery ? t('lst.nothingMatchesShort') : t('lst.noNotesYet')}</p>
                 <p className="lv-small" style={{ marginBottom: 14 }}>
-                  {searchQuery ? 'Try another word from the note.' : 'Write down what you need to remember about a job.'}
+                  {searchQuery ? t('lst.tryAnotherWord') : t('lst.noNotesBody')}
                 </p>
-                {!searchQuery && <button className="lv-btn pri sm" onClick={handleNew}><Plus size={15} /> New note</button>}
+                {!searchQuery && <button className="lv-btn pri sm" onClick={handleNew}><Plus size={15} /> {t('lst.newNote')}</button>}
               </div>
             ) : (
               filteredNotes.map(note => (
@@ -205,8 +207,8 @@ export const Notes: React.FC = () => {
                   className={`lv-row nt-row ${selectedNote?.id === note.id ? 'on' : ''}`}
                 >
                   <div style={{ minWidth: 0, flex: 1 }}>
-                    <div className="lv-row-t nt-clip">{note.title || 'Untitled'}</div>
-                    <div className="lv-row-s nt-clip">{note.content || 'Empty note'}</div>
+                    <div className="lv-row-t nt-clip">{note.title || t('lst.untitled')}</div>
+                    <div className="lv-row-s nt-clip">{note.content || t('lst.emptyNote')}</div>
                     <div className="lv-row-s lv-num">{new Date(note.updated_at).toLocaleDateString()}</div>
                   </div>
                   <ChevronRight size={16} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
@@ -223,12 +225,12 @@ export const Notes: React.FC = () => {
                 className="lv-btn quiet sm nt-back"
                 onClick={() => { setSelectedNote(null); setIsNew(false); setTitle(''); setContent(''); }}
               >
-                <ArrowLeft size={15} /> Notes
+                <ArrowLeft size={15} /> {t('nav.notes')}
               </button>
               <div className="lv-inline" style={{ marginLeft: 'auto', gap: 8 }}>
                 {selectedNote && (
                   <button className="lv-btn danger sm" onClick={() => handleDelete(selectedNote.id)}>
-                    <Trash2 size={15} /> Delete
+                    <Trash2 size={15} /> {t('a.delete')}
                   </button>
                 )}
                 <button
@@ -236,7 +238,7 @@ export const Notes: React.FC = () => {
                   onClick={handleSave}
                   disabled={saving || (!content.trim() && !title.trim())}
                 >
-                  {saving ? 'Saving…' : 'Save'}
+                  {saving ? t('a.saving') : t('a.save')}
                 </button>
               </div>
             </div>
@@ -244,13 +246,13 @@ export const Notes: React.FC = () => {
               className="nt-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Title"
+              placeholder={t('lst.noteTitlePlaceholder')}
             />
             <textarea
               className="nt-body"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Start typing"
+              placeholder={t('lst.noteBodyPlaceholder')}
               autoFocus
             />
           </div>
@@ -258,9 +260,9 @@ export const Notes: React.FC = () => {
           <div className="nt-blank">
             <div style={{ textAlign: 'center' }}>
               <StickyNote size={28} style={{ color: 'var(--lv-faint)', marginBottom: 10 }} />
-              <p className="lv-h3" style={{ marginBottom: 6 }}>Nothing open</p>
-              <p className="lv-small" style={{ marginBottom: 16 }}>Pick a note on the left, or start a new one.</p>
-              <button className="lv-btn pri sm" onClick={handleNew}><Plus size={15} /> New note</button>
+              <p className="lv-h3" style={{ marginBottom: 6 }}>{t('lst.nothingOpen')}</p>
+              <p className="lv-small" style={{ marginBottom: 16 }}>{t('lst.nothingOpenBody')}</p>
+              <button className="lv-btn pri sm" onClick={handleNew}><Plus size={15} /> {t('lst.newNote')}</button>
             </div>
           </div>
         )}

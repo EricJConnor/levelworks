@@ -2,18 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { Trash2, Loader2, X } from 'lucide-react';
+import { useT } from '@/i18n';
 
 interface DeleteAccountDialogProps {
   userEmail?: string;
 }
 
-const GONE = [
-  'Every estimate and invoice',
-  'Every client and their details',
-  'All job records',
-  'Your profile and settings',
-  'Your chat history with the assistant',
-  'Any photos you uploaded',
+type T = (key: string, vars?: Record<string, string | number>) => string;
+
+const gone = (t: T) => [
+  t('mod.goneEstimatesInvoices'),
+  t('mod.goneClients'),
+  t('mod.goneJobRecords'),
+  t('mod.goneProfileSettings'),
+  t('mod.goneChatHistory'),
+  t('mod.gonePhotos'),
 ];
 
 export function DeleteAccountDialog({ userEmail }: DeleteAccountDialogProps) {
@@ -21,6 +24,7 @@ export function DeleteAccountDialog({ userEmail }: DeleteAccountDialogProps) {
   const [confirmText, setConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
+  const t = useT();
 
   // Lock the page behind the sheet and let Escape close it, the way the
   // other modals in the app behave. Never while the delete is in flight.
@@ -36,8 +40,8 @@ export function DeleteAccountDialog({ userEmail }: DeleteAccountDialogProps) {
   const handleDelete = async () => {
     if (confirmText !== 'DELETE') {
       toast({
-        title: 'Confirmation required',
-        description: 'Type DELETE to confirm you want the account removed.',
+        title: t('mod.confirmationRequired'),
+        description: t('mod.typeDeleteToConfirmSub'),
         variant: 'destructive'
       });
       return;
@@ -51,8 +55,8 @@ export function DeleteAccountDialog({ userEmail }: DeleteAccountDialogProps) {
 
       if (!user) {
         toast({
-          title: 'No session found',
-          description: 'Sign in again, then try deleting the account.',
+          title: t('mod.noSessionFound'),
+          description: t('mod.signInAgainToDelete'),
           variant: 'destructive'
         });
         setDeleting(false);
@@ -73,7 +77,7 @@ export function DeleteAccountDialog({ userEmail }: DeleteAccountDialogProps) {
 
       if (error) {
         console.error('Delete account error:', error);
-        throw new Error(error.message || 'Failed to delete account');
+        throw new Error(error.message || t('mod.failedToDeleteAccount'));
       }
 
       if (data?.success === false && data?.error) {
@@ -81,8 +85,8 @@ export function DeleteAccountDialog({ userEmail }: DeleteAccountDialogProps) {
       }
 
       toast({
-        title: 'Account deleted',
-        description: data?.warning || 'Your account and all of its data have been removed.'
+        title: t('mod.accountDeleted'),
+        description: data?.warning || t('mod.accountDeletedSub')
       });
 
       // Sign out and redirect to home
@@ -93,8 +97,8 @@ export function DeleteAccountDialog({ userEmail }: DeleteAccountDialogProps) {
     } catch (error) {
       console.error('Delete account error:', error);
       toast({
-        title: 'Could not delete the account',
-        description: error instanceof Error ? error.message : 'Something went wrong. Try again in a moment.',
+        title: t('mod.couldNotDeleteAccount'),
+        description: error instanceof Error ? error.message : t('mod.somethingWrongTryAgain'),
         variant: 'destructive'
       });
       setDeleting(false);
@@ -104,40 +108,40 @@ export function DeleteAccountDialog({ userEmail }: DeleteAccountDialogProps) {
   return (
     <>
       <button type="button" className="lv-btn danger wide" onClick={() => setOpen(true)}>
-        <Trash2 size={15} /> Delete account
+        <Trash2 size={15} /> {t('mod.deleteAccount')}
       </button>
 
       {open && (
         <div className="lv-scrim" onClick={() => { if (!deleting) setOpen(false); }}>
-          <div className="lv-modal" onClick={(e: React.MouseEvent) => e.stopPropagation()} role="alertdialog" aria-modal="true" aria-label="Delete your account">
+          <div className="lv-modal" onClick={(e: React.MouseEvent) => e.stopPropagation()} role="alertdialog" aria-modal="true" aria-label={t('mod.deleteYourAccount')}>
             <div className="lv-modal-head">
               <div>
-                <span className="lv-eyebrow" style={{ color: 'var(--lv-red)' }}>Permanent</span>
-                <h2 className="lv-h2">Delete your account</h2>
+                <span className="lv-eyebrow" style={{ color: 'var(--lv-red)' }}>{t('mod.permanent')}</span>
+                <h2 className="lv-h2">{t('mod.deleteYourAccount')}</h2>
               </div>
-              <button className="lv-icon-btn" onClick={() => setOpen(false)} disabled={deleting} aria-label="Close">
+              <button className="lv-icon-btn" onClick={() => setOpen(false)} disabled={deleting} aria-label={t('a.close')}>
                 <X size={20} />
               </button>
             </div>
 
             <div className="lv-modal-body">
               <p className="lv-sub" style={{ color: 'var(--lv-ink-2)', fontWeight: 600 }}>
-                This cannot be undone.
+                {t('mod.cannotBeUndone')}
               </p>
               <p className="lv-sub" style={{ marginTop: 6 }}>
                 {userEmail
-                  ? <>Deleting the account for {userEmail} removes:</>
-                  : <>Deleting your account removes:</>}
+                  ? t('mod.deletingAccountForRemoves', { email: userEmail })
+                  : t('mod.deletingYourAccountRemoves')}
               </p>
 
               <ul className="lv-small" style={{ margin: '10px 0 0', paddingLeft: 18, lineHeight: 1.9 }}>
-                {GONE.map(item => <li key={item}>{item}</li>)}
+                {gone(t).map(item => <li key={item}>{item}</li>)}
               </ul>
 
               <hr className="lv-hr" />
 
               <label className="lv-field">
-                <span className="lv-label">Type DELETE to confirm</span>
+                <span className="lv-label">{t('mod.typeDeleteToConfirm')}</span>
                 <input
                   className="lv-input"
                   id="confirm-delete"
@@ -154,7 +158,7 @@ export function DeleteAccountDialog({ userEmail }: DeleteAccountDialogProps) {
 
             <div className="lv-modal-foot">
               <div className="lv-actions">
-                <button className="lv-btn quiet" onClick={() => setOpen(false)} disabled={deleting}>Cancel</button>
+                <button className="lv-btn quiet" onClick={() => setOpen(false)} disabled={deleting}>{t('a.cancel')}</button>
                 <span className="spacer" />
                 <button
                   className="lv-btn danger"
@@ -162,8 +166,8 @@ export function DeleteAccountDialog({ userEmail }: DeleteAccountDialogProps) {
                   disabled={confirmText !== 'DELETE' || deleting}
                 >
                   {deleting
-                    ? <><Loader2 size={15} className="animate-spin" /> Deleting</>
-                    : <><Trash2 size={15} /> Delete account</>}
+                    ? <><Loader2 size={15} className="animate-spin" /> {t('a.deleting')}</>
+                    : <><Trash2 size={15} /> {t('mod.deleteAccount')}</>}
                 </button>
               </div>
             </div>

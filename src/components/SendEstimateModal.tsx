@@ -4,6 +4,7 @@ import { useData } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
 import { X, Mail, MessageSquare, Loader2, AlertCircle, CheckCircle, Copy, Check, ChevronRight } from 'lucide-react';
+import { useT } from '@/i18n';
 
 interface Props {
   estimateData?: any;
@@ -18,6 +19,7 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
   const data = estimateData || estimate;
   const { refreshEstimates } = useData();
   const { profile } = useProfile();
+  const t = useT();
   const [sendMethod, setSendMethod] = useState<SendMethod>(null);
   const [clientEmail, setClientEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -68,8 +70,8 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
 
   if (!data) return null;
 
-  const projectName = data.projectName || data.project_name || 'Project';
-  const clientName = data.clientName || data.client_name || 'Client';
+  const projectName = data.projectName || data.project_name || t('m.project');
+  const clientName = data.clientName || data.client_name || t('m.client');
   const totalAmount = Number(data.total) || 0;
   const estimateId = data.id;
   const estimateUrl = viewToken ? `${window.location.origin}/view-estimate/${viewToken}` : '';
@@ -79,7 +81,7 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
     try {
       await navigator.clipboard.writeText(estimateUrl);
       setLinkCopied(true);
-      toast({ title: 'Link Copied!', description: 'Paste it into your text message app.' });
+      toast({ title: t('a.copied'), description: t('mod.pasteIntoMessagesApp') });
       if (estimateId) {
         await supabase
           .from('estimates')
@@ -89,22 +91,22 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
       }
       setTimeout(() => { if (isMountedRef.current) setLinkCopied(false); }, 3000);
     } catch (err) {
-      toast({ title: 'Error', description: 'Could not copy link. Please try again.', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: t('mod.couldNotCopyLink'), variant: 'destructive' });
     }
   };
 
   const handleSendEmail = async () => {
     if (!clientEmail.trim()) {
-      toast({ title: 'Error', description: 'Please enter the client\'s email address', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: t('mod.enterClientEmail'), variant: 'destructive' });
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(clientEmail.trim())) {
-      toast({ title: 'Error', description: 'Please enter a valid email address', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: t('mod.enterValidEmail'), variant: 'destructive' });
       return;
     }
     if (!viewToken) {
-      toast({ title: 'Error', description: 'Unable to generate estimate link. Please try again.', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: t('mod.couldNotMakeLink'), variant: 'destructive' });
       return;
     }
 
@@ -126,17 +128,17 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
       if (!isMountedRef.current) return;
 
       if (error || result?.success === false) {
-        const errorMsg = error?.message || result?.error || 'Failed to send email';
+        const errorMsg = error?.message || result?.error || t('mod.failedToSendEmail');
         setErrorMessage(errorMsg);
         setSendStatus('error');
         setIsSending(false);
-        toast({ title: 'Failed to Send', description: errorMsg, variant: 'destructive' });
+        toast({ title: t('mod.failedToSend'), description: errorMsg, variant: 'destructive' });
         return;
       }
 
       setSendStatus('success');
       setIsSending(false);
-      toast({ title: 'Estimate Sent!', description: `Email sent to ${clientEmail.trim()}`, duration: 5000 });
+      toast({ title: t('mod.estimateSent'), description: t('mod.emailSentTo', { email: clientEmail.trim() }), duration: 5000 });
 
       if (estimateId) {
         await supabase
@@ -152,10 +154,10 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
     } catch (err: any) {
       if (!isMountedRef.current) return;
       setIsSending(false);
-      const errorMsg = err?.message || 'An unexpected error occurred.';
+      const errorMsg = err?.message || t('mod.unexpectedError');
       setErrorMessage(errorMsg);
       setSendStatus('error');
-      toast({ title: 'Error', description: errorMsg, variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: errorMsg, variant: 'destructive' });
     }
   };
 
@@ -167,10 +169,10 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
 
         <div className="lv-modal-head">
           <div>
-            <span className="lv-eyebrow">Estimate</span>
-            <h2 className="lv-h2">Send to your client</h2>
+            <span className="lv-eyebrow">{t('m.estimate')}</span>
+            <h2 className="lv-h2">{t('mod.sendToYourClient')}</h2>
           </div>
-          <button className="lv-icon-btn" onClick={onClose} disabled={isSending} aria-label="Close">
+          <button className="lv-icon-btn" onClick={onClose} disabled={isSending} aria-label={t('a.close')}>
             <X size={20} />
           </button>
         </div>
@@ -190,7 +192,7 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
 
             {isGeneratingToken && (
               <p className="lv-small lv-inline">
-                <Loader2 size={16} className="animate-spin" /> Getting the client link ready…
+                <Loader2 size={16} className="animate-spin" /> {t('mod.gettingLinkReady')}
               </p>
             )}
 
@@ -200,8 +202,8 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
                   <span className="lv-inline" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
                     <Mail size={18} style={{ color: 'var(--lv-blue)', flexShrink: 0 }} />
                     <span>
-                      <span className="lv-row-t" style={{ display: 'block' }}>Email it</span>
-                      <span className="lv-row-s" style={{ display: 'block' }}>We send it straight to your client</span>
+                      <span className="lv-row-t" style={{ display: 'block' }}>{t('mod.emailIt')}</span>
+                      <span className="lv-row-s" style={{ display: 'block' }}>{t('mod.emailItSub')}</span>
                     </span>
                   </span>
                   <ChevronRight size={18} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
@@ -210,8 +212,8 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
                   <span className="lv-inline" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
                     <MessageSquare size={18} style={{ color: 'var(--lv-blue)', flexShrink: 0 }} />
                     <span>
-                      <span className="lv-row-t" style={{ display: 'block' }}>Text it</span>
-                      <span className="lv-row-s" style={{ display: 'block' }}>Copy the link and paste it into your messages</span>
+                      <span className="lv-row-t" style={{ display: 'block' }}>{t('mod.textIt')}</span>
+                      <span className="lv-row-s" style={{ display: 'block' }}>{t('mod.textItSub')}</span>
                     </span>
                   </span>
                   <ChevronRight size={18} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
@@ -228,14 +230,14 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
                   >
                     <AlertCircle size={18} style={{ color: 'var(--lv-red)', flexShrink: 0, marginTop: 2 }} />
                     <p className="lv-small" style={{ color: 'var(--lv-red)' }}>
-                      The estimate did not go out: {errorMessage}. Check the email address and send it again.
+                      {t('mod.estimateDidNotGoOut', { reason: errorMessage })}
                     </p>
                   </div>
                 )}
 
                 <div>
                   <label className="lv-field">
-                    <span className="lv-label">Client's email address</span>
+                    <span className="lv-label">{t('mod.clientEmailAddress')}</span>
                     <input
                       className="lv-input"
                       value={clientEmail}
@@ -243,29 +245,29 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
                       type="email"
                       inputMode="email"
                       autoComplete="email"
-                      placeholder="client@email.com"
+                      placeholder={t('mod.clientEmailPlaceholder')}
                       disabled={isSending}
                     />
                   </label>
                 </div>
-                <p className="lv-small">They get a link to open the estimate and approve it.</p>
+                <p className="lv-small">{t('mod.clientGetsLinkToApprove')}</p>
               </>
             )}
 
             {sendStatus === 'success' && (
               <div className="lv-empty">
                 <CheckCircle size={40} style={{ color: 'var(--lv-green)' }} />
-                <h3>Estimate sent</h3>
-                <p>{clientEmail.trim() || 'Your client'} will have it in a moment.</p>
+                <h3>{t('mod.estimateSentHeading')}</h3>
+                <p>{t('mod.willHaveItInAMoment', { who: clientEmail.trim() || t('mod.yourClient') })}</p>
               </div>
             )}
 
             {sendMethod === 'text' && sendStatus !== 'success' && (
               <>
                 <div className="lv-card lv-card-pad">
-                  <h3 className="lv-h3">Send it in a text</h3>
+                  <h3 className="lv-h3">{t('mod.sendItInAText')}</h3>
                   <p className="lv-sub" style={{ marginTop: 6 }}>
-                    Copy the link, then open your messages and paste it to your client.
+                    {t('mod.copyThenPasteToClient')}
                   </p>
                   {estimateUrl && (
                     <p className="lv-small" style={{ marginTop: 10, wordBreak: 'break-all', color: 'var(--lv-faint)' }}>
@@ -275,7 +277,7 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
                 </div>
                 {linkCopied && (
                   <p className="lv-small lv-inline" style={{ color: 'var(--lv-green)' }}>
-                    <Check size={16} /> Link copied. Paste it into your messages.
+                    <Check size={16} /> {t('mod.linkCopiedPaste')}
                   </p>
                 )}
               </>
@@ -288,11 +290,11 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
           {sendStatus === 'success' ? (
             <div className="lv-actions">
               <span className="spacer" />
-              <button className="lv-btn pri span" onClick={onClose}>Done</button>
+              <button className="lv-btn pri span" onClick={onClose}>{t('a.done')}</button>
             </div>
           ) : sendMethod === 'email' ? (
             <div className="lv-actions">
-              <button className="lv-btn quiet" onClick={() => setSendMethod(null)} disabled={isSending}>Back</button>
+              <button className="lv-btn quiet" onClick={() => setSendMethod(null)} disabled={isSending}>{t('a.back')}</button>
               <span className="spacer" />
               <button
                 className="lv-btn go"
@@ -300,25 +302,25 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
                 disabled={isSending || !viewToken || isGeneratingToken}
               >
                 {isSending
-                  ? <><Loader2 size={16} className="animate-spin" /> Sending…</>
-                  : <><Mail size={16} /> Send estimate</>}
+                  ? <><Loader2 size={16} className="animate-spin" /> {t('a.sending')}</>
+                  : <><Mail size={16} /> {t('mod.sendEstimate')}</>}
               </button>
             </div>
           ) : sendMethod === 'text' ? (
             <div className="lv-actions">
-              <button className="lv-btn quiet" onClick={onClose}>Done</button>
+              <button className="lv-btn quiet" onClick={onClose}>{t('a.done')}</button>
               <span className="spacer" />
               <button
                 className="lv-btn pri"
                 onClick={handleCopyLink}
                 disabled={!viewToken || isGeneratingToken}
               >
-                {linkCopied ? <><Check size={16} /> Link copied</> : <><Copy size={16} /> Copy link</>}
+                {linkCopied ? <><Check size={16} /> {t('mod.linkCopied')}</> : <><Copy size={16} /> {t('a.copyLink')}</>}
               </button>
             </div>
           ) : (
             <div className="lv-actions">
-              <button className="lv-btn quiet span" onClick={onClose} disabled={isSending}>Cancel</button>
+              <button className="lv-btn quiet span" onClick={onClose} disabled={isSending}>{t('a.cancel')}</button>
             </div>
           )}
         </div>

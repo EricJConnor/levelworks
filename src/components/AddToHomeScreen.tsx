@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Smartphone, Share, MoreVertical, Plus, Download, ChevronRight } from 'lucide-react';
+import { useT } from '@/i18n';
 
 export const AddToHomeScreen: React.FC = () => {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'iphone' | 'android'>('iphone');
 
@@ -10,7 +12,7 @@ export const AddToHomeScreen: React.FC = () => {
     <>
       <button onClick={() => setOpen(true)} className="lv-a2hs">
         <Smartphone size={16} />
-        <span>Add to phone</span>
+        <span>{t('nav.addToPhone')}</span>
       </button>
 
 
@@ -20,12 +22,12 @@ export const AddToHomeScreen: React.FC = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Smartphone className="text-blue-600" />
-              Add LevelWorks to your phone
+              {t('mod.addToPhoneTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <p className="text-gray-600 text-sm mb-4">
-            Install LevelWorks on your home screen so it opens like an app.
+            {t('mod.addToPhoneSub')}
           </p>
 
           <div className="flex gap-2 mb-4">
@@ -33,13 +35,13 @@ export const AddToHomeScreen: React.FC = () => {
               onClick={() => setActiveTab('iphone')}
               className={`lv-btn ${activeTab === 'iphone' ? 'pri' : 'sec'}`} style={{ flex: 1 }}
             >
-              iPhone / iPad
+              {t('mod.iphoneIpad')}
             </button>
             <button
               onClick={() => setActiveTab('android')}
               className={`lv-btn ${activeTab === 'android' ? 'pri' : 'sec'}`} style={{ flex: 1 }}
             >
-              Android
+              {t('mod.android')}
             </button>
           </div>
 
@@ -47,7 +49,7 @@ export const AddToHomeScreen: React.FC = () => {
 
           <div className="mt-4 pt-4 border-t">
             <p className="text-xs text-gray-500 text-center">
-              Once installed, Level will appear on your home screen and work offline!
+              {t('mod.onceInstalled')}
             </p>
           </div>
         </DialogContent>
@@ -57,35 +59,37 @@ export const AddToHomeScreen: React.FC = () => {
 };
 
 function IPhoneInstructions() {
+  const t = useT();
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-gray-800">Safari Browser (Required)</h3>
+      <h3 className="font-semibold text-gray-800">{t('mod.safariRequired')}</h3>
       <div className="space-y-3">
-        <Step number={1} icon={<Share size={18} />} title="Tap the Share button" desc="Located at the bottom of Safari (square with arrow pointing up)" />
-        <Step number={2} icon={<ChevronRight size={18} />} title="Scroll down in the menu" desc="Look through the list of options" />
-        <Step number={3} icon={<Plus size={18} />} title='Tap "Add to Home Screen"' desc="It has a plus icon next to it" />
-        <Step number={4} icon={<Download size={18} />} title='Tap "Add"' desc="Confirm by tapping Add in the top right corner" />
+        <Step number={1} icon={<Share size={18} />} title={t('mod.iosStep1')} desc={t('mod.iosStep1Desc')} />
+        <Step number={2} icon={<ChevronRight size={18} />} title={t('mod.iosStep2')} desc={t('mod.iosStep2Desc')} />
+        <Step number={3} icon={<Plus size={18} />} title={t('mod.iosStep3')} desc={t('mod.iosStep3Desc')} />
+        <Step number={4} icon={<Download size={18} />} title={t('mod.iosStep4')} desc={t('mod.iosStep4Desc')} />
       </div>
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
-        <p className="text-sm text-amber-800"><strong>Note:</strong> You must use Safari. This feature doesn't work in Chrome or other browsers on iPhone.</p>
+        <p className="text-sm text-amber-800"><strong>{t('mod.noteLabel')}</strong> {t('mod.safariOnlyNote')}</p>
       </div>
     </div>
   );
 }
 
 function AndroidInstructions() {
+  const t = useT();
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-gray-800">Chrome Browser</h3>
+      <h3 className="font-semibold text-gray-800">{t('mod.chromeBrowser')}</h3>
       <div className="space-y-3">
-        <Step number={1} icon={<MoreVertical size={18} />} title="Tap the menu button" desc="Three dots in the top right corner" />
-        <Step number={2} icon={<Download size={18} />} title='Tap "Install app" or "Add to Home screen"' desc="You may need to scroll down to find it" />
-        <Step number={3} icon={<Plus size={18} />} title='Tap "Install" or "Add"' desc="Confirm the installation" />
+        <Step number={1} icon={<MoreVertical size={18} />} title={t('mod.androidStep1')} desc={t('mod.androidStep1Desc')} />
+        <Step number={2} icon={<Download size={18} />} title={t('mod.androidStep2')} desc={t('mod.androidStep2Desc')} />
+        <Step number={3} icon={<Plus size={18} />} title={t('mod.androidStep3')} desc={t('mod.androidStep3Desc')} />
       </div>
-      <h3 className="font-semibold text-gray-800 mt-6">Samsung Internet</h3>
+      <h3 className="font-semibold text-gray-800 mt-6">{t('mod.samsungInternet')}</h3>
       <div className="space-y-3">
-        <Step number={1} icon={<MoreVertical size={18} />} title="Tap the menu button" desc="Three lines at the bottom right" />
-        <Step number={2} icon={<Plus size={18} />} title='Tap "Add page to" then "Home screen"' desc="Select Home screen from options" />
+        <Step number={1} icon={<MoreVertical size={18} />} title={t('mod.samsungStep1')} desc={t('mod.samsungStep1Desc')} />
+        <Step number={2} icon={<Plus size={18} />} title={t('mod.samsungStep2')} desc={t('mod.samsungStep2Desc')} />
       </div>
     </div>
   );

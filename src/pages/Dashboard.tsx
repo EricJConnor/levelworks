@@ -12,6 +12,7 @@ import { PricingCountdown } from '@/components/PricingCountdown';
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
 import { EdgeFunctionDiagnostic } from '@/components/EdgeFunctionDiagnostic';
 import AuthModal from '@/components/AuthModal';
+import { useT } from '@/i18n';
 import { Loader2, Gift, User, Mail, Calendar, Lock, AlertTriangle, Wrench, ArrowLeft } from 'lucide-react';
 
 // One class list for the six tabs, so the strip reads as the app's own
@@ -21,6 +22,7 @@ const TAB = 'gap-1.5 rounded-[7px] px-2.5 py-2 text-[13px] font-medium text-[var
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const t = useT();
 
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -99,10 +101,10 @@ export default function Dashboard() {
     return (
       <div className="lv-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
         <div className="lv-card lv-card-pad" style={{ maxWidth: 380, width: '100%', textAlign: 'center' }}>
-          <h2 className="lv-h2">Sign in to continue</h2>
-          <p className="lv-sub" style={{ margin: '8px 0 20px' }}>Your account settings are behind a sign-in.</p>
-          <button className="lv-btn pri wide" onClick={() => setShowAuthModal(true)}>Sign in</button>
-          <button className="lv-btn quiet wide" style={{ marginTop: 8 }} onClick={() => window.location.href = '/'}>Back to home</button>
+          <h2 className="lv-h2">{t('gate.title')}</h2>
+          <p className="lv-sub" style={{ margin: '8px 0 20px' }}>{t('pg.dash.gateBody')}</p>
+          <button className="lv-btn pri wide" onClick={() => setShowAuthModal(true)}>{t('a.signIn')}</button>
+          <button className="lv-btn quiet wide" style={{ marginTop: 8 }} onClick={() => window.location.href = '/'}>{t('gate.backHome')}</button>
         </div>
         <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} onSuccess={() => window.location.reload()} />
       </div>
@@ -113,13 +115,13 @@ export default function Dashboard() {
     <div className="lv-app">
       <main className="lv-main" style={{ maxWidth: 1024 }}>
         <button className="lv-btn quiet sm" style={{ marginBottom: 12, marginLeft: -10 }} onClick={handleBackToApp}>
-          <ArrowLeft size={15} /> Back to the app
+          <ArrowLeft size={15} /> {t('pg.dash.backToApp')}
         </button>
 
         <div className="lv-page-head">
           <div>
-            <h1 className="lv-h1">Account settings</h1>
-            <p className="lv-sub">Your business details, plan, security and referrals.</p>
+            <h1 className="lv-h1">{t('pg.dash.title')}</h1>
+            <p className="lv-sub">{t('pg.dash.sub')}</p>
           </div>
         </div>
 
@@ -127,12 +129,12 @@ export default function Dashboard() {
 
         <Tabs defaultValue={defaultTab} className="space-y-4">
           <TabsList className={TAB_LIST}>
-            <TabsTrigger value="profile" className={TAB}><User className="w-3.5 h-3.5" />Profile</TabsTrigger>
-            <TabsTrigger value="subscription" className={TAB}>Plan</TabsTrigger>
-            <TabsTrigger value="security" className={TAB}><Lock className="w-3.5 h-3.5" />Security</TabsTrigger>
-            <TabsTrigger value="referrals" className={TAB}><Gift className="w-3.5 h-3.5" />Refer</TabsTrigger>
-            <TabsTrigger value="diagnostic" className={TAB}><Wrench className="w-3.5 h-3.5" />Fix</TabsTrigger>
-            <TabsTrigger value="danger" className={TAB}><AlertTriangle className="w-3.5 h-3.5" />Delete</TabsTrigger>
+            <TabsTrigger value="profile" className={TAB}><User className="w-3.5 h-3.5" />{t('pg.dash.tabProfile')}</TabsTrigger>
+            <TabsTrigger value="subscription" className={TAB}>{t('pg.dash.tabPlan')}</TabsTrigger>
+            <TabsTrigger value="security" className={TAB}><Lock className="w-3.5 h-3.5" />{t('pg.dash.tabSecurity')}</TabsTrigger>
+            <TabsTrigger value="referrals" className={TAB}><Gift className="w-3.5 h-3.5" />{t('pg.dash.tabRefer')}</TabsTrigger>
+            <TabsTrigger value="diagnostic" className={TAB}><Wrench className="w-3.5 h-3.5" />{t('pg.dash.tabFix')}</TabsTrigger>
+            <TabsTrigger value="danger" className={TAB}><AlertTriangle className="w-3.5 h-3.5" />{t('pg.dash.tabDelete')}</TabsTrigger>
           </TabsList>
           <TabsContent value="profile"><ProfileEditor /></TabsContent>
           <TabsContent value="subscription"><SubscriptionCard subscription={subscription} onCancel={() => setCancelDialogOpen(true)} onUpdatePayment={() => setUpdatePaymentOpen(true)} /><PricingCountdown className="mt-4" /></TabsContent>
@@ -144,11 +146,11 @@ export default function Dashboard() {
           <TabsContent value="danger">
             <div className="lv-card" style={{ maxWidth: 560 }}>
               <div className="lv-card-head">
-                <h2 className="lv-h2">Delete your account</h2>
+                <h2 className="lv-h2">{t('pg.dash.deleteTitle')}</h2>
               </div>
               <div className="lv-card-pad">
                 <p className="lv-sub" style={{ marginBottom: 16 }}>
-                  This cannot be undone. Every estimate, invoice, client and setting is removed for good.
+                  {t('pg.dash.deleteBody')}
                 </p>
                 <DeleteAccountDialog userEmail={userEmail || undefined} />
               </div>
@@ -164,6 +166,7 @@ export default function Dashboard() {
 }
 
 function ProfileCard({ profile, userEmail, userCreatedAt }: { profile: any; userEmail: string | null; userCreatedAt: string | null }) {
+  const t = useT();
   return (
     <div className="lv-card" style={{ marginBottom: 20 }}>
       <div className="lv-card-head">
@@ -180,8 +183,8 @@ function ProfileCard({ profile, userEmail, userCreatedAt }: { profile: any; user
               : <User size={22} />}
           </div>
           <div style={{ minWidth: 0 }}>
-            <p className="lv-h3">{profile?.full_name || 'Your profile'}</p>
-            <p className="lv-small" style={{ marginTop: 2 }}>{profile?.company_name || 'Account information'}</p>
+            <p className="lv-h3">{profile?.full_name || t('pg.dash.yourProfile')}</p>
+            <p className="lv-small" style={{ marginTop: 2 }}>{profile?.company_name || t('pg.dash.accountInfo')}</p>
           </div>
         </div>
       </div>
@@ -190,18 +193,18 @@ function ProfileCard({ profile, userEmail, userCreatedAt }: { profile: any; user
           <div className="lv-inline" style={{ gap: 11, padding: '11px 13px', background: 'var(--lv-sunken)', borderRadius: 'var(--lv-r)', flexWrap: 'nowrap', minWidth: 0 }}>
             <Mail size={17} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
             <div style={{ minWidth: 0 }}>
-              <p className="lv-eyebrow">Email</p>
+              <p className="lv-eyebrow">{t('m.email')}</p>
               <p className="lv-small" style={{ color: 'var(--lv-ink)', fontWeight: 500, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {userEmail || 'Not available'}
+                {userEmail || t('pg.dash.notAvailable')}
               </p>
             </div>
           </div>
           <div className="lv-inline" style={{ gap: 11, padding: '11px 13px', background: 'var(--lv-sunken)', borderRadius: 'var(--lv-r)', flexWrap: 'nowrap', minWidth: 0 }}>
             <Calendar size={17} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
             <div style={{ minWidth: 0 }}>
-              <p className="lv-eyebrow">Member since</p>
+              <p className="lv-eyebrow">{t('pg.dash.memberSince')}</p>
               <p className="lv-small lv-num" style={{ color: 'var(--lv-ink)', fontWeight: 500, marginTop: 2 }}>
-                {userCreatedAt ? new Date(userCreatedAt).toLocaleDateString() : 'Not available'}
+                {userCreatedAt ? new Date(userCreatedAt).toLocaleDateString() : t('pg.dash.notAvailable')}
               </p>
             </div>
           </div>
@@ -212,17 +215,18 @@ function ProfileCard({ profile, userEmail, userCreatedAt }: { profile: any; user
 }
 
 function SubscriptionCard({ subscription, onCancel, onUpdatePayment }: any) {
+  const t = useT();
   if (!subscription) return (
     <div className="lv-card" style={{ maxWidth: 560 }}>
       <div className="lv-card-head">
-        <h2 className="lv-h2">Your plan</h2>
-        <span className="lv-pill">No subscription</span>
+        <h2 className="lv-h2">{t('pg.dash.planTitle')}</h2>
+        <span className="lv-pill">{t('pg.dash.noSubscription')}</span>
       </div>
       <div className="lv-card-pad">
         <p className="lv-sub" style={{ marginBottom: 16 }}>
-          There is no active subscription on this account. LevelWorks is $5 a month.
+          {t('pg.dash.noSubBody')}
         </p>
-        <button className="lv-btn pri">Start free trial</button>
+        <button className="lv-btn pri">{t('pg.dash.startTrial')}</button>
       </div>
     </div>
   );
@@ -232,25 +236,25 @@ function SubscriptionCard({ subscription, onCancel, onUpdatePayment }: any) {
   return (
     <div className="lv-card" style={{ maxWidth: 560 }}>
       <div className="lv-card-head">
-        <h2 className="lv-h2">Your plan</h2>
-        <span className={`lv-pill ${tone}`}>{status ? status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ') : 'Unknown'}</span>
+        <h2 className="lv-h2">{t('pg.dash.planTitle')}</h2>
+        <span className={`lv-pill ${tone}`}>{status ? status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ') : t('pg.dash.statusUnknown')}</span>
       </div>
       <div className="lv-card-pad">
         <div className="lv-grid-2">
           <div>
-            <p className="lv-eyebrow">Plan</p>
-            <p className="lv-h3" style={{ marginTop: 4 }}>Professional</p>
+            <p className="lv-eyebrow">{t('pg.dash.planLabel')}</p>
+            <p className="lv-h3" style={{ marginTop: 4 }}>{t('pg.dash.planName')}</p>
           </div>
           <div>
-            <p className="lv-eyebrow">Rate</p>
-            <p className="lv-h3 lv-num" style={{ marginTop: 4 }}>{amount ? `$${amount} a month` : '—'}</p>
+            <p className="lv-eyebrow">{t('m.rate')}</p>
+            <p className="lv-h3 lv-num" style={{ marginTop: 4 }}>{amount ? t('pg.dash.amountAMonth', { amount }) : '—'}</p>
           </div>
         </div>
       </div>
       <div className="lv-card-foot">
         <div className="lv-inline">
-          <button className="lv-btn sec sm" onClick={onUpdatePayment}>Update payment</button>
-          <button className="lv-btn danger sm" onClick={onCancel}>Cancel subscription</button>
+          <button className="lv-btn sec sm" onClick={onUpdatePayment}>{t('pg.dash.updatePayment')}</button>
+          <button className="lv-btn danger sm" onClick={onCancel}>{t('pg.dash.cancelSubscription')}</button>
         </div>
       </div>
     </div>

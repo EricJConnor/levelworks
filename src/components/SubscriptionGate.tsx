@@ -5,6 +5,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Check, Loader2, Lock } from 'lucide-react';
 import { Mark } from './Mark';
+import { useT } from '@/i18n';
 
 const stripePromise = loadStripe('pk_live_51Rv0bbCrlMKmuUj4ll9r1pdjnK3SKP7LmqlTMi4CYBlBHuLu5NtO0UOBSj8aFGiw1qKNkFQgjm3roSWupxHFbUxL00BEFePpG1');
 
@@ -22,6 +23,7 @@ const elementOptions = {
 };
 
 function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEmail: string; onSuccess: () => void }) {
+  const t = useT();
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -35,7 +37,7 @@ function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEma
 
     try {
       const cardElement = elements.getElement(CardNumberElement);
-      if (!cardElement) throw new Error('Card element not found');
+      if (!cardElement) throw new Error(t('mod.cardFieldNotReady'));
 
       const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
@@ -54,7 +56,7 @@ function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEma
 
       onSuccess();
     } catch (err: any) {
-      setError(err.message || 'Payment failed. Please try again.');
+      setError(err.message || t('mod.paymentFailed'));
     } finally {
       setLoading(false);
     }
@@ -78,7 +80,7 @@ function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEma
       )}
 
       <label className="lv-field">
-        <span className="lv-label">Card number</span>
+        <span className="lv-label">{t('mod.cardNumber')}</span>
         <div className="lv-input focus-within:border-[var(--lv-blue)]">
           <CardNumberElement options={elementOptions} />
         </div>
@@ -86,13 +88,13 @@ function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEma
 
       <div className="lv-grid-2" style={{ marginTop: 14 }}>
         <label className="lv-field">
-          <span className="lv-label">Expires</span>
+          <span className="lv-label">{t('mod.expires')}</span>
           <div className="lv-input focus-within:border-[var(--lv-blue)]">
             <CardExpiryElement options={elementOptions} />
           </div>
         </label>
         <label className="lv-field" style={{ marginTop: 0 }}>
-          <span className="lv-label">Security code</span>
+          <span className="lv-label">{t('mod.securityCode')}</span>
           <div className="lv-input focus-within:border-[var(--lv-blue)]">
             <CardCvcElement options={elementOptions} />
           </div>
@@ -101,15 +103,15 @@ function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEma
 
       <button type="submit" className="lv-btn pri wide lg" disabled={!stripe || loading} style={{ marginTop: 20 }}>
         {loading
-          ? <><Loader2 size={18} className="animate-spin" /> Processing…</>
-          : <><Lock size={17} /> Subscribe — $5 a month</>}
+          ? <><Loader2 size={18} className="animate-spin" /> {t('mod.processing')}</>
+          : <><Lock size={17} /> {t('mod.subscribeFiveAMonth')}</>}
       </button>
 
       <ul className="lv-stack" style={{ gap: 7, listStyle: 'none', margin: '16px 0 0', padding: 0 }}>
         {[
-          'Cancel any time from your account settings.',
-          '$5 a month, nothing else added on.',
-          'Your estimates, clients and invoices stay where they are.',
+          t('mod.cancelAnyTimeInSettings'),
+          t('mod.fiveAMonthNothingElse'),
+          t('mod.yourDataStaysPut'),
         ].map(line => (
           <li key={line} className="lv-small" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
             <Check size={15} style={{ color: 'var(--lv-green)', flexShrink: 0, marginTop: 2 }} />
@@ -126,6 +128,7 @@ interface SubscriptionGateProps {
 }
 
 export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) => {
+  const t = useT();
   const [status, setStatus] = useState<'loading' | 'trial' | 'active' | 'expired' | 'cancelled'>('loading');
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [userId, setUserId] = useState('');
@@ -184,14 +187,14 @@ export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) 
               <Mark size={22} />
               Level<span style={{ color: 'var(--lv-blue)' }}>Works</span>
             </span>
-            <span className="lv-pill amber">{status === 'cancelled' ? 'Cancelled' : 'Trial ended'}</span>
+            <span className="lv-pill amber">{status === 'cancelled' ? t('s.cancelled') : t('mod.trialEnded')}</span>
           </div>
           <div className="lv-card-pad">
             <h2 className="lv-h2">
-              {status === 'cancelled' ? 'Start your subscription again' : 'Your free trial has ended'}
+              {status === 'cancelled' ? t('mod.startSubscriptionAgain') : t('mod.freeTrialHasEnded')}
             </h2>
             <p className="lv-sub" style={{ marginTop: 8, marginBottom: 20 }}>
-              LevelWorks is $5 a month. Your estimates, clients and invoices are all still here.
+              {t('mod.fiveAMonthEverythingStillHere')}
             </p>
             <Elements stripe={stripePromise}>
               <PaymentForm
@@ -224,12 +227,12 @@ export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) 
             textAlign: 'center',
           }}
         >
-          <span className="lv-pill amber">Trial ending</span>
+          <span className="lv-pill amber">{t('mod.trialEnding')}</span>
           <span>
-            Your free trial ends in {daysLeft} day{daysLeft !== 1 ? 's' : ''}.
+            {daysLeft === 1 ? t('mod.trialEndsInOneDay', { n: daysLeft }) : t('mod.trialEndsInDays', { n: daysLeft })}
           </span>
           <button className="lv-btn pri sm" onClick={() => setStatus('expired')}>
-            Subscribe — $5 a month
+            {t('mod.subscribeFiveAMonth')}
           </button>
         </div>
       )}

@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { sendInvoiceEmail } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { autoGrowTextarea } from '@/lib/utils';
+import { useT } from '@/i18n';
 
 interface InvoiceBuilderProps {
   estimateId?: string;
@@ -20,6 +21,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   const { addInvoice, invoices } = useInvoices();
   const { addClient, clients, estimates } = useData();
   const { toast } = useToast();
+  const t = useT();
   const [clientName, setClientName] = useState(initialData?.clientName || '');
   const [clientEmail, setClientEmail] = useState(initialData?.clientEmail || '');
   const [clientPhone, setClientPhone] = useState(initialData?.clientPhone || '');
@@ -71,7 +73,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   // Handle conversion - just save the invoice without sending email
   const handleConvert = async () => {
     if (!clientName || !projectName || lineItems.length === 0) {
-      toast({ title: 'Please fill in all required fields', variant: 'destructive' });
+      toast({ title: t('inv.fillRequired'), variant: 'destructive' });
       return;
     }
     setSending(true);
@@ -125,17 +127,17 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
       });
 
       console.log('[InvoiceBuilder] Invoice created with ID:', invoiceId);
-      toast({ title: 'Invoice created', description: 'You can send it from the Invoices list.' });
+      toast({ title: t('inv.created'), description: t('inv.createdBody') });
 
       onComplete?.();
       onClose?.();
     } catch (error: any) {
       console.error('Convert to invoice error:', error);
-      let errorMessage = 'Error creating invoice';
+      let errorMessage = t('inv.couldNotCreate');
       if (error?.message) {
         errorMessage = error.message;
       }
-      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: errorMessage, variant: 'destructive' });
     } finally { 
       setSending(false); 
     }
@@ -144,7 +146,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   // Handle sending a new invoice (not conversion)
   const handleSendInvoice = async () => {
     if (!clientName || !clientEmail || !projectName || lineItems.length === 0) {
-      toast({ title: 'Please fill in all required fields', variant: 'destructive' });
+      toast({ title: t('inv.fillRequired'), variant: 'destructive' });
       return;
     }
     setSending(true);
@@ -244,20 +246,20 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
       const responseData = result.data;
 
       if (responseData?.errors && responseData.errors.length > 0) {
-        toast({ title: 'Invoice sent with warnings', description: responseData.errors.join(', ') });
+        toast({ title: t('inv.sentWithWarnings'), description: responseData.errors.join(', ') });
       } else {
-        toast({ title: 'Invoice sent' });
+        toast({ title: t('inv.sent') });
       }
 
       onComplete?.();
       onClose?.();
     } catch (error: any) {
       console.error('Send invoice error:', error);
-      let errorMessage = 'Error sending invoice';
+      let errorMessage = t('inv.couldNotSend');
       if (error?.message) {
         errorMessage = error.message;
       }
-      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: errorMessage, variant: 'destructive' });
     } finally { 
       setSending(false); 
     }
@@ -266,8 +268,8 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   // Choose the appropriate handler based on mode
   const handleSubmit = isConversion ? handleConvert : handleSendInvoice;
   const buttonText = isConversion 
-    ? (sending ? 'Converting…' : 'Convert to invoice') 
-    : (sending ? 'Sending…' : 'Send invoice');
+    ? (sending ? t('inv.converting') : t('est.convertToInvoice')) 
+    : (sending ? t('a.sending') : t('inv.sendInvoice'));
   const buttonIcon = isConversion ? <FileText size={16} /> : <Send size={16} />;
 
   const handleClose = () => { onClose?.(); onComplete?.(); };
@@ -284,12 +286,12 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   const summary = (
     <div className="eb-sum">
       <div className="eb-sum-head">
-        <span className="lv-eyebrow">Totals</span>
-        <span className="lv-small">{itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
+        <span className="lv-eyebrow">{t('est.totals')}</span>
+        <span className="lv-small">{itemCount === 1 ? t('est.itemCount', { n: itemCount }) : t('est.itemsCount', { n: itemCount })}</span>
       </div>
-      <div className="eb-sum-row"><span>Subtotal</span><span className="lv-num">{money(subtotal)}</span></div>
+      <div className="eb-sum-row"><span>{t('m.subtotal')}</span><span className="lv-num">{money(subtotal)}</span></div>
       <div className="eb-sum-row">
-        <span>Tax</span>
+        <span>{t('m.tax')}</span>
         <span className="eb-tax">
           <input
             type="number"
@@ -298,13 +300,13 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
             value={taxRate}
             onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
             onFocus={(e) => e.target.select()}
-            aria-label="Tax rate percent"
+            aria-label={t('est.taxRatePercent')}
           />
           <span className="lv-small">%</span>
           <b className="lv-num">{money(tax)}</b>
         </span>
       </div>
-      <div className="eb-sum-row total"><span>Total</span><span className="lv-num">{money(total)}</span></div>
+      <div className="eb-sum-row total"><span>{t('m.total')}</span><span className="lv-num">{money(total)}</span></div>
     </div>
   );
 
@@ -317,10 +319,10 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
       <div className="eb-item" key={index}>
         <div className="eb-item-head">
           <span className="eb-item-n">{index + 1}</span>
-          <span className="lv-small">Item</span>
+          <span className="lv-small">{t('est.item')}</span>
           <div className="eb-item-total lv-num">{money(lineTotal)}</div>
           {lineItems.length > 1 && (
-            <button className="lv-icon-btn eb-del" onClick={() => removeLineItem(index)} title="Remove item" aria-label={`Remove item ${index + 1}`}>
+            <button className="lv-icon-btn eb-del" onClick={() => removeLineItem(index)} title={t('est.removeItem')} aria-label={t('est.removeItemN', { n: index + 1 })}>
               <Trash2 size={16} />
             </button>
           )}
@@ -331,20 +333,20 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
           className="lv-textarea eb-desc"
           value={item.description}
           onChange={(e) => { updateLineItem(index, 'description', e.target.value); autoGrowTextarea(e.target); }}
-          placeholder="Describe the work — materials, prep, coats, anything the client should see"
+          placeholder={t('est.describePlaceholder')}
         />
 
         <div className="eb-qr">
           <label className="lv-field">
-            <span className="lv-label">Qty</span>
+            <span className="lv-label">{t('m.qty')}</span>
             <input type="number" inputMode="decimal" className="lv-input num" value={item.quantity} onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} />
           </label>
           <label className="lv-field">
-            <span className="lv-label">Rate</span>
+            <span className="lv-label">{t('m.rate')}</span>
             <input type="number" inputMode="decimal" className="lv-input num" value={item.rate} onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} />
           </label>
           <div className="lv-field">
-            <span className="lv-label">Line total</span>
+            <span className="lv-label">{t('m.lineTotal')}</span>
             <div className="eb-linetotal lv-num">{money(lineTotal)}</div>
           </div>
         </div>
@@ -358,12 +360,12 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
 
         <header className="eb-head-bar">
           <div className="eb-head-l">
-            <span className="lv-eyebrow">{isConversion ? 'Convert to invoice' : 'New invoice'}</span>
-            <h2 className="lv-h2">{projectName?.trim() || (clientName?.trim() ? clientName : 'Untitled invoice')}</h2>
+            <span className="lv-eyebrow">{isConversion ? t('est.convertToInvoice') : t('nav.newInvoice')}</span>
+            <h2 className="lv-h2">{projectName?.trim() || (clientName?.trim() ? clientName : t('inv.untitled'))}</h2>
           </div>
           <div className="lv-inline">
             <span className="eb-head-total lv-num lv-hide-mobile">{money(total)}</span>
-            <button className="lv-icon-btn" onClick={handleClose} aria-label="Close"><X size={20} /></button>
+            <button className="lv-icon-btn" onClick={handleClose} aria-label={t('a.close')}><X size={20} /></button>
           </div>
         </header>
 
@@ -373,19 +375,19 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
             {/* --- who it's for --- */}
             <section className="lv-card eb-sec">
               <div className="eb-sec-head">
-                <h3 className="lv-h3">Client</h3>
+                <h3 className="lv-h3">{t('m.client')}</h3>
               </div>
               <div className="eb-sec-body">
                 <div className="eb-client-grid">
                   <label className="lv-field eb-rel">
-                    <span className="lv-label">Name *</span>
+                    <span className="lv-label">{t('m.name')} *</span>
                     <input
                       className="lv-input"
                       value={clientName}
                       onChange={(e) => { setClientName(e.target.value); setShowClientSuggest(true); }}
                       onFocus={() => setShowClientSuggest(true)}
                       onBlur={() => setTimeout(() => setShowClientSuggest(false), 150)}
-                      placeholder="Maria Keller"
+                      placeholder={t('est.clientNamePlaceholder')}
                     />
                     {showClientSuggest && filteredClients.length > 0 && (
                       <div className="lv-pop">
@@ -398,23 +400,23 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
                     )}
                   </label>
                   <label className="lv-field">
-                    <span className="lv-label">{isConversion ? 'Email' : 'Email *'}</span>
-                    <input className="lv-input" type="email" inputMode="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="client@email.com" />
-                    {isConversion && <span className="lv-small" style={{ display: 'block', marginTop: 6 }}>Optional here — you can send this invoice later from the Invoices list.</span>}
+                    <span className="lv-label">{isConversion ? t('m.email') : `${t('m.email')} *`}</span>
+                    <input className="lv-input" type="email" inputMode="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder={t('est.emailPlaceholder')} />
+                    {isConversion && <span className="lv-small" style={{ display: 'block', marginTop: 6 }}>{t('inv.emailOptional')}</span>}
                   </label>
                   <label className="lv-field">
-                    <span className="lv-label">Phone</span>
-                    <input className="lv-input" type="tel" inputMode="tel" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="(555) 123-4567" />
+                    <span className="lv-label">{t('m.phone')}</span>
+                    <input className="lv-input" type="tel" inputMode="tel" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder={t('est.phonePlaceholder')} />
                   </label>
                   <label className="lv-field eb-rel eb-span">
-                    <span className="lv-label">Project *</span>
+                    <span className="lv-label">{t('m.project')} *</span>
                     <input
                       className="lv-input"
                       value={projectName}
                       onChange={(e) => { setProjectName(e.target.value); setShowProjectSuggest(true); }}
                       onFocus={() => setShowProjectSuggest(true)}
                       onBlur={() => setTimeout(() => setShowProjectSuggest(false), 150)}
-                      placeholder="Exterior repaint"
+                      placeholder={t('est.projectPlaceholder')}
                     />
                     {showProjectSuggest && filteredProjectNames.length > 0 && (
                       <div className="lv-pop">
@@ -431,12 +433,12 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
             {/* --- the work --- */}
             <section className="lv-card eb-sec">
               <div className="eb-sec-head">
-                <h3 className="lv-h3">The work</h3>
-                <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> Add item</button>
+                <h3 className="lv-h3">{t('est.theWork')}</h3>
+                <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> {t('est.addItem')}</button>
               </div>
               <div className="eb-sec-body eb-items">
                 {lineItems.map((item: any, index: number) => renderItem(item, index))}
-                <button className="eb-add" onClick={addLineItem}><Plus size={16} /> Add another item</button>
+                <button className="eb-add" onClick={addLineItem}><Plus size={16} /> {t('est.addAnotherItem')}</button>
               </div>
             </section>
 
@@ -446,16 +448,16 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
             {/* --- when it's due, and anything the client should know --- */}
             <section className="lv-card eb-sec">
               <div className="eb-sec-head">
-                <h3 className="lv-h3">Invoice details</h3>
+                <h3 className="lv-h3">{t('inv.details')}</h3>
               </div>
               <div className="eb-sec-body">
                 <label className="lv-field">
-                  <span className="lv-label">Due date</span>
+                  <span className="lv-label">{t('m.dueDate')}</span>
                   <input className="lv-input" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
                 </label>
                 <label className="lv-field">
-                  <span className="lv-label">Notes</span>
-                  <textarea className="lv-textarea" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Payment terms, or anything else the client should know" />
+                  <span className="lv-label">{t('m.notes')}</span>
+                  <textarea className="lv-textarea" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('inv.notesPlaceholder')} />
                 </label>
               </div>
             </section>
@@ -467,7 +469,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         {/* --- the action bar: everything that finishes this invoice, together --- */}
         <footer className="eb-foot">
           <div className="lv-actions">
-            <button className="lv-btn quiet lv-hide-mobile" onClick={handleClose}>Cancel</button>
+            <button className="lv-btn quiet lv-hide-mobile" onClick={handleClose}>{t('a.cancel')}</button>
             <div className="spacer" />
             <button className="lv-btn pri span" onClick={handleSubmit} disabled={sending}>
               {buttonIcon} {buttonText}

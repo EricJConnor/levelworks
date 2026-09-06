@@ -910,3 +910,106 @@ button.lv-row:hover, a.lv-row:hover { background: var(--lv-surface-2); }
 .eb-doc-photos .eb-photo-grid { margin-top: 12px; }
 .eb-doc-photos figcaption { font-size: 12px; color: var(--lv-mute); text-align: center; margin-top: 5px; }
 .eb-doc-thanks { margin-top: 24px; text-align: center; font-size: 13.5px; color: var(--lv-mute); }
+
+/* ------------------------------------------------------- language toggle
+
+   EN | ES, both words always visible so a Spanish speaker can find it
+   without reading English first. That is the whole point of the control.
+   ---------------------------------------------------------------------- */
+.lv-lang {
+  display: inline-flex;
+  background: var(--lv-sunken);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.lv-lang button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font: 600 12.5px var(--lv-font);
+  letter-spacing: .03em;
+  color: var(--lv-mute);
+  transition: background var(--lv-t) var(--lv-ease), color var(--lv-t) var(--lv-ease);
+}
+.lv-lang button:hover { color: var(--lv-ink); }
+.lv-lang button.on {
+  background: var(--lv-surface);
+  color: var(--lv-ink);
+  box-shadow: var(--lv-shadow-sm);
+}
+.lv-lang button:focus-visible { outline: 2px solid var(--lv-blue); outline-offset: 1px; }
+
+/* in the phone sheet it sits on its own row, full width */
+.lv-sheet .lv-lang { width: 100%; }
+.lv-sheet .lv-lang button { flex: 1; padding: 9px 11px; font-size: 14px; }
+
+/* ------------------------------------------- the translation review sheet
+
+   He wrote it in one language; this is where he checks the other before it
+   reaches a client. Original above, translation below on a phone; side by
+   side once there is room.
+   ---------------------------------------------------------------------- */
+.eb-tr-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 0;
+  color: var(--lv-blue);
+}
+.eb-tr-list { display: flex; flex-direction: column; gap: 12px; }
+.eb-tr-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--lv-line);
+  border-radius: var(--lv-r-lg);
+  background: var(--lv-surface-2);
+}
+@media (min-width: 720px) { .eb-tr-row { grid-template-columns: 1fr 1fr; gap: 20px; } }
+.eb-tr-text {
+  margin: 5px 0 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.eb-tr-text.was { color: var(--lv-mute); }
+.eb-tr-text.now { color: var(--lv-ink); font-weight: 500; }
+
+/* the translate button keeps its words on one line even on a narrow phone */
+.eb-translate { max-width: 100%; }
+@media (max-width: 420px) {
+  .eb-sec-head .lv-inline { gap: 6px; }
+  .eb-translate, .eb-sec-head .lv-btn.sm { padding: 0 9px; font-size: 12.5px; }
+}
+
+/* --------------------------------------------- room for longer languages
+
+   Spanish runs roughly a fifth longer than English. "Convertir en factura"
+   does not fit where "Convert to invoice" did, so the action bar and the
+   section headers give it room rather than clipping it.
+   ---------------------------------------------------------------------- */
+@media (max-width: 720px) {
+  .lv-actions .lv-btn { font-size: 13.5px; padding: 0 12px; gap: 6px; }
+}
+@media (max-width: 430px) {
+  .lv-actions .lv-btn { font-size: 13px; padding: 0 8px; }
+  /* the label carries the meaning; the icon is the first thing to go */
+  .lv-actions .lv-btn svg { display: none; }
+}
+
+/* a section header stacks once its title and its buttons stop fitting */
+@media (max-width: 560px) {
+  .eb-sec-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .eb-sec-head .lv-inline { justify-content: stretch; }
+  .eb-sec-head .lv-inline .lv-btn { flex: 1; }
+}

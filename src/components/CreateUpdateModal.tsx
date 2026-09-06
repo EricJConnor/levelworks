@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
 import { X, Send, Camera, Upload, Loader2, Copy, Check, Trash2, Mail, MessageSquare, AlertCircle, CheckCircle, ChevronRight } from 'lucide-react';
+import { useT } from '@/i18n';
 
 interface Props {
   onClose: () => void;
@@ -19,6 +20,7 @@ type SendStep = 'compose' | 'choose' | 'email' | 'text';
 
 export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
   const { profile } = useProfile();
+  const t = useT();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [clientEmail, setClientEmail] = useState('');
@@ -101,7 +103,7 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
       setPhotos(prev => [...prev, p]);
       setCaptions(prev => ({ ...prev, [p.id]: '' }));
     } catch (e: any) {
-      toast({ title: 'Upload failed', description: e.message, variant: 'destructive' });
+      toast({ title: t('mod.uploadFailed'), description: e.message, variant: 'destructive' });
     } finally {
       setUploading(false);
     }
@@ -120,7 +122,7 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
       setPhotos(prev => prev.filter(p => p.id !== photoId));
       setCaptions(prev => { const n = { ...prev }; delete n[photoId]; return n; });
     } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: e.message, variant: 'destructive' });
     }
   };
 
@@ -131,7 +133,7 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
 
   const handleProceedToSend = () => {
     if (!name.trim()) {
-      toast({ title: 'Add a name', description: 'Give this update a title before sending.', variant: 'destructive' });
+      toast({ title: t('mod.addAName'), description: t('mod.addANameSub'), variant: 'destructive' });
       return;
     }
     setStep('choose');
@@ -139,7 +141,7 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
 
   const handleSendEmail = async () => {
     if (!clientEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail.trim())) {
-      toast({ title: 'Invalid email', description: 'Please enter a valid email address.', variant: 'destructive' });
+      toast({ title: t('mod.invalidEmail'), description: t('mod.enterValidEmail'), variant: 'destructive' });
       return;
     }
     setSending(true);
@@ -152,17 +154,17 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
         body: { to: clientEmail.trim(), contractorName, updateName: name.trim(), message: description.trim() || null, updateUrl },
       });
       if (error || result?.success === false) {
-        const msg = error?.message || result?.error || 'Failed to send email';
+        const msg = error?.message || result?.error || t('mod.failedToSendEmail');
         setSendError(msg);
-        toast({ title: 'Failed to send', description: msg, variant: 'destructive' });
+        toast({ title: t('mod.failedToSend'), description: msg, variant: 'destructive' });
         return;
       }
       setSendSuccess(true);
-      toast({ title: 'Update Sent!', description: `Email sent to ${clientEmail.trim()}` });
+      toast({ title: t('mod.updateSent'), description: t('mod.emailSentTo', { email: clientEmail.trim() }) });
     } catch (e: any) {
-      const msg = e.message || 'An unexpected error occurred';
+      const msg = e.message || t('mod.unexpectedError');
       setSendError(msg);
-      toast({ title: 'Error', description: msg, variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: msg, variant: 'destructive' });
     } finally {
       setSending(false);
     }
@@ -174,9 +176,9 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
       const url = `${window.location.origin}/view-update/${token}`;
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
-      toast({ title: 'Link Copied!', description: 'Open your texts and paste it to your client.' });
+      toast({ title: t('a.copied'), description: t('mod.openTextsAndPaste') });
     } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: e.message, variant: 'destructive' });
     }
   };
 
@@ -186,12 +188,12 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
 
         <div className="lv-modal-head">
           <div>
-            <span className="lv-eyebrow">Photo update</span>
+            <span className="lv-eyebrow">{t('mod.photoUpdate')}</span>
             <h2 className="lv-h2">
-              {step === 'compose' ? 'New update' : sendSuccess ? 'Update sent' : 'Send this update'}
+              {step === 'compose' ? t('mod.newUpdate') : sendSuccess ? t('mod.updateSentHeading') : t('mod.sendThisUpdate')}
             </h2>
           </div>
-          <button className="lv-icon-btn" onClick={onClose} disabled={sending} aria-label="Close">
+          <button className="lv-icon-btn" onClick={onClose} disabled={sending} aria-label={t('a.close')}>
             <X size={20} />
           </button>
         </div>
@@ -203,36 +205,36 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
             <div className="lv-stack">
               <div>
                 <label className="lv-field">
-                  <span className="lv-label">Update name *</span>
+                  <span className="lv-label">{t('mod.updateName')}</span>
                   <input
                     className="lv-input"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    placeholder="Week 2 progress"
+                    placeholder={t('mod.updateNamePlaceholder')}
                   />
                 </label>
                 <label className="lv-field">
-                  <span className="lv-label">Message to your client (optional)</span>
+                  <span className="lv-label">{t('mod.messageToClientOptional')}</span>
                   <textarea
                     className="lv-textarea"
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    placeholder="Demo is complete and rough-in is done. Here is where things stand."
+                    placeholder={t('mod.updateMessagePlaceholder')}
                     rows={3}
                   />
                 </label>
               </div>
 
               <div>
-                <span className="lv-label">Photos</span>
+                <span className="lv-label">{t('m.photos')}</span>
                 <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFile} style={{ display: 'none' }} />
                 <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: 'none' }} />
                 <div className="lv-inline" style={{ marginBottom: 12 }}>
                   <button type="button" className="lv-btn sec sm" onClick={() => cameraInputRef.current?.click()} disabled={uploading}>
-                    {uploading ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />} Camera
+                    {uploading ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />} {t('a.camera')}
                   </button>
                   <button type="button" className="lv-btn sec sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-                    {uploading ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />} Gallery
+                    {uploading ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />} {t('mod.gallery')}
                   </button>
                 </div>
 
@@ -243,14 +245,14 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
                         <div style={{ position: 'relative' }}>
                           <img
                             src={photo.fileUrl}
-                            alt={captions[photo.id] || 'Job photo'}
+                            alt={captions[photo.id] || t('mod.jobPhoto')}
                             style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 'var(--lv-r)', border: '1px solid var(--lv-line)', display: 'block' }}
                           />
                           <button
                             type="button"
                             className="lv-icon-btn"
                             onClick={() => handleDeletePhoto(photo.id)}
-                            aria-label="Remove photo"
+                            aria-label={t('mod.removePhoto')}
                             style={{ position: 'absolute', top: 5, right: 5, width: 28, height: 28, background: 'var(--lv-surface)', border: '1px solid var(--lv-line)', color: 'var(--lv-red)' }}
                           >
                             <Trash2 size={14} />
@@ -261,7 +263,7 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
                           value={captions[photo.id] || ''}
                           onChange={e => setCaptions(prev => ({ ...prev, [photo.id]: e.target.value }))}
                           onBlur={e => handleCaptionSave(photo.id, e.target.value)}
-                          placeholder="Label"
+                          placeholder={t('mod.photoLabel')}
                           style={{ marginTop: 6, height: 36, padding: '0 10px' }}
                         />
                       </div>
@@ -270,8 +272,8 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
                 ) : (
                   <div className="lv-empty">
                     <Camera size={28} />
-                    <h3>No photos yet</h3>
-                    <p>Tap Camera or Gallery above to add the shots you want your client to see.</p>
+                    <h3>{t('mod.noPhotosYet')}</h3>
+                    <p>{t('mod.noPhotosYetSub')}</p>
                   </div>
                 )}
               </div>
@@ -281,14 +283,14 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
           {/* STEP: choose email or text */}
           {step === 'choose' && (
             <div className="lv-stack">
-              <p className="lv-sub">How do you want to get this to your client?</p>
+              <p className="lv-sub">{t('mod.howToGetThisToClient')}</p>
               <div className="lv-card">
                 <button type="button" className="lv-row" onClick={() => setStep('email')}>
                   <span className="lv-inline" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
                     <Mail size={18} style={{ color: 'var(--lv-blue)', flexShrink: 0 }} />
                     <span>
-                      <span className="lv-row-t" style={{ display: 'block' }}>Email it</span>
-                      <span className="lv-row-s" style={{ display: 'block' }}>We send it straight to your client</span>
+                      <span className="lv-row-t" style={{ display: 'block' }}>{t('mod.emailIt')}</span>
+                      <span className="lv-row-s" style={{ display: 'block' }}>{t('mod.emailItSub')}</span>
                     </span>
                   </span>
                   <ChevronRight size={18} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
@@ -297,8 +299,8 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
                   <span className="lv-inline" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
                     <MessageSquare size={18} style={{ color: 'var(--lv-blue)', flexShrink: 0 }} />
                     <span>
-                      <span className="lv-row-t" style={{ display: 'block' }}>Text it</span>
-                      <span className="lv-row-s" style={{ display: 'block' }}>Copy the link and paste it into your messages</span>
+                      <span className="lv-row-t" style={{ display: 'block' }}>{t('mod.textIt')}</span>
+                      <span className="lv-row-s" style={{ display: 'block' }}>{t('mod.textItSub')}</span>
                     </span>
                   </span>
                   <ChevronRight size={18} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
@@ -317,13 +319,13 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
                 >
                   <AlertCircle size={18} style={{ color: 'var(--lv-red)', flexShrink: 0, marginTop: 2 }} />
                   <p className="lv-small" style={{ color: 'var(--lv-red)' }}>
-                    The update did not go out: {sendError}. Check the email address and send it again.
+                    {t('mod.updateDidNotGoOut', { reason: sendError })}
                   </p>
                 </div>
               )}
               <div>
                 <label className="lv-field">
-                  <span className="lv-label">Client's email address</span>
+                  <span className="lv-label">{t('mod.clientEmailAddress')}</span>
                   <input
                     className="lv-input"
                     value={clientEmail}
@@ -331,12 +333,12 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
                     type="email"
                     inputMode="email"
                     autoComplete="email"
-                    placeholder="client@email.com"
+                    placeholder={t('mod.clientEmailPlaceholder')}
                     disabled={sending}
                   />
                 </label>
               </div>
-              <p className="lv-small">They get a link to {name.trim() || 'this update'} with every photo on it.</p>
+              <p className="lv-small">{t('mod.theyGetLinkToUpdate', { name: name.trim() || t('mod.thisUpdate') })}</p>
             </div>
           )}
 
@@ -344,8 +346,8 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
           {step === 'email' && sendSuccess && (
             <div className="lv-empty">
               <CheckCircle size={40} style={{ color: 'var(--lv-green)' }} />
-              <h3>Update sent</h3>
-              <p>{clientEmail.trim() || 'Your client'} will have it in a moment.</p>
+              <h3>{t('mod.updateSentHeading')}</h3>
+              <p>{t('mod.willHaveItInAMoment', { who: clientEmail.trim() || t('mod.yourClient') })}</p>
             </div>
           )}
 
@@ -353,14 +355,14 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
           {step === 'text' && (
             <div className="lv-stack">
               <div className="lv-card lv-card-pad">
-                <h3 className="lv-h3">Send it in a text</h3>
+                <h3 className="lv-h3">{t('mod.sendItInAText')}</h3>
                 <p className="lv-sub" style={{ marginTop: 6 }}>
-                  Copy the link, then open your messages and paste it to your client.
+                  {t('mod.copyThenPasteToClient')}
                 </p>
               </div>
               {linkCopied && (
                 <p className="lv-small lv-inline" style={{ color: 'var(--lv-green)' }}>
-                  <Check size={16} /> Link copied. Paste it into your messages.
+                  <Check size={16} /> {t('mod.linkCopiedPaste')}
                 </p>
               )}
             </div>
@@ -371,28 +373,28 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
         <div className="lv-modal-foot">
           {step === 'compose' && (
             <div className="lv-actions">
-              <button className="lv-btn quiet" onClick={onClose}>Cancel</button>
+              <button className="lv-btn quiet" onClick={onClose}>{t('a.cancel')}</button>
               <span className="spacer" />
               <button className="lv-btn pri" onClick={handleProceedToSend} disabled={!name.trim()}>
-                <Send size={16} /> Send update
+                <Send size={16} /> {t('mod.sendUpdate')}
               </button>
             </div>
           )}
 
           {step === 'choose' && (
             <div className="lv-actions">
-              <button className="lv-btn quiet span" onClick={() => setStep('compose')}>Back</button>
+              <button className="lv-btn quiet span" onClick={() => setStep('compose')}>{t('a.back')}</button>
             </div>
           )}
 
           {step === 'email' && !sendSuccess && (
             <div className="lv-actions">
-              <button className="lv-btn quiet" onClick={() => setStep('choose')} disabled={sending}>Back</button>
+              <button className="lv-btn quiet" onClick={() => setStep('choose')} disabled={sending}>{t('a.back')}</button>
               <span className="spacer" />
               <button className="lv-btn go" onClick={handleSendEmail} disabled={sending}>
                 {sending
-                  ? <><Loader2 size={16} className="animate-spin" /> Sending…</>
-                  : <><Mail size={16} /> Send update</>}
+                  ? <><Loader2 size={16} className="animate-spin" /> {t('a.sending')}</>
+                  : <><Mail size={16} /> {t('mod.sendUpdate')}</>}
               </button>
             </div>
           )}
@@ -400,7 +402,7 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
           {step === 'email' && sendSuccess && (
             <div className="lv-actions">
               <span className="spacer" />
-              <button className="lv-btn pri span" onClick={onCreated}>Done</button>
+              <button className="lv-btn pri span" onClick={onCreated}>{t('a.done')}</button>
             </div>
           )}
 
@@ -411,15 +413,15 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
                 onClick={linkCopied ? onCreated : () => setStep('choose')}
                 disabled={sending}
               >
-                {linkCopied ? 'Done' : 'Back'}
+                {linkCopied ? t('a.done') : t('a.back')}
               </button>
               <span className="spacer" />
               <button className="lv-btn pri" onClick={handleCopyLink} disabled={sending}>
                 {sending
-                  ? <><Loader2 size={16} className="animate-spin" /> Preparing…</>
+                  ? <><Loader2 size={16} className="animate-spin" /> {t('mod.preparing')}</>
                   : linkCopied
-                    ? <><Check size={16} /> Link copied</>
-                    : <><Copy size={16} /> Copy link</>}
+                    ? <><Check size={16} /> {t('mod.linkCopied')}</>
+                    : <><Copy size={16} /> {t('a.copyLink')}</>}
               </button>
             </div>
           )}

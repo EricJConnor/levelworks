@@ -310,7 +310,7 @@ export default function LandingPage() {
             <div className="lw-price-chip"><b>$5/mo</b> Estimates, signatures, invoices and payments. All of it.</div>
             <h1 className="lw-h1">The estimating and invoicing app built by a contractor.</h1>
             <p className="lw-lead">
-              Write a professional estimate on your phone, get it signed from the client's, and get paid by card straight to your bank. Everything the $149-a-month apps do, for five dollars.
+              Write a professional estimate on your phone, get it signed from the client's, and get paid by card straight to your bank. All of it for $5 a month.
             </p>
             <div className="lw-hero-cta">
               <button className="lw-btn pri lg" onClick={openSignUp}>Start free 30-day trial <ChevronRight size={18} /></button>

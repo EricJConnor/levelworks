@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
 import { SignatureCanvas, SignatureCanvasRef } from '@/components/SignatureCanvas';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { useToast } from '@/hooks/use-toast';
+import { useT } from '@/i18n';
 import { Loader2, ImageIcon, CheckCircle, FileText, User, Mail, Phone, Calendar } from 'lucide-react';
 
 interface Photo { id: string; fileUrl: string; caption?: string; }
 
 function EstimatePhotos({ estimateId }: { estimateId: string }) {
+  const t = useT();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [show, setShow] = useState(false);
 
@@ -24,7 +26,7 @@ function EstimatePhotos({ estimateId }: { estimateId: string }) {
   return (
     <div>
       <button onClick={() => setShow(!show)} className="flex items-center gap-2 text-blue-600 hover:underline py-2">
-        <ImageIcon className="w-4 h-4" /> View {photos.length} Project Photos
+        <ImageIcon className="w-4 h-4" /> {t('pg.est.viewPhotos', { count: photos.length })}
       </button>
       {show && <div className="mt-3"><PhotoGallery photos={photos} readOnly /></div>}
     </div>
@@ -34,6 +36,7 @@ function EstimatePhotos({ estimateId }: { estimateId: string }) {
 export default function PublicEstimateView() {
   const { token } = useParams();
   const { toast } = useToast();
+  const t = useT();
   const signatureRef = useRef<SignatureCanvasRef>(null);
   const [estimate, setEstimate] = useState<any>(null);
   const [branding, setBranding] = useState<{ company_name?: string; profile_photo_url?: string } | null>(null);
@@ -49,7 +52,7 @@ export default function PublicEstimateView() {
   const loadEstimate = async () => {
     setError(null);
     if (!token) {
-      setError('No estimate token provided');
+      setError(t('pg.est.noToken'));
       setLoading(false);
       return;
     }
@@ -66,20 +69,20 @@ export default function PublicEstimateView() {
       });
       
       if (!response.ok) {
-        setError('Unable to load estimate. Please try again.');
+        setError(t('pg.est.loadFailed'));
         return;
       }
       
       const results = await response.json();
       if (!results || results.length === 0) {
-        setError('Estimate not found. The link may have expired or is invalid.');
+        setError(t('pg.est.notFoundLong'));
         return;
       }
       
       setEstimate(results[0]);
       loadBranding();
     } catch (err: any) {
-      setError('An unexpected error occurred');
+      setError(t('pg.pub.unexpected'));
     } finally {
       setLoading(false);
     }
@@ -106,15 +109,15 @@ export default function PublicEstimateView() {
     }
 
     if (!signedByName.trim()) {
-      toast({ title: 'Name Required', description: 'Please enter your full name', variant: 'destructive' });
+      toast({ title: t('pg.est.nameRequired'), description: t('pg.est.nameRequiredBody'), variant: 'destructive' });
       return;
     }
     if (!signedByEmail.trim()) {
-      toast({ title: 'Email Required', description: 'Please enter your email address', variant: 'destructive' });
+      toast({ title: t('pg.est.emailRequired'), description: t('pg.est.emailRequiredBody'), variant: 'destructive' });
       return;
     }
     if (!finalSignature) {
-      toast({ title: 'Signature Required', description: 'Please draw your signature in the box above', variant: 'destructive' });
+      toast({ title: t('pg.est.sigRequired'), description: t('pg.est.sigRequiredBody'), variant: 'destructive' });
       return;
     }
 
@@ -131,10 +134,10 @@ export default function PublicEstimateView() {
       
       if (error) throw error;
       
-      toast({ title: 'Success!', description: 'Estimate signed and approved successfully.' });
+      toast({ title: t('pg.est.signedTitle'), description: t('pg.est.signedBody') });
       await loadEstimate();
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Failed to sign estimate.', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: err.message || t('pg.est.signFailed'), variant: 'destructive' });
     } finally { setSigning(false); }
   };
 
@@ -142,7 +145,7 @@ export default function PublicEstimateView() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-        <p className="text-gray-600">Loading estimate...</p>
+        <p className="text-gray-600">{t('pg.est.loading')}</p>
       </div>
     );
   }
@@ -151,7 +154,7 @@ export default function PublicEstimateView() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
         <FileText className="h-16 w-16 text-gray-400 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">Estimate Not Found</h2>
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">{t('pg.est.notFound')}</h2>
         <p className="text-gray-500 text-center max-w-md">{error}</p>
       </div>
     );
@@ -177,7 +180,7 @@ export default function PublicEstimateView() {
           {isSigned && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center gap-3">
               <CheckCircle className="h-6 w-6 text-green-600" />
-              <p className="text-green-800 font-semibold">Estimate Approved</p>
+              <p className="text-green-800 font-semibold">{t('pg.est.approvedBanner')}</p>
             </div>
           )}
 
@@ -185,11 +188,11 @@ export default function PublicEstimateView() {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
               <div className="flex items-start gap-3">
                 {branding?.profile_photo_url && (
-                  <img src={branding.profile_photo_url} alt="Logo" className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
+                  <img src={branding.profile_photo_url} alt={t('pg.pub.logoAlt')} className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
                 )}
                 <div>
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">Estimate</h2>
-                  <p className="text-sm text-gray-500">{estimate.project_name || 'Project Estimate'}</p>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">{t('m.estimate')}</h2>
+                  <p className="text-sm text-gray-500">{estimate.project_name || t('pg.est.projectEstimate')}</p>
                   {branding?.company_name && <p className="text-sm font-medium text-gray-700 mt-1">{branding.company_name}</p>}
                 </div>
               </div>
@@ -220,38 +223,38 @@ export default function PublicEstimateView() {
 
           <div className="mt-6 bg-blue-50 rounded-lg p-4">
             <div className="flex justify-between text-xl font-bold text-gray-900">
-              <span>Total:</span>
+              <span>{t('m.total')}:</span>
               <span className="text-blue-600">${total.toFixed(2)}</span>
             </div>
           </div>
 
-          <p className="mt-6 text-sm text-gray-500 text-center italic">We appreciate the opportunity to work with you. Thanks for considering us!</p>
+          <p className="mt-6 text-sm text-gray-500 text-center italic">{t('pg.pub.thanks')}</p>
 
           {!isSigned && (
             <div className="mt-8 border-t pt-6 space-y-4">
-              <h3 className="text-xl font-bold text-gray-900">Approve This Estimate</h3>
+              <h3 className="text-xl font-bold text-gray-900">{t('pg.est.approveTitle')}</h3>
               <input 
                 value={signedByName} 
                 onChange={(e) => setSignedByName(e.target.value)} 
                 className="w-full border-2 rounded-lg px-4 py-3" 
-                placeholder="Your Full Name"
+                placeholder={t('pg.est.namePlaceholder')}
               />
               <input 
                 type="email" 
                 value={signedByEmail} 
                 onChange={(e) => setSignedByEmail(e.target.value)} 
                 className="w-full border-2 rounded-lg px-4 py-3" 
-                placeholder="Your Email"
+                placeholder={t('pg.est.emailPlaceholder')}
               />
               <SignatureCanvas ref={signatureRef} onChange={setSignatureData} showButtons={true} onSave={setSignatureData} />
               <Button onClick={handleSign} disabled={signing} className="w-full py-4 bg-green-600 hover:bg-green-700" size="lg">
                 {signing ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <CheckCircle className="h-5 w-5 mr-2" />}
-                {signing ? 'Processing...' : 'Sign and Approve'}
+                {signing ? t('pg.est.processing') : t('pg.est.signApprove')}
               </Button>
             </div>
           )}
         </Card>
-        <p className="text-center text-xs text-gray-400 mt-4">Powered by levelworks.org</p>
+        <p className="text-center text-xs text-gray-400 mt-4">{t('pg.pub.poweredBy')}</p>
       </div>
     </div>
   );

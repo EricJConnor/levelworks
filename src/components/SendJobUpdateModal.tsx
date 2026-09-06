@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
 import { X, Loader2, Copy, Check } from 'lucide-react';
+import { useT } from '@/i18n';
 
 interface Props {
   jobId: string;
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export const SendJobUpdateModal: React.FC<Props> = ({ jobId, clientName, photoCount, onClose }) => {
+  const t = useT();
   const [summary, setSummary] = useState('');
   const [generating, setGenerating] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -30,9 +32,9 @@ export const SendJobUpdateModal: React.FC<Props> = ({ jobId, clientName, photoCo
       setUpdateUrl(url);
       await navigator.clipboard.writeText(url);
       setLinkCopied(true);
-      toast({ title: 'Link Copied!', description: 'Paste it into a text or email to your client.' });
+      toast({ title: t('a.copied'), description: t('mod.pasteIntoTextOrEmail') });
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Could not create the update link.', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: err.message || t('mod.couldNotCreateUpdateLink'), variant: 'destructive' });
     } finally {
       setGenerating(false);
     }
@@ -44,10 +46,10 @@ export const SendJobUpdateModal: React.FC<Props> = ({ jobId, clientName, photoCo
 
         <div className="lv-modal-head">
           <div>
-            <span className="lv-eyebrow">Job update</span>
-            <h2 className="lv-h2">Send photos to your client</h2>
+            <span className="lv-eyebrow">{t('mod.jobUpdate')}</span>
+            <h2 className="lv-h2">{t('mod.sendPhotosToClient')}</h2>
           </div>
-          <button className="lv-icon-btn" onClick={onClose} disabled={generating} aria-label="Close">
+          <button className="lv-icon-btn" onClick={onClose} disabled={generating} aria-label={t('a.close')}>
             <X size={20} />
           </button>
         </div>
@@ -59,21 +61,21 @@ export const SendJobUpdateModal: React.FC<Props> = ({ jobId, clientName, photoCo
               <div className="lv-row">
                 <div style={{ minWidth: 0 }}>
                   <div className="lv-row-t">{clientName}</div>
-                  <div className="lv-row-s">Goes out with the photos on this job</div>
+                  <div className="lv-row-s">{t('mod.goesOutWithPhotos')}</div>
                 </div>
-                <span className="lv-pill blue">{photoCount} photo{photoCount === 1 ? '' : 's'}</span>
+                <span className="lv-pill blue">{photoCount === 1 ? t('mod.photoCountOne', { n: photoCount }) : t('mod.photoCountMany', { n: photoCount })}</span>
               </div>
             </div>
 
             <div>
               <label className="lv-field">
-                <span className="lv-label">Message to your client (optional)</span>
+                <span className="lv-label">{t('mod.messageToClientOptional')}</span>
                 <textarea
                   className="lv-textarea"
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
                   rows={4}
-                  placeholder="Demo and rough-in are done. Here is where things stand."
+                  placeholder={t('mod.jobUpdatePlaceholder')}
                   disabled={generating}
                 />
               </label>
@@ -82,10 +84,10 @@ export const SendJobUpdateModal: React.FC<Props> = ({ jobId, clientName, photoCo
             {updateUrl ? (
               <div className="lv-card lv-card-pad">
                 <p className="lv-h3 lv-inline" style={{ color: 'var(--lv-green)' }}>
-                  <Check size={18} /> Link copied
+                  <Check size={18} /> {t('mod.linkCopied')}
                 </p>
                 <p className="lv-sub" style={{ marginTop: 6 }}>
-                  Open your messages or email and paste it to your client.
+                  {t('mod.openMessagesAndPaste')}
                 </p>
                 <p className="lv-small" style={{ marginTop: 10, wordBreak: 'break-all', color: 'var(--lv-faint)' }}>
                   {updateUrl}
@@ -93,7 +95,7 @@ export const SendJobUpdateModal: React.FC<Props> = ({ jobId, clientName, photoCo
               </div>
             ) : (
               <p className="lv-small">
-                Copying the link saves your message and opens the update for your client.
+                {t('mod.copyingSavesMessage')}
               </p>
             )}
 
@@ -102,14 +104,14 @@ export const SendJobUpdateModal: React.FC<Props> = ({ jobId, clientName, photoCo
 
         <div className="lv-modal-foot">
           <div className="lv-actions">
-            <button className="lv-btn quiet" onClick={onClose} disabled={generating}>Done</button>
+            <button className="lv-btn quiet" onClick={onClose} disabled={generating}>{t('a.done')}</button>
             <span className="spacer" />
             <button className="lv-btn pri" onClick={handleGenerateAndCopy} disabled={generating}>
               {generating
-                ? <><Loader2 size={16} className="animate-spin" /> Preparing…</>
+                ? <><Loader2 size={16} className="animate-spin" /> {t('mod.preparing')}</>
                 : linkCopied
-                  ? <><Check size={16} /> Link copied</>
-                  : <><Copy size={16} /> Copy link</>}
+                  ? <><Check size={16} /> {t('mod.linkCopied')}</>
+                  : <><Copy size={16} /> {t('a.copyLink')}</>}
             </button>
           </div>
         </div>

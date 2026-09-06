@@ -4,6 +4,7 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 import { Card } from '@/components/ui/card';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import { Loader2, FileText, Send } from 'lucide-react';
+import { useT } from '@/i18n';
 
 interface UpdateDetails { id: string; name?: string; description?: string; sent_at?: string; created_at?: string; }
 interface Branding { company_name?: string; profile_photo_url?: string; }
@@ -11,6 +12,7 @@ interface Photo { id: string; fileUrl: string; caption?: string; }
 
 export default function PublicUpdateView() {
   const { token } = useParams();
+  const t = useT();
   const [update, setUpdate] = useState<UpdateDetails | null>(null);
   const [branding, setBranding] = useState<Branding | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -28,11 +30,11 @@ export default function PublicUpdateView() {
   };
 
   const load = async () => {
-    if (!token) { setError('No link provided'); setLoading(false); return; }
+    if (!token) { setError(t('pg.pub.noLink')); setLoading(false); return; }
     try {
       const rows = await fetchJson(`public_update_details?view_token=eq.${encodeURIComponent(token)}&select=*`);
       if (!rows || rows.length === 0) {
-        setError('Update not found. The link may have expired or is invalid.');
+        setError(t('pg.upd.notFoundLong'));
         setLoading(false);
         return;
       }
@@ -46,7 +48,7 @@ export default function PublicUpdateView() {
       if (brandingRows && brandingRows.length > 0) setBranding(brandingRows[0]);
       if (photoRows) setPhotos(photoRows.map((p: any) => ({ id: p.id, fileUrl: p.file_url, caption: p.caption })));
     } catch {
-      setError('An unexpected error occurred');
+      setError(t('pg.pub.unexpected'));
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,7 @@ export default function PublicUpdateView() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-        <p className="text-gray-600">Loading update...</p>
+        <p className="text-gray-600">{t('pg.upd.loading')}</p>
       </div>
     );
   }
@@ -65,7 +67,7 @@ export default function PublicUpdateView() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 px-4">
         <FileText className="h-16 w-16 text-gray-400 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">Update Not Found</h2>
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">{t('pg.upd.notFound')}</h2>
         <p className="text-gray-500 text-center max-w-md">{error}</p>
       </div>
     );
@@ -78,11 +80,11 @@ export default function PublicUpdateView() {
           <div className="border-b pb-6 mb-6">
             <div className="flex items-start gap-3">
               {branding?.profile_photo_url && (
-                <img src={branding.profile_photo_url} alt="Logo" className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
+                <img src={branding.profile_photo_url} alt={t('pg.pub.logoAlt')} className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
               )}
               <div>
                 {branding?.company_name && <p className="text-sm font-medium text-gray-500 mb-1">{branding.company_name}</p>}
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900">{update.name || 'Project Update'}</h2>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">{update.name || t('pg.upd.projectUpdate')}</h2>
                 {update.sent_at && (
                   <p className="text-xs text-gray-400 mt-1">{new Date(update.sent_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
                 )}
@@ -102,7 +104,7 @@ export default function PublicUpdateView() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {photos.map(photo => (
                     <div key={photo.id} className="space-y-1">
-                      <img src={photo.fileUrl} alt={photo.caption || 'Photo'} className="w-full aspect-square object-cover rounded-lg border border-gray-100" />
+                      <img src={photo.fileUrl} alt={photo.caption || t('pg.upd.photoAlt')} className="w-full aspect-square object-cover rounded-lg border border-gray-100" />
                       {photo.caption && <p className="text-xs text-gray-500 text-center">{photo.caption}</p>}
                     </div>
                   ))}
@@ -111,10 +113,10 @@ export default function PublicUpdateView() {
               {!photos.some(p => p.caption) && <PhotoGallery photos={photos} readOnly />}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-8">No photos included in this update.</p>
+            <p className="text-gray-500 text-center py-8">{t('pg.upd.noPhotos')}</p>
           )}
         </Card>
-        <p className="text-center text-xs text-gray-400 mt-4">Powered by levelworks.org</p>
+        <p className="text-center text-xs text-gray-400 mt-4">{t('pg.pub.poweredBy')}</p>
       </div>
     </div>
   );

@@ -2,10 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Building2, Upload } from 'lucide-react';
+import { useT } from '@/i18n';
 
 export const ProfileEditor: React.FC = () => {
   const { profile, loading, updateProfile, uploadPhoto } = useProfile();
   const { toast } = useToast();
+  const t = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -34,7 +36,7 @@ export const ProfileEditor: React.FC = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast({ title: 'That file is not an image', description: 'Upload a PNG or JPG of your logo.', variant: 'destructive' });
+      toast({ title: t('mod.notAnImage'), description: t('mod.uploadPngOrJpg'), variant: 'destructive' });
       return;
     }
 
@@ -43,7 +45,7 @@ export const ProfileEditor: React.FC = () => {
     if (url) {
       setFormData(prev => ({ ...prev, profile_photo_url: url }));
       await updateProfile({ profile_photo_url: url });
-      toast({ title: 'Logo updated', description: 'It shows on every estimate and invoice.' });
+      toast({ title: t('mod.logoUpdated'), description: t('mod.logoShowsOnDocuments') });
     }
     setUploading(false);
   };
@@ -53,9 +55,9 @@ export const ProfileEditor: React.FC = () => {
     setSaving(true);
     const success = await updateProfile(formData);
     if (success) {
-      toast({ title: 'Profile saved', description: 'Your business details are up to date.' });
+      toast({ title: t('mod.profileSaved'), description: t('mod.profileSavedSub') });
     } else {
-      toast({ title: 'Could not save', description: 'Check your connection and try again.', variant: 'destructive' });
+      toast({ title: t('mod.couldNotSave'), description: t('mod.checkConnection'), variant: 'destructive' });
     }
     setSaving(false);
   };
@@ -70,8 +72,8 @@ export const ProfileEditor: React.FC = () => {
     <form className="lv-card" onSubmit={handleSubmit} style={{ maxWidth: 640 }}>
       <div className="lv-card-head">
         <div>
-          <h2 className="lv-h2">Business profile</h2>
-          <p className="lv-small" style={{ marginTop: 3 }}>This is what your clients see on every estimate and invoice.</p>
+          <h2 className="lv-h2">{t('mod.businessProfile')}</h2>
+          <p className="lv-small" style={{ marginTop: 3 }}>{t('mod.businessProfileSub')}</p>
         </div>
       </div>
 
@@ -85,16 +87,16 @@ export const ProfileEditor: React.FC = () => {
             }}
           >
             {formData.profile_photo_url
-              ? <img src={formData.profile_photo_url} alt="Company logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              ? <img src={formData.profile_photo_url} alt={t('mod.companyLogo')} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               : <Building2 size={24} style={{ color: 'var(--lv-faint)' }} />}
           </div>
           <div style={{ minWidth: 0 }}>
             <button type="button" className="lv-btn sec" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
               {uploading
-                ? <><Loader2 size={15} className="animate-spin" /> Uploading</>
-                : <><Upload size={15} /> {formData.profile_photo_url ? 'Replace logo' : 'Upload logo'}</>}
+                ? <><Loader2 size={15} className="animate-spin" /> {t('mod.uploading')}</>
+                : <><Upload size={15} /> {formData.profile_photo_url ? t('mod.replaceLogo') : t('mod.uploadLogo')}</>}
             </button>
-            <p className="lv-small" style={{ marginTop: 6 }}>A PNG or JPG of your company logo.</p>
+            <p className="lv-small" style={{ marginTop: 6 }}>{t('mod.pngOrJpgOfLogo')}</p>
           </div>
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
         </div>
@@ -102,34 +104,34 @@ export const ProfileEditor: React.FC = () => {
         <div className="lv-grid-2">
           <div>
             <label className="lv-field">
-              <span className="lv-label">Your name</span>
+              <span className="lv-label">{t('mod.yourName')}</span>
               <input
                 className="lv-input"
                 id="full_name"
                 autoComplete="name"
                 value={formData.full_name}
                 onChange={e => setFormData(p => ({ ...p, full_name: e.target.value }))}
-                placeholder="John Smith"
+                placeholder={t('mod.fullNamePlaceholder')}
               />
             </label>
           </div>
           <div>
             <label className="lv-field">
-              <span className="lv-label">Company name</span>
+              <span className="lv-label">{t('mod.companyName')}</span>
               <input
                 className="lv-input"
                 id="company_name"
                 autoComplete="organization"
                 value={formData.company_name}
                 onChange={e => setFormData(p => ({ ...p, company_name: e.target.value }))}
-                placeholder="Smith Contracting LLC"
+                placeholder={t('mod.companyNamePlaceholder')}
               />
             </label>
           </div>
         </div>
 
         <label className="lv-field" style={{ marginTop: 14 }}>
-          <span className="lv-label">Phone number</span>
+          <span className="lv-label">{t('m.phone')}</span>
           <input
             className="lv-input"
             id="phone_number"
@@ -143,21 +145,21 @@ export const ProfileEditor: React.FC = () => {
         </label>
 
         <label className="lv-field">
-          <span className="lv-label">Business address</span>
+          <span className="lv-label">{t('mod.businessAddress')}</span>
           <textarea
             className="lv-textarea"
             id="business_address"
             rows={3}
             value={formData.business_address}
             onChange={e => setFormData(p => ({ ...p, business_address: e.target.value }))}
-            placeholder={'123 Main Street\nCity, State 12345'}
+            placeholder={t('mod.businessAddressPlaceholder')}
           />
         </label>
       </div>
 
       <div className="lv-card-foot">
         <button type="submit" className="lv-btn pri" disabled={saving}>
-          {saving ? <><Loader2 size={15} className="animate-spin" /> Saving</> : 'Save profile'}
+          {saving ? <><Loader2 size={15} className="animate-spin" /> {t('a.saving')}</> : t('mod.saveProfile')}
         </button>
       </div>
     </form>

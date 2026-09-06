@@ -3,6 +3,7 @@ import { useData } from '@/contexts/DataContext';
 import { supabase } from '@/lib/supabase';
 import { Camera, FileText, ChevronRight, Send, Clock, Search, Plus, ExternalLink } from 'lucide-react';
 import { CreateUpdateModal } from './CreateUpdateModal';
+import { useT } from '@/i18n';
 
 interface PhotosHubProps {
   onOpenEstimate: (estimate: any) => void;
@@ -10,6 +11,7 @@ interface PhotosHubProps {
 
 export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
   const { estimates } = useData();
+  const t = useT();
   const [showEstimatePicker, setShowEstimatePicker] = useState(false);
   const [showCreateUpdate, setShowCreateUpdate] = useState(false);
   const [updates, setUpdates] = useState<any[]>([]);
@@ -62,10 +64,10 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
 
       <div className="lv-page-head">
         <div>
-          <h1 className="lv-h1">Photos</h1>
-          <p className="lv-sub">Put site photos on an estimate, or build an update to send a client.</p>
+          <h1 className="lv-h1">{t('nav.photos')}</h1>
+          <p className="lv-sub">{t('lst.photosSub')}</p>
         </div>
-        <button className="lv-btn pri" onClick={() => setShowCreateUpdate(true)}><Plus size={16} /> New update</button>
+        <button className="lv-btn pri" onClick={() => setShowCreateUpdate(true)}><Plus size={16} /> {t('lst.newUpdate')}</button>
       </div>
 
       <div className="ph-acts">
@@ -76,16 +78,16 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
         >
           <span className="ph-act-ic"><Camera size={19} /></span>
           <span style={{ minWidth: 0 }}>
-            <span className="lv-h3" style={{ display: 'block' }}>Upload photos</span>
-            <span className="lv-small" style={{ display: 'block', marginTop: 2 }}>Add photos to an existing estimate</span>
+            <span className="lv-h3" style={{ display: 'block' }}>{t('lst.uploadPhotos')}</span>
+            <span className="lv-small" style={{ display: 'block', marginTop: 2 }}>{t('lst.uploadPhotosBody')}</span>
           </span>
         </button>
 
         <button className="ph-act" onClick={() => setShowCreateUpdate(true)}>
           <span className="ph-act-ic"><Send size={18} /></span>
           <span style={{ minWidth: 0 }}>
-            <span className="lv-h3" style={{ display: 'block' }}>Create update</span>
-            <span className="lv-small" style={{ display: 'block', marginTop: 2 }}>Build a photo update to send a client</span>
+            <span className="lv-h3" style={{ display: 'block' }}>{t('lst.createUpdate')}</span>
+            <span className="lv-small" style={{ display: 'block', marginTop: 2 }}>{t('lst.createUpdateBody')}</span>
           </span>
         </button>
       </div>
@@ -93,21 +95,21 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
       {showEstimatePicker && (
         <div className="lv-card ph-picker">
           <div className="lv-card-head" style={{ display: 'block' }}>
-            <span className="lv-eyebrow">Choose an estimate to open</span>
+            <span className="lv-eyebrow">{t('lst.chooseEstimate')}</span>
             <div className="lv-search" style={{ marginTop: 8 }}>
               <Search size={16} />
               <input
                 className="lv-input"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search by client or project"
+                placeholder={t('lst.searchByClientOrProject')}
                 autoFocus
               />
             </div>
           </div>
           <div className="ph-pick-list">
             {filtered.length === 0 ? (
-              <p className="lv-small" style={{ padding: '24px 18px', textAlign: 'center' }}>No estimates match that search.</p>
+              <p className="lv-small" style={{ padding: '24px 18px', textAlign: 'center' }}>{t('lst.noEstimatesMatch')}</p>
             ) : (
               filtered.map(est => (
                 <button
@@ -116,7 +118,7 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
                   onClick={() => { onOpenEstimate(est); setShowEstimatePicker(false); }}
                 >
                   <span style={{ minWidth: 0 }}>
-                    <span className="lv-row-t ph-clip" style={{ display: 'block' }}>{est.projectName || 'Unnamed project'}</span>
+                    <span className="lv-row-t ph-clip" style={{ display: 'block' }}>{est.projectName || t('lst.unnamedProject')}</span>
                     <span className="lv-row-s ph-clip" style={{ display: 'block' }}>{est.clientName}</span>
                   </span>
                   <ChevronRight size={16} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
@@ -130,7 +132,7 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
       {updates.length > 0 ? (
         <div className="lv-card">
           <div className="lv-card-head">
-            <h2 className="lv-h2">Sent updates</h2>
+            <h2 className="lv-h2">{t('lst.sentUpdates')}</h2>
             <span className="lv-small lv-num">{updates.length}</span>
           </div>
           {updates.map(u => (
@@ -140,7 +142,9 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
                 {u.description && <div className="lv-row-s ph-clip">{u.description}</div>}
                 <div className="lv-row-s ph-when">
                   <Clock size={12} />
-                  {u.sent_at ? `Sent ${new Date(u.sent_at).toLocaleDateString()}` : `Created ${new Date(u.created_at).toLocaleDateString()}`}
+                  {u.sent_at
+                    ? t('lst.sentOn', { date: new Date(u.sent_at).toLocaleDateString() })
+                    : t('lst.createdOn', { date: new Date(u.created_at).toLocaleDateString() })}
                 </div>
               </div>
               {u.view_token && (
@@ -150,7 +154,7 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <ExternalLink size={14} /> View link
+                  <ExternalLink size={14} /> {t('lst.viewLink')}
                 </a>
               )}
             </div>
@@ -159,9 +163,9 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
       ) : !showEstimatePicker && (
         <div className="lv-empty">
           <FileText size={30} />
-          <h3>No photo updates yet</h3>
-          <p>Build an update from your site photos and send your client a link they can open on their phone.</p>
-          <button className="lv-btn pri" onClick={() => setShowCreateUpdate(true)}><Plus size={16} /> Create an update</button>
+          <h3>{t('lst.noUpdatesYet')}</h3>
+          <p>{t('lst.noUpdatesBody')}</p>
+          <button className="lv-btn pri" onClick={() => setShowCreateUpdate(true)}><Plus size={16} /> {t('lst.createAnUpdate')}</button>
         </div>
       )}
 

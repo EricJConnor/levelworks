@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { HelpModal } from './HelpModal';
 import { Mark } from './Mark';
+import { LanguageToggle, useT } from '@/i18n';
 
 type View = 'dashboard' | 'clients' | 'notifications' | 'estimates' | 'photos' | 'invoices' | 'account' | 'notes';
 
@@ -39,6 +40,7 @@ export const AppLayout: React.FC = () => {
   const [showHelpModal, setShowHelpModal] = useState(false);
   const { clients, estimates, addClient, loading } = useData();
   const { profile } = useProfile();
+  const t = useT();
   const mountedRef = useRef(true);
 
   const handleConnectStripe = async () => {
@@ -93,12 +95,12 @@ export const AppLayout: React.FC = () => {
   const handleHelpClick = () => { setShowHelpModal(true); setMobileMenuOpen(false); };
 
   const navItems: { key: View; label: string; icon: React.ElementType }[] = [
-    { key: 'dashboard', label: 'Dashboard', icon: Home },
-    { key: 'estimates', label: 'Estimates', icon: FileText },
-    { key: 'invoices', label: 'Invoices', icon: Receipt },
-    { key: 'clients', label: 'Clients', icon: Users },
-    { key: 'photos', label: 'Photos', icon: Camera },
-    { key: 'notes', label: 'Notes', icon: StickyNote },
+    { key: 'dashboard', label: t('nav.dashboard'), icon: Home },
+    { key: 'estimates', label: t('nav.estimates'), icon: FileText },
+    { key: 'invoices', label: t('nav.invoices'), icon: Receipt },
+    { key: 'clients', label: t('nav.clients'), icon: Users },
+    { key: 'photos', label: t('nav.photos'), icon: Camera },
+    { key: 'notes', label: t('nav.notes'), icon: StickyNote },
   ];
 
   const handleNavClick = (view: View) => {
@@ -119,18 +121,18 @@ export const AppLayout: React.FC = () => {
   if (isAuthenticated === false) return (
     <div className="lv-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div className="lv-card lv-card-pad" style={{ maxWidth: 380, width: '100%', textAlign: 'center' }}>
-        <h2 className="lv-h1" style={{ fontSize: 21, marginBottom: 6 }}>Sign in to continue</h2>
-        <p className="lv-sub" style={{ marginBottom: 20 }}>Your estimates and clients are waiting.</p>
-        <button className="lv-btn pri wide" onClick={() => setShowAuthModal(true)}>Sign in</button>
-        <button className="lv-btn quiet wide" style={{ marginTop: 8 }} onClick={() => (window.location.href = '/')}>Back to home</button>
+        <h2 className="lv-h1" style={{ fontSize: 21, marginBottom: 6 }}>{t('gate.title')}</h2>
+        <p className="lv-sub" style={{ marginBottom: 20 }}>{t('gate.body')}</p>
+        <button className="lv-btn pri wide" onClick={() => setShowAuthModal(true)}>{t('a.signIn')}</button>
+        <button className="lv-btn quiet wide" style={{ marginTop: 8 }} onClick={() => (window.location.href = '/')}>{t('gate.backHome')}</button>
       </div>
       <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} onSuccess={() => window.location.reload()} />
     </div>
   );
 
   const viewTitle: Record<View, string> = {
-    dashboard: 'Dashboard', clients: 'Clients', notifications: 'Notifications', estimates: 'Estimates',
-    photos: 'Photos', invoices: 'Invoices', account: 'Account', notes: 'Notes',
+    dashboard: t('nav.dashboard'), clients: t('nav.clients'), notifications: t('nav.notifications'), estimates: t('nav.estimates'),
+    photos: t('nav.photos'), invoices: t('nav.invoices'), account: t('nav.account'), notes: t('nav.notes'),
   };
 
   return (
@@ -142,7 +144,7 @@ export const AppLayout: React.FC = () => {
               <Mark />
               <span>Level<b>Works</b></span>
             </button>
-            <nav className="lv-nav lv-hide-mobile" aria-label="Sections">
+            <nav className="lv-nav lv-hide-mobile" aria-label={t('lst.sectionsNav')}>
               {navItems.map(item => (
                 <button key={item.key} className={currentView === item.key ? 'on' : ''} onClick={() => handleNavClick(item.key)}>
                   {item.label}
@@ -152,10 +154,11 @@ export const AppLayout: React.FC = () => {
           </div>
 
           <div className="lv-hdr-tools">
-            <button className="lv-btn pri sm lv-hide-mobile" onClick={newEstimate}><Plus size={15} /> New estimate</button>
-            <button className="lv-btn sec sm lv-hide-mobile" onClick={newInvoice}><Plus size={15} /> Invoice</button>
-            <button className="lv-icon-btn lv-hide-mobile" onClick={handleHelpClick} title="Help" aria-label="Help"><HelpCircle size={19} /></button>
-            <button className="lv-icon-btn lv-hide-mobile" onClick={() => handleNavClick('notifications')} title="Notifications" aria-label="Notifications">
+            <button className="lv-btn pri sm lv-hide-mobile" onClick={newEstimate}><Plus size={15} /> {t('nav.newEstimate')}</button>
+            <button className="lv-btn sec sm lv-hide-mobile" onClick={newInvoice}><Plus size={15} /> {t('nav.invoice')}</button>
+            <LanguageToggle className="lv-hide-mobile" />
+            <button className="lv-icon-btn lv-hide-mobile" onClick={handleHelpClick} title={t('nav.help')} aria-label={t('nav.help')}><HelpCircle size={19} /></button>
+            <button className="lv-icon-btn lv-hide-mobile" onClick={() => handleNavClick('notifications')} title={t('nav.notifications')} aria-label={t('nav.notifications')}>
               <Bell size={19} />
               {!pushEnabled && <span className="dot" />}
             </button>
@@ -163,12 +166,12 @@ export const AppLayout: React.FC = () => {
               {profile?.profile_photo_url
                 ? <img src={profile.profile_photo_url} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
                 : <User size={15} />}
-              {profile?.full_name?.split(' ')[0] || 'Account'}
+              {profile?.full_name?.split(' ')[0] || t('nav.account')}
             </button>
-            <button className="lv-icon-btn lv-hide-mobile" onClick={handleSignOut} title="Sign out" aria-label="Sign out"><LogOut size={18} /></button>
+            <button className="lv-icon-btn lv-hide-mobile" onClick={handleSignOut} title={t('a.signOut')} aria-label={t('a.signOut')}><LogOut size={18} /></button>
 
             {/* mobile: one primary action lives in the header, the rest in the tab bar */}
-            <button className="lv-btn pri sm lv-hide-desktop" onClick={newEstimate}><Plus size={15} /> Estimate</button>
+            <button className="lv-btn pri sm lv-hide-desktop" onClick={newEstimate}><Plus size={15} /> {t('m.estimate')}</button>
           </div>
         </div>
       </header>
@@ -176,7 +179,7 @@ export const AppLayout: React.FC = () => {
       <main className="lv-main" style={{ paddingBottom: 96 }}>
         {currentView !== 'dashboard' && (
           <button className="lv-btn quiet sm" style={{ marginBottom: 12, marginLeft: -10 }} onClick={() => setCurrentView('dashboard')}>
-            <ArrowLeft size={15} /> Dashboard
+            <ArrowLeft size={15} /> {t('nav.dashboard')}
           </button>
         )}
 
@@ -206,23 +209,25 @@ export const AppLayout: React.FC = () => {
         <>
           <div className="lv-sheet-scrim lv-hide-desktop" onClick={() => setMobileMenuOpen(false)} />
           <div className="lv-sheet lv-hide-desktop">
+            <LanguageToggle />
+            <hr />
             {navItems.filter(i => !['dashboard', 'estimates', 'invoices', 'clients'].includes(i.key)).map(item => (
               <button key={item.key} className={currentView === item.key ? 'on' : ''} onClick={() => handleNavClick(item.key)}>
                 <item.icon size={17} /> {item.label}
               </button>
             ))}
-            <button className={currentView === 'notifications' ? 'on' : ''} onClick={() => handleNavClick('notifications')}><Bell size={17} /> Notifications</button>
+            <button className={currentView === 'notifications' ? 'on' : ''} onClick={() => handleNavClick('notifications')}><Bell size={17} /> {t('nav.notifications')}</button>
             <hr />
-            <button onClick={newInvoice}><Plus size={17} /> New invoice</button>
-            <button onClick={handleAccountClick}><User size={17} /> Account</button>
+            <button onClick={newInvoice}><Plus size={17} /> {t('nav.newInvoice')}</button>
+            <button onClick={handleAccountClick}><User size={17} /> {t('nav.account')}</button>
             <AddToHomeScreen />
-            <button onClick={handleHelpClick}><HelpCircle size={17} /> Help</button>
-            <button onClick={handleSignOut} style={{ color: 'var(--lv-mute)' }}><LogOut size={17} /> Sign out</button>
+            <button onClick={handleHelpClick}><HelpCircle size={17} /> {t('nav.help')}</button>
+            <button onClick={handleSignOut} style={{ color: 'var(--lv-mute)' }}><LogOut size={17} /> {t('a.signOut')}</button>
           </div>
         </>
       )}
 
-      <nav className="lv-tabs lv-hide-desktop" aria-label="Main">
+      <nav className="lv-tabs lv-hide-desktop" aria-label={t('lst.mainNav')}>
         {navItems.slice(0, 4).map(({ key, label, icon: Icon }) => (
           <button key={key} className={currentView === key ? 'on' : ''} onClick={() => handleNavClick(key)}>
             <Icon size={21} /><span>{label}</span>
@@ -232,7 +237,7 @@ export const AppLayout: React.FC = () => {
           className={mobileMenuOpen || !['dashboard', 'estimates', 'invoices', 'clients'].includes(currentView) ? 'on' : ''}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          <Menu size={21} /><span>More</span>
+          <Menu size={21} /><span>{t('nav.more')}</span>
         </button>
       </nav>
 
@@ -273,24 +278,31 @@ interface DashboardViewProps {
 }
 
 function DashboardView({ clients, estimates, onCreateEstimate, onViewEstimates, onViewClients, onViewEstimate, onConnectStripe, stripeConnected, firstName }: DashboardViewProps) {
+  const t = useT();
   const recentEstimates = estimates.slice(0, 5);
   const pendingEstimates = estimates.filter(e => e.status === 'sent').length;
   const totalEstimateValue = estimates.reduce((sum, e) => sum + (e.total || 0), 0);
 
+  const STATUS_KEY: Record<string, string> = { draft: 's.draft', sent: 's.sent', approved: 's.approved', rejected: 's.rejected' };
+
   const statusPill = (status: string) => {
     const tone = status === 'approved' ? 'green' : status === 'sent' ? 'blue' : '';
-    return <span className={`lv-pill ${tone}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
+    return (
+      <span className={`lv-pill ${tone}`}>
+        {STATUS_KEY[status] ? t(STATUS_KEY[status]) : status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
   };
 
   return (
     <div>
       <div className="lv-page-head">
         <div>
-          <h1 className="lv-h1">{firstName ? `Hi ${firstName}` : 'Dashboard'}</h1>
-          <p className="lv-sub">Here’s where every job stands.</p>
+          <h1 className="lv-h1">{firstName ? t('lst.greeting', { name: firstName }) : t('nav.dashboard')}</h1>
+          <p className="lv-sub">{t('lst.dashboardSub')}</p>
         </div>
         <div className="lv-inline">
-          <button className="lv-btn pri" onClick={onCreateEstimate}><Plus size={16} /> New estimate</button>
+          <button className="lv-btn pri" onClick={onCreateEstimate}><Plus size={16} /> {t('nav.newEstimate')}</button>
         </div>
       </div>
 
@@ -301,47 +313,47 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewEstimates, 
               <CreditCard size={18} />
             </div>
             <div>
-              <p className="lv-h3">Get paid by card</p>
-              <p className="lv-small" style={{ marginTop: 2 }}>Connect Stripe once and clients can pay any invoice online.</p>
+              <p className="lv-h3">{t('lst.getPaidByCard')}</p>
+              <p className="lv-small" style={{ marginTop: 2 }}>{t('lst.getPaidByCardBody')}</p>
             </div>
           </div>
-          <button className="lv-btn sec" onClick={onConnectStripe}>Set up payments</button>
+          <button className="lv-btn sec" onClick={onConnectStripe}>{t('lst.setUpPayments')}</button>
         </div>
       )}
 
       <div className="lv-stats" style={{ marginBottom: 24 }}>
         <button className="lv-stat" onClick={() => onViewEstimates()}>
-          <b>{money(totalEstimateValue)}</b><span>Total estimated</span>
+          <b>{money(totalEstimateValue)}</b><span>{t('lst.totalEstimated')}</span>
         </button>
         <button className="lv-stat" onClick={() => onViewEstimates()}>
-          <b>{estimates.length}</b><span>Estimates</span>
+          <b>{estimates.length}</b><span>{t('nav.estimates')}</span>
         </button>
         <button className="lv-stat" onClick={() => onViewEstimates('sent')}>
-          <b>{pendingEstimates}</b><span>Awaiting a client</span>
+          <b>{pendingEstimates}</b><span>{t('lst.awaitingClient')}</span>
         </button>
         <button className="lv-stat" onClick={onViewClients}>
-          <b>{clients.length}</b><span>Clients</span>
+          <b>{clients.length}</b><span>{t('nav.clients')}</span>
         </button>
       </div>
 
       <div className="lv-page-head" style={{ marginBottom: 12, alignItems: 'center' }}>
-        <h2 className="lv-h2">Recent estimates</h2>
-        <button className="lv-btn quiet sm" onClick={() => onViewEstimates()}>View all <ChevronRight size={15} /></button>
+        <h2 className="lv-h2">{t('lst.recentEstimates')}</h2>
+        <button className="lv-btn quiet sm" onClick={() => onViewEstimates()}>{t('a.viewAll')} <ChevronRight size={15} /></button>
       </div>
 
       {recentEstimates.length === 0 ? (
         <div className="lv-empty">
           <FileText size={30} />
-          <h3>No estimates yet</h3>
-          <p>Write your first one now — it takes a couple of minutes, and your client can sign it from their phone.</p>
-          <button className="lv-btn pri" onClick={onCreateEstimate}><Plus size={16} /> Create your first estimate</button>
+          <h3>{t('lst.noEstimatesYet')}</h3>
+          <p>{t('lst.dashNoEstimatesBody')}</p>
+          <button className="lv-btn pri" onClick={onCreateEstimate}><Plus size={16} /> {t('lst.createFirstEstimate')}</button>
         </div>
       ) : (
         <div className="lv-card">
           {recentEstimates.map((estimate) => (
             <button className="lv-row" key={estimate.id} onClick={() => onViewEstimate(estimate)}>
               <div style={{ minWidth: 0 }}>
-                <div className="lv-row-t" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{estimate.projectName || 'Unnamed project'}</div>
+                <div className="lv-row-t" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{estimate.projectName || t('lst.unnamedProject')}</div>
                 <div className="lv-row-s">{estimate.clientName} · EST-{estimate.id.slice(-6)} · {new Date(estimate.createdAt).toLocaleDateString()}</div>
               </div>
               <div className="lv-inline" style={{ flexShrink: 0, gap: 12 }}>
@@ -361,6 +373,7 @@ function BillingSettings() {
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const { toast } = useToast();
+  const t = useT();
 
   useEffect(() => {
     const loadStatus = async () => {
@@ -375,7 +388,7 @@ function BillingSettings() {
   }, []);
 
   const handleCancel = async () => {
-    if (!confirm('Are you sure you want to cancel your subscription?')) return;
+    if (!confirm(t('lst.confirmCancelSubscription'))) return;
     setCancelling(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -383,9 +396,9 @@ function BillingSettings() {
       const { error } = await supabase.functions.invoke('cancel-subscription', { body: { userId: user.id } });
       if (error) throw error;
       setStatus('cancelled');
-      toast({ title: 'Subscription cancelled', description: 'You can reactivate anytime.' });
+      toast({ title: t('lst.subscriptionCancelled'), description: t('lst.subscriptionCancelledBody') });
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Failed to cancel', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: err.message || t('lst.cancelFailed'), variant: 'destructive' });
     } finally {
       setCancelling(false);
     }
@@ -393,51 +406,52 @@ function BillingSettings() {
 
   return (
     <div className="lv-card lv-card-pad" style={{ maxWidth: 460 }}>
-      <span className="lv-eyebrow">Subscription</span>
+      <span className="lv-eyebrow">{t('lst.subscription')}</span>
       {status === 'active' && (
         <div style={{ marginTop: 10 }}>
-          <p className="lv-h2" style={{ color: 'var(--lv-green)' }}>Active — $5/month</p>
-          <p className="lv-sub" style={{ margin: '6px 0 16px' }}>Thanks for being here. Everything is switched on.</p>
-          <button className="lv-btn danger sm" onClick={handleCancel} disabled={cancelling}>{cancelling ? 'Cancelling…' : 'Cancel subscription'}</button>
+          <p className="lv-h2" style={{ color: 'var(--lv-green)' }}>{t('lst.planActive')}</p>
+          <p className="lv-sub" style={{ margin: '6px 0 16px' }}>{t('lst.planActiveBody')}</p>
+          <button className="lv-btn danger sm" onClick={handleCancel} disabled={cancelling}>{cancelling ? t('lst.cancelling') : t('lst.cancelSubscription')}</button>
         </div>
       )}
       {status === 'trial' && (
         <div style={{ marginTop: 10 }}>
-          <p className="lv-h2" style={{ color: 'var(--lv-blue)' }}>Free trial</p>
-          <p className="lv-sub" style={{ marginTop: 4 }}>{daysLeft !== null ? `${daysLeft} days remaining` : 'Trial active'}</p>
+          <p className="lv-h2" style={{ color: 'var(--lv-blue)' }}>{t('lst.freeTrial')}</p>
+          <p className="lv-sub" style={{ marginTop: 4 }}>{daysLeft !== null ? t('lst.daysRemaining', { days: daysLeft }) : t('lst.trialActive')}</p>
         </div>
       )}
       {status === 'cancelled' && (
         <div style={{ marginTop: 10 }}>
-          <p className="lv-h2">Cancelled</p>
-          <p className="lv-sub" style={{ marginTop: 4 }}>Your subscription has been cancelled.</p>
+          <p className="lv-h2">{t('s.cancelled')}</p>
+          <p className="lv-sub" style={{ marginTop: 4 }}>{t('lst.subscriptionCancelledNote')}</p>
         </div>
       )}
-      {status === null && <p className="lv-sub" style={{ marginTop: 10 }}>Loading…</p>}
+      {status === null && <p className="lv-sub" style={{ marginTop: 10 }}>{t('a.loading')}</p>}
     </div>
   );
 }
 
 function AccountView({ onBack }: { onBack: () => void }) {
+  const t = useT();
   return (
     <div>
       <div className="lv-page-head">
         <div>
-          <h1 className="lv-h1">Account</h1>
-          <p className="lv-sub">Your business details, security and billing.</p>
+          <h1 className="lv-h1">{t('nav.account')}</h1>
+          <p className="lv-sub">{t('lst.accountSub')}</p>
         </div>
       </div>
       <Tabs defaultValue="profile" className="space-y-4">
         <TabsList className="grid grid-cols-3 w-full max-w-lg">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
+          <TabsTrigger value="profile">{t('lst.tabProfile')}</TabsTrigger>
+          <TabsTrigger value="security">{t('lst.tabSecurity')}</TabsTrigger>
+          <TabsTrigger value="billing">{t('lst.tabBilling')}</TabsTrigger>
         </TabsList>
         <TabsContent value="profile"><ProfileEditor /></TabsContent>
         <TabsContent value="security"><ChangePasswordForm /></TabsContent>
         <TabsContent value="billing"><BillingSettings /></TabsContent>
       </Tabs>
-      <button className="lv-btn quiet sm" style={{ marginTop: 18, marginLeft: -10 }} onClick={onBack}><ArrowLeft size={15} /> Back to dashboard</button>
+      <button className="lv-btn quiet sm" style={{ marginTop: 18, marginLeft: -10 }} onClick={onBack}><ArrowLeft size={15} /> {t('lst.backToDashboard')}</button>
       <span style={{ display: 'none' }}><CheckCircle size={1} /></span>
     </div>
   );

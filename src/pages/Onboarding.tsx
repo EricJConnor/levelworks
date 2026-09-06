@@ -4,12 +4,14 @@ import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useToast } from '@/hooks/use-toast';
 import { Mark } from '@/components/Mark';
+import { useT } from '@/i18n';
 import { Building2, Camera, Check, CreditCard, FileText, Loader2 } from 'lucide-react';
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { profile, loading, updateProfile, uploadPhoto, refreshProfile } = useProfile();
   const { toast } = useToast();
+  const t = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Once the form is submitted the saved profile flows back through context -
   // this keeps that refresh from bouncing us past the success state.
@@ -54,13 +56,13 @@ export default function Onboarding() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      toast({ title: 'Invalid file', description: 'Please upload an image file', variant: 'destructive' });
+      toast({ title: t('pg.onb.invalidFile'), description: t('pg.onb.invalidFileBody'), variant: 'destructive' });
       return;
     }
     setUploading(true);
     const url = await uploadPhoto(file);
     if (url) setForm(prev => ({ ...prev, profile_photo_url: url }));
-    else toast({ title: 'Upload failed', description: 'Please try another image', variant: 'destructive' });
+    else toast({ title: t('pg.onb.uploadFailed'), description: t('pg.onb.uploadFailedBody'), variant: 'destructive' });
     setUploading(false);
   };
 
@@ -76,7 +78,7 @@ export default function Onboarding() {
   const handleContinue = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.company_name.trim()) {
-      toast({ title: 'Company name required', description: 'Add your company name to continue', variant: 'destructive' });
+      toast({ title: t('pg.onb.companyRequired'), description: t('pg.onb.companyRequiredBody'), variant: 'destructive' });
       return;
     }
     setSaving(true);
@@ -85,7 +87,7 @@ export default function Onboarding() {
     setSaving(false);
     if (!success) {
       submittedRef.current = false;
-      toast({ title: 'Error', description: 'Could not save your business details. Please try again.', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: t('pg.onb.saveFailedBody'), variant: 'destructive' });
       return;
     }
     setStep('done');
@@ -124,7 +126,7 @@ export default function Onboarding() {
       }}
     >
       {form.profile_photo_url
-        ? <img src={form.profile_photo_url} alt="Company logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        ? <img src={form.profile_photo_url} alt={t('pg.onb.logoAlt')} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         : <Building2 size={Math.round(size * 0.38)} style={{ color: 'var(--lv-faint)' }} />}
     </div>
   );
@@ -139,10 +141,10 @@ export default function Onboarding() {
 
         {step === 'setup' ? (
           <>
-            <span className="lv-eyebrow">Step 1 of 2</span>
-            <h1 className="lv-h1" style={{ marginTop: 8 }}>Set up your business</h1>
+            <span className="lv-eyebrow">{t('pg.onb.step1')}</span>
+            <h1 className="lv-h1" style={{ marginTop: 8 }}>{t('pg.onb.setupTitle')}</h1>
             <p className="lv-sub" style={{ marginTop: 8, marginBottom: 22 }}>
-              These details go at the top of every estimate and invoice you send. You can change them later.
+              {t('pg.onb.setupSub')}
             </p>
 
             <form onSubmit={handleContinue}>
@@ -157,69 +159,69 @@ export default function Onboarding() {
                       disabled={uploading}
                     >
                       {uploading ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />}
-                      {uploading ? 'Uploading…' : 'Upload your logo'}
+                      {uploading ? t('pg.onb.uploading') : t('pg.onb.uploadLogo')}
                     </button>
-                    <p className="lv-small" style={{ marginTop: 7 }}>Optional. It appears on everything you send.</p>
+                    <p className="lv-small" style={{ marginTop: 7 }}>{t('pg.onb.logoHint')}</p>
                   </div>
                   <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
                 </div>
 
                 <div className="lv-field">
-                  <label className="lv-label" htmlFor="company_name">Company name</label>
+                  <label className="lv-label" htmlFor="company_name">{t('pg.onb.companyName')}</label>
                   <input
                     id="company_name"
                     className="lv-input"
                     type="text"
                     value={form.company_name}
                     onChange={e => setForm(p => ({ ...p, company_name: e.target.value }))}
-                    placeholder="Smith Contracting LLC"
+                    placeholder={t('pg.onb.companyPlaceholder')}
                     required
                   />
                 </div>
 
                 <div className="lv-field">
-                  <label className="lv-label" htmlFor="phone_number">Phone number</label>
+                  <label className="lv-label" htmlFor="phone_number">{t('pg.onb.phoneLabel')}</label>
                   <input
                     id="phone_number"
                     className="lv-input"
                     type="tel"
                     value={form.phone_number}
                     onChange={e => setForm(p => ({ ...p, phone_number: e.target.value }))}
-                    placeholder="(555) 123-4567"
+                    placeholder={t('pg.onb.phonePlaceholder')}
                   />
                 </div>
 
                 <div className="lv-field">
-                  <label className="lv-label" htmlFor="business_email">Email</label>
+                  <label className="lv-label" htmlFor="business_email">{t('m.email')}</label>
                   <input
                     id="business_email"
                     className="lv-input"
                     type="email"
                     value={form.business_email}
                     onChange={e => setForm(p => ({ ...p, business_email: e.target.value }))}
-                    placeholder="you@email.com"
+                    placeholder={t('pg.onb.emailPlaceholder')}
                   />
                 </div>
               </div>
 
               <button type="submit" className="lv-btn pri wide lg" style={{ marginTop: 18 }} disabled={saving || uploading}>
-                {saving ? <><Loader2 size={17} className="animate-spin" /> Saving…</> : 'Continue'}
+                {saving ? <><Loader2 size={17} className="animate-spin" /> {t('a.saving')}</> : t('a.continue')}
               </button>
 
               <div style={{ textAlign: 'center', marginTop: 16 }}>
                 <button type="button" className="lv-btn quiet sm" onClick={handleSetUpPayments} disabled={saving}>
-                  <CreditCard size={15} /> Set up card payments
+                  <CreditCard size={15} /> {t('pg.onb.setUpPayments')}
                 </button>
-                <p className="lv-small" style={{ marginTop: 4 }}>Optional. You can do this any time from your account.</p>
+                <p className="lv-small" style={{ marginTop: 4 }}>{t('pg.onb.paymentsHint')}</p>
               </div>
             </form>
           </>
         ) : (
           <>
-            <span className="lv-eyebrow">Step 2 of 2</span>
-            <h1 className="lv-h1" style={{ marginTop: 8 }}>You’re set up</h1>
+            <span className="lv-eyebrow">{t('pg.onb.step2')}</span>
+            <h1 className="lv-h1" style={{ marginTop: 8 }}>{t('pg.onb.doneTitle')}</h1>
             <p className="lv-sub" style={{ marginTop: 8, marginBottom: 22 }}>
-              Your business details are saved. Write your first estimate whenever you’re ready.
+              {t('pg.onb.doneSub')}
             </p>
 
             <div className="lv-card">
@@ -231,14 +233,14 @@ export default function Onboarding() {
                       {form.company_name}
                     </p>
                     <p className="lv-small" style={{ marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {[form.phone_number, form.business_email].filter(Boolean).join(' · ') || 'Business profile'}
+                      {[form.phone_number, form.business_email].filter(Boolean).join(' · ') || t('pg.onb.businessProfile')}
                     </p>
                   </div>
                 </div>
               </div>
               <div className="lv-card-pad">
                 <ul className="lv-stack" style={{ gap: 9, listStyle: 'none', margin: 0, padding: 0 }}>
-                  {['Your logo', 'Your business details', 'Your estimates, with your name on them'].map(item => (
+                  {[t('pg.onb.check1'), t('pg.onb.check2'), t('pg.onb.check3')].map(item => (
                     <li key={item} className="lv-inline" style={{ gap: 9, flexWrap: 'nowrap' }}>
                       <Check size={16} style={{ color: 'var(--lv-green)', flexShrink: 0 }} />
                       <span className="lv-sub" style={{ color: 'var(--lv-ink-2)' }}>{item}</span>
@@ -249,10 +251,10 @@ export default function Onboarding() {
             </div>
 
             <button className="lv-btn pri wide lg" style={{ marginTop: 18 }} onClick={() => goToApp(true)}>
-              <FileText size={17} /> Write your first estimate
+              <FileText size={17} /> {t('pg.onb.firstEstimate')}
             </button>
             <button className="lv-btn quiet wide" style={{ marginTop: 8 }} onClick={() => goToApp(false)}>
-              Skip for now
+              {t('pg.onb.skipForNow')}
             </button>
           </>
         )}

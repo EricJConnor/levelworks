@@ -4,9 +4,11 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
 import { SendEstimateModal } from './SendEstimateModal';
 import { supabase } from '@/lib/supabase';
-import { X, Plus, Trash2, Users, Edit, ImageIcon, Send, FileText, Eye, Check, ChevronDown, Tag } from 'lucide-react';
+import { X, Plus, Trash2, Users, Edit, ImageIcon, Send, FileText, Eye, Check, ChevronDown, Tag, Languages, Loader2 } from 'lucide-react';
 import { PhotoUpload } from './PhotoUpload';
 import { autoGrowTextarea } from '@/lib/utils';
+import { useT, useLang } from '@/i18n';
+import { translateItems, looksSpanish, type Direction } from '@/lib/translate';
 
 interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; sectionTitle?: string; }
 interface Props { onClose: () => void; onConvertToInvoice?: (data: any) => void; existingEstimate?: any; }
@@ -43,6 +45,8 @@ const cleanLineItem = (item: any, index: number): LineItem | null => {
 export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, existingEstimate }) => {
   const { addEstimate, updateEstimate, refreshEstimates, addClient, clients, estimates } = useData();
   const { profile } = useProfile();
+  const t = useT();
+  const { lang } = useLang();
   const [clientName, setClientName] = useState(existingEstimate?.clientName || '');
   const [clientEmail, setClientEmail] = useState(existingEstimate?.clientEmail || '');
   const [clientPhone, setClientPhone] = useState(existingEstimate?.clientPhone || '');
@@ -67,6 +71,12 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const clientPickerRef = useRef<HTMLDivElement>(null);
   const [estimatePhotos, setEstimatePhotos] = useState<{ id: string; fileUrl: string; caption: string }[]>([]);
   const [photoCaptions, setPhotoCaptions] = useState<Record<string, string>>({});
+
+  // Translation of what the contractor typed. Never applied without him
+  // seeing it first — a document that goes to a client is one he has read.
+  const [showTranslate, setShowTranslate] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translated, setTranslated] = useState<{ id: string; text: string }[]>([]);
 
   useEffect(() => { loadSavedTitles(); }, []);
   useEffect(() => { if (existingEstimate?.id) loadEstimatePhotos(existingEstimate.id); }, [existingEstimate?.id]);
@@ -112,14 +122,14 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   };
 
   const handleEstimatePhotoDeleted = async (photoId: string) => {
-    if (!confirm('Delete this photo?')) return;
+    if (!confirm(t('est.deletePhotoConfirm'))) return;
     try {
       const { error } = await supabase.from('project_photos').delete().eq('id', photoId);
       if (error) throw error;
       setEstimatePhotos(prev => prev.filter(p => p.id !== photoId));
       setPhotoCaptions(prev => { const n = { ...prev }; delete n[photoId]; return n; });
     } catch (e: any) {
-      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: e.message, variant: 'destructive' });
     }
   };
 
@@ -191,9 +201,9 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const removeItem = (id: string) => { if (lineItems.length > 1) setLineItems(lineItems.filter(item => item.id !== id)); };
 
   const saveEstimate = async (forSending = false): Promise<any> => {
-    if (!clientName.trim()) { toast({ title: 'Client name needed', description: 'Add the client’s name before saving.', variant: 'destructive' }); return null; }
-    if (!projectName.trim()) { toast({ title: 'Project name needed', description: 'Give this estimate a project name so you can find it later.', variant: 'destructive' }); return null; }
-    if (forSending && !clientEmail.trim()) { toast({ title: 'Client email needed', description: 'Add an email address to send this estimate.', variant: 'destructive' }); return null; }
+    if (!clientName.trim()) { toast({ title: t('est.clientNameNeeded'), description: t('est.clientNameNeededBody'), variant: 'destructive' }); return null; }
+    if (!projectName.trim()) { toast({ title: t('est.projectNameNeeded'), description: t('est.projectNameNeededBody'), variant: 'destructive' }); return null; }
+    if (forSending && !clientEmail.trim()) { toast({ title: t('est.clientEmailNeeded'), description: t('est.clientEmailNeededBody'), variant: 'destructive' }); return null; }
 
     setIsSaving(true);
     try {
@@ -205,7 +215,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         .filter((item): item is LineItem => item !== null);
 
       if (validItems.length === 0) {
-        toast({ title: 'Add a line item', description: 'Every estimate needs at least one item with a description and a quantity.', variant: 'destructive' });
+        toast({ title: t('est.addALineItem'), description: t('est.addALineItemBody'), variant: 'destructive' });
         setIsSaving(false);
         return null;
       }
@@ -248,7 +258,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
       const result = { id: resultId, ...estimateData, viewToken: resultViewToken };
       return result;
     } catch (error: any) {
-      toast({ title: 'Could not save', description: error.message || 'Something went wrong saving this estimate.', variant: 'destructive' });
+      toast({ title: t('est.couldNotSave'), description: error.message || t('est.couldNotSaveBody'), variant: 'destructive' });
       return null;
     } finally {
       setIsSaving(false);
@@ -257,7 +267,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
   const handleSave = async () => {
     const result = await saveEstimate(false);
-    if (result) { toast({ title: 'Saved', description: 'This estimate is in your list.' }); onClose(); }
+    if (result) { toast({ title: t('est.saved'), description: t('est.savedBody') }); onClose(); }
   };
 
   const handleDone = async () => {
@@ -274,7 +284,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
       setSavedEstimateData(result);
       setShowSendModal(true);
     } else if (result) {
-      toast({ title: 'Could not send', description: 'This estimate could not be prepared for sending. Try again.', variant: 'destructive' });
+      toast({ title: t('est.couldNotSend'), description: t('est.couldNotSendBody'), variant: 'destructive' });
     }
   };
 
@@ -288,6 +298,43 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const handleSendModalClose = () => { setShowSendModal(false); setSavedEstimateData(null); };
   const handleSendSuccess = () => { setShowSendModal(false); setSavedEstimateData(null); onClose(); };
 
+  // Direction is guessed from what he has already written, so the button
+  // almost always reads the way he needs it. On an empty estimate there is
+  // nothing to read yet, so fall back to the language he set the app to: a
+  // contractor working in Spanish is writing Spanish and wants English out.
+  const written = lineItems.map(i => safeString(i.description)).filter(d => d.trim());
+  const direction: Direction = written.length
+    ? (written.some(looksSpanish) ? 'es-en' : 'en-es')
+    : (lang === 'es' ? 'es-en' : 'en-es');
+
+  const handleTranslate = async () => {
+    const items = lineItems
+      .filter(i => safeString(i.description).trim())
+      .map(i => ({ id: i.id, text: safeString(i.description) }));
+    if (items.length === 0) {
+      toast({ title: t('tr.nothingToTranslate'), description: t('tr.nothingToTranslateBody'), variant: 'destructive' });
+      return;
+    }
+    setTranslating(true);
+    setShowTranslate(true);
+    const res = await translateItems(direction, items, safeString(projectName) || undefined);
+    setTranslating(false);
+    if (!res.ok) {
+      setShowTranslate(false);
+      toast({ title: t('tr.failed'), description: res.message, variant: 'destructive' });
+      return;
+    }
+    setTranslated(res.items);
+  };
+
+  const applyTranslation = () => {
+    const map = new Map(translated.map(i => [i.id, i.text]));
+    setLineItems(prev => prev.map(i => (map.has(i.id) ? { ...i, description: map.get(i.id)! } : i)));
+    setShowTranslate(false);
+    setTranslated([]);
+    toast({ title: t('tr.applied'), description: t('tr.appliedBody') });
+  };
+
   const canConvert = !!onConvertToInvoice;
   const itemCount = lineItems.filter(i => safeString(i.description).trim()).length;
 
@@ -299,7 +346,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
       <div className="eb-item-head">
         <span className="eb-item-n">{idx + 1}</span>
         {isReadOnly ? (
-          item.sectionTitle ? <span className="lv-pill blue">{item.sectionTitle}</span> : <span className="lv-small">Item</span>
+          item.sectionTitle ? <span className="lv-pill blue">{item.sectionTitle}</span> : <span className="lv-small">{t('est.item')}</span>
         ) : (
           <div className="eb-title-wrap" ref={openTitlePicker === item.id ? titlePickerRef : undefined}>
             <button
@@ -308,14 +355,14 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
               onClick={() => setOpenTitlePicker(openTitlePicker === item.id ? null : item.id)}
             >
               <Tag size={13} />
-              {item.sectionTitle || 'Add a section'}
+              {item.sectionTitle || t('est.addSection')}
               <ChevronDown size={13} />
             </button>
             {openTitlePicker === item.id && (
               <div className="lv-pop eb-title-pop">
                 <div className="lv-pop-head">
-                  <span className="lv-eyebrow">Saved sections</span>
-                  <button type="button" className="lv-btn quiet sm" onClick={() => setShowNewTitleInput(true)}>+ New</button>
+                  <span className="lv-eyebrow">{t('est.savedSections')}</span>
+                  <button type="button" className="lv-btn quiet sm" onClick={() => setShowNewTitleInput(true)}>{t('est.newSection')}</button>
                 </div>
                 {showNewTitleInput && (
                   <div className="eb-title-new">
@@ -324,14 +371,14 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                       value={newTitleInput}
                       onChange={(e) => setNewTitleInput(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') addNewTitle(item.id); }}
-                      placeholder="e.g. Kitchen"
+                      placeholder={t('est.sectionPlaceholder')}
                       autoFocus
                     />
-                    <button type="button" className="lv-btn pri sm" onClick={() => addNewTitle(item.id)}>Add</button>
+                    <button type="button" className="lv-btn pri sm" onClick={() => addNewTitle(item.id)}>{t('a.add')}</button>
                   </div>
                 )}
                 {savedTitles.length === 0 ? (
-                  <p className="lv-small eb-pop-empty">No saved sections yet — add your first above.</p>
+                  <p className="lv-small eb-pop-empty">{t('est.noSavedSections')}</p>
                 ) : (
                   savedTitles.map((t, i) => (
                     <button key={i} type="button" onClick={() => applyTitle(item.id, t)}>
@@ -341,7 +388,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                 )}
                 {item.sectionTitle && (
                   <button type="button" className="eb-title-clear" onClick={() => { updateItem(item.id, 'sectionTitle', undefined); setOpenTitlePicker(null); }}>
-                    Remove section
+                    {t('est.removeSection')}
                   </button>
                 )}
               </div>
@@ -350,7 +397,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         )}
         <div className="eb-item-total lv-num">{money(item.total)}</div>
         {!isReadOnly && lineItems.length > 1 && (
-          <button className="lv-icon-btn eb-del" onClick={() => removeItem(item.id)} title="Remove item" aria-label={`Remove item ${idx + 1}`}>
+          <button className="lv-icon-btn eb-del" onClick={() => removeItem(item.id)} title={t('est.removeItem')} aria-label={t('est.removeItemN', { n: idx + 1 })}>
             <Trash2 size={16} />
           </button>
         )}
@@ -361,21 +408,21 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         className="lv-textarea eb-desc"
         value={item.description}
         onChange={(e) => { updateItem(item.id, 'description', e.target.value); autoGrowTextarea(e.target); }}
-        placeholder="Describe the work — materials, prep, coats, anything the client should see"
+        placeholder={t('est.describePlaceholder')}
         disabled={isReadOnly}
       />
 
       <div className="eb-qr">
         <label className="lv-field">
-          <span className="lv-label">Qty</span>
+          <span className="lv-label">{t('m.qty')}</span>
           <input type="number" inputMode="decimal" className="lv-input num" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} />
         </label>
         <label className="lv-field">
-          <span className="lv-label">Rate</span>
+          <span className="lv-label">{t('m.rate')}</span>
           <input type="number" inputMode="decimal" className="lv-input num" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} />
         </label>
         <div className="lv-field">
-          <span className="lv-label">Line total</span>
+          <span className="lv-label">{t('m.lineTotal')}</span>
           <div className="eb-linetotal lv-num">{money(item.total)}</div>
         </div>
       </div>
@@ -396,12 +443,12 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         <div className="eb-shell">
           <header className="eb-head-bar">
             <div className="eb-head-l">
-              <span className="lv-eyebrow">Client view</span>
-              <h2 className="lv-h2">{previewData.projectName || 'Estimate'}</h2>
+              <span className="lv-eyebrow">{t('est.clientView')}</span>
+              <h2 className="lv-h2">{previewData.projectName || t('m.estimate')}</h2>
             </div>
             <div className="lv-inline">
-              <span className="lv-pill blue lv-hide-mobile">This is what your client sees</span>
-              <button className="lv-icon-btn" onClick={onClose} aria-label="Close"><X size={20} /></button>
+              <span className="lv-pill blue lv-hide-mobile">{t('est.whatClientSees')}</span>
+              <button className="lv-icon-btn" onClick={onClose} aria-label={t('a.close')}><X size={20} /></button>
             </div>
           </header>
 
@@ -411,19 +458,19 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                 <div className="eb-doc-biz">
                   {profile?.profile_photo_url && <img src={profile.profile_photo_url} alt="" className="eb-doc-logo" />}
                   <div>
-                    <p className="eb-doc-name">{profile?.company_name || profile?.full_name || 'Your Business'}</p>
+                    <p className="eb-doc-name">{profile?.company_name || profile?.full_name || t('est.yourBusiness')}</p>
                     {profile?.phone_number && <p className="lv-small">{profile.phone_number}</p>}
                     {profile?.business_address && <p className="lv-small">{profile.business_address}</p>}
                   </div>
                 </div>
                 <div className="eb-doc-meta">
-                  <p className="eb-doc-num">Estimate #{safeString(previewData.id).slice(-6).toUpperCase() || 'DRAFT'}</p>
+                  <p className="eb-doc-num">{t('est.estimateNumber', { n: safeString(previewData.id).slice(-6).toUpperCase() || t('est.draftRef') })}</p>
                   <p className="lv-small">{previewData.createdAt ? new Date(previewData.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</p>
                 </div>
               </div>
 
               <div className="eb-doc-for">
-                <span className="lv-eyebrow">Prepared for</span>
+                <span className="lv-eyebrow">{t('est.preparedFor')}</span>
                 <p className="eb-doc-name">{previewData.clientName}</p>
                 {previewData.clientEmail && <p className="lv-small">{previewData.clientEmail}</p>}
                 {previewData.clientPhone && <p className="lv-small">{previewData.clientPhone}</p>}
@@ -443,24 +490,24 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
               </div>
 
               <div className="eb-doc-sum">
-                <div className="row"><span>Subtotal</span><span className="lv-num">{money(previewSubtotal)}</span></div>
-                {Number(previewData.taxRate) > 0 && <div className="row"><span>Tax ({previewData.taxRate}%)</span><span className="lv-num">{money(previewTax)}</span></div>}
-                <div className="row total"><span>Total</span><span className="lv-num">{money(previewTotal)}</span></div>
+                <div className="row"><span>{t('m.subtotal')}</span><span className="lv-num">{money(previewSubtotal)}</span></div>
+                {Number(previewData.taxRate) > 0 && <div className="row"><span>{t('est.taxPercent', { p: previewData.taxRate })}</span><span className="lv-num">{money(previewTax)}</span></div>}
+                <div className="row total"><span>{t('m.total')}</span><span className="lv-num">{money(previewTotal)}</span></div>
                 {previewDeposit > 0 && (
                   <>
-                    <div className="row"><span>Deposit due at signing</span><span className="lv-num">{money(previewDeposit)}</span></div>
-                    <div className="row balance"><span>Balance on completion</span><span className="lv-num">{money(previewTotal - previewDeposit)}</span></div>
+                    <div className="row"><span>{t('est.depositAtSigning')}</span><span className="lv-num">{money(previewDeposit)}</span></div>
+                    <div className="row balance"><span>{t('est.balanceOnCompletion')}</span><span className="lv-num">{money(previewTotal - previewDeposit)}</span></div>
                   </>
                 )}
               </div>
 
               {estimatePhotos.length > 0 && (
                 <div className="eb-doc-photos">
-                  <span className="lv-eyebrow">Project photos</span>
+                  <span className="lv-eyebrow">{t('est.projectPhotos')}</span>
                   <div className="eb-photo-grid">
                     {estimatePhotos.map(photo => (
                       <figure key={photo.id}>
-                        <img src={photo.fileUrl} alt={photoCaptions[photo.id] || 'Project photo'} />
+                        <img src={photo.fileUrl} alt={photoCaptions[photo.id] || t('est.projectPhoto')} />
                         {photoCaptions[photo.id] && <figcaption>{photoCaptions[photo.id]}</figcaption>}
                       </figure>
                     ))}
@@ -468,17 +515,17 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                 </div>
               )}
 
-              <p className="eb-doc-thanks">We appreciate the opportunity to work with you. Thanks for considering us.</p>
+              <p className="eb-doc-thanks">{t('est.thanks')}</p>
             </div>
           </div>
 
           <footer className="eb-foot">
             <div className="lv-actions">
-              <button className="lv-btn quiet lv-hide-mobile" onClick={onClose}>Close</button>
+              <button className="lv-btn quiet lv-hide-mobile" onClick={onClose}>{t('a.close')}</button>
               <div className="spacer" />
-              <button className="lv-btn sec" onClick={() => { setShowPreview(false); setIsReadOnly(false); }}><Edit size={16} /> Edit</button>
-              {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> Convert to invoice</button>}
-              <button className="lv-btn pri span" onClick={handlePreviewSend} disabled={isSaving}><Send size={16} /> Send to client</button>
+              <button className="lv-btn sec" onClick={() => { setShowPreview(false); setIsReadOnly(false); }}><Edit size={16} /> {t('a.edit')}</button>
+              {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> {t('est.convertToInvoice')}</button>}
+              <button className="lv-btn pri span" onClick={handlePreviewSend} disabled={isSaving}><Send size={16} /> {t('est.sendToClient')}</button>
             </div>
           </footer>
         </div>
@@ -496,24 +543,24 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const summary = (
     <div className="eb-sum">
       <div className="eb-sum-head">
-        <span className="lv-eyebrow">Totals</span>
-        <span className="lv-small">{itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
+        <span className="lv-eyebrow">{t('est.totals')}</span>
+        <span className="lv-small">{itemCount === 1 ? t('est.itemCount', { n: itemCount }) : t('est.itemsCount', { n: itemCount })}</span>
       </div>
-      <div className="eb-sum-row"><span>Subtotal</span><span className="lv-num">{money(subtotal)}</span></div>
+      <div className="eb-sum-row"><span>{t('m.subtotal')}</span><span className="lv-num">{money(subtotal)}</span></div>
       <div className="eb-sum-row">
-        <span>Tax</span>
+        <span>{t('m.tax')}</span>
         <span className="eb-tax">
-          <input type="number" inputMode="decimal" className="lv-input num eb-tax-in" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} aria-label="Tax rate percent" />
+          <input type="number" inputMode="decimal" className="lv-input num eb-tax-in" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} aria-label={t('est.taxRatePercent')} />
           <span className="lv-small">%</span>
           <b className="lv-num">{money(tax)}</b>
         </span>
       </div>
-      <div className="eb-sum-row total"><span>Total</span><span className="lv-num">{money(total)}</span></div>
+      <div className="eb-sum-row total"><span>{t('m.total')}</span><span className="lv-num">{money(total)}</span></div>
       <div className="eb-sum-row">
-        <span>Deposit</span>
-        <input type="number" inputMode="decimal" className="lv-input num eb-dep-in" value={deposit} onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} aria-label="Deposit amount" />
+        <span>{t('m.deposit')}</span>
+        <input type="number" inputMode="decimal" className="lv-input num eb-dep-in" value={deposit} onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} aria-label={t('est.depositAmount')} />
       </div>
-      <div className="eb-sum-row balance"><span>Balance due</span><span className="lv-num">{money(balanceDue)}</span></div>
+      <div className="eb-sum-row balance"><span>{t('m.balanceDue')}</span><span className="lv-num">{money(balanceDue)}</span></div>
     </div>
   );
 
@@ -523,15 +570,15 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
         <header className="eb-head-bar">
           <div className="eb-head-l">
-            <span className="lv-eyebrow">{isReadOnly ? 'Estimate' : existingEstimate ? 'Editing estimate' : 'New estimate'}</span>
-            <h2 className="lv-h2">{projectName?.trim() || (clientName?.trim() ? clientName : 'Untitled estimate')}</h2>
+            <span className="lv-eyebrow">{isReadOnly ? t('m.estimate') : existingEstimate ? t('est.editingEstimate') : t('nav.newEstimate')}</span>
+            <h2 className="lv-h2">{projectName?.trim() || (clientName?.trim() ? clientName : t('est.untitled'))}</h2>
           </div>
           <div className="lv-inline">
             <span className="eb-head-total lv-num lv-hide-mobile">{money(total)}</span>
             {isReadOnly && (
-              <button className="lv-btn sec sm" onClick={() => setIsReadOnly(false)}><Edit size={15} /> Edit</button>
+              <button className="lv-btn sec sm" onClick={() => setIsReadOnly(false)}><Edit size={15} /> {t('a.edit')}</button>
             )}
-            <button className="lv-icon-btn" onClick={onClose} aria-label="Close"><X size={20} /></button>
+            <button className="lv-icon-btn" onClick={onClose} aria-label={t('a.close')}><X size={20} /></button>
           </div>
         </header>
 
@@ -541,15 +588,15 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
             {/* --- who it's for --- */}
             <section className="lv-card eb-sec">
               <div className="eb-sec-head">
-                <h3 className="lv-h3">Client</h3>
+                <h3 className="lv-h3">{t('m.client')}</h3>
                 {!isReadOnly && clients.length > 0 && (
                   <div className="eb-picker" ref={clientPickerRef}>
                     <button type="button" className="lv-btn sec sm" onClick={() => setShowClientPicker(!showClientPicker)}>
-                      <Users size={15} /> Saved clients
+                      <Users size={15} /> {t('est.savedClients')}
                     </button>
                     {showClientPicker && (
                       <div className="lv-pop eb-client-pop">
-                        <div className="lv-pop-head"><span className="lv-eyebrow">Choose a client</span></div>
+                        <div className="lv-pop-head"><span className="lv-eyebrow">{t('est.chooseClient')}</span></div>
                         {clients.map((c) => (
                           <button key={c.id} type="button" onClick={() => { setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientPicker(false); }}>
                             {c.name}
@@ -564,14 +611,14 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
               <div className="eb-sec-body">
                 <div className="eb-client-grid">
                   <label className="lv-field eb-rel">
-                    <span className="lv-label">Name *</span>
+                    <span className="lv-label">{t('m.name')} *</span>
                     <input
                       className="lv-input"
                       value={clientName}
                       onChange={(e) => { setClientName(e.target.value); setShowClientSuggest(true); }}
                       onFocus={() => setShowClientSuggest(true)}
                       onBlur={() => setTimeout(() => setShowClientSuggest(false), 150)}
-                      placeholder="Maria Keller"
+                      placeholder={t('est.clientNamePlaceholder')}
                       disabled={isReadOnly}
                     />
                     {showClientSuggest && filteredClients.length > 0 && (
@@ -585,22 +632,22 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                     )}
                   </label>
                   <label className="lv-field">
-                    <span className="lv-label">Email</span>
-                    <input className="lv-input" type="email" inputMode="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="client@email.com" disabled={isReadOnly} />
+                    <span className="lv-label">{t('m.email')}</span>
+                    <input className="lv-input" type="email" inputMode="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder={t('est.emailPlaceholder')} disabled={isReadOnly} />
                   </label>
                   <label className="lv-field">
-                    <span className="lv-label">Phone</span>
-                    <input className="lv-input" type="tel" inputMode="tel" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="(555) 123-4567" disabled={isReadOnly} />
+                    <span className="lv-label">{t('m.phone')}</span>
+                    <input className="lv-input" type="tel" inputMode="tel" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder={t('est.phonePlaceholder')} disabled={isReadOnly} />
                   </label>
                   <label className="lv-field eb-rel eb-span">
-                    <span className="lv-label">Project *</span>
+                    <span className="lv-label">{t('m.project')} *</span>
                     <input
                       className="lv-input"
                       value={projectName}
                       onChange={(e) => { setProjectName(e.target.value); setShowProjectSuggest(true); }}
                       onFocus={() => setShowProjectSuggest(true)}
                       onBlur={() => setTimeout(() => setShowProjectSuggest(false), 150)}
-                      placeholder="Exterior repaint"
+                      placeholder={t('est.projectPlaceholder')}
                       disabled={isReadOnly}
                     />
                     {showProjectSuggest && filteredProjectNames.length > 0 && (
@@ -618,15 +665,21 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
             {/* --- the work --- */}
             <section className="lv-card eb-sec">
               <div className="eb-sec-head">
-                <h3 className="lv-h3">The work</h3>
+                <h3 className="lv-h3">{t('est.theWork')}</h3>
                 {!isReadOnly && (
-                  <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> Add item</button>
+                  <div className="lv-inline" style={{ gap: 8 }}>
+                    <button className="lv-btn sec sm eb-translate" onClick={handleTranslate} disabled={translating}>
+                      {translating ? <Loader2 size={15} className="animate-spin" /> : <Languages size={15} />}
+                      {translating ? t('tr.translating') : (direction === 'es-en' ? t('tr.toEnglish') : t('tr.toSpanish'))}
+                    </button>
+                    <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> {t('est.addItem')}</button>
+                  </div>
                 )}
               </div>
               <div className="eb-sec-body eb-items">
                 {lineItems.map((item, idx) => renderItem(item, idx))}
                 {!isReadOnly && (
-                  <button className="eb-add" onClick={addLineItem}><Plus size={16} /> Add another item</button>
+                  <button className="eb-add" onClick={addLineItem}><Plus size={16} /> {t('est.addAnotherItem')}</button>
                 )}
               </div>
             </section>
@@ -638,26 +691,26 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
             {existingEstimate?.id && (
               <section className="lv-card eb-sec">
                 <div className="eb-sec-head">
-                  <h3 className="lv-h3"><ImageIcon size={16} style={{ verticalAlign: '-3px', marginRight: 6, color: 'var(--lv-faint)' }} />Project photos</h3>
+                  <h3 className="lv-h3"><ImageIcon size={16} style={{ verticalAlign: '-3px', marginRight: 6, color: 'var(--lv-faint)' }} />{t('est.projectPhotos')}</h3>
                   <PhotoUpload estimateId={existingEstimate.id} onPhotoUploaded={handleEstimatePhotoUploaded} />
                 </div>
                 <div className="eb-sec-body">
                   {estimatePhotos.length === 0 ? (
-                    <p className="lv-small eb-nophotos">No photos yet. Add job-site photos and they go out with the estimate.</p>
+                    <p className="lv-small eb-nophotos">{t('est.noPhotos')}</p>
                   ) : (
                     <div className="eb-photo-grid edit">
                       {estimatePhotos.map(photo => (
                         <figure key={photo.id}>
                           <div className="eb-photo">
-                            <img src={photo.fileUrl} alt={photoCaptions[photo.id] || 'Project photo'} />
-                            <button className="eb-photo-del" onClick={() => handleEstimatePhotoDeleted(photo.id)} aria-label="Delete photo"><Trash2 size={13} /></button>
+                            <img src={photo.fileUrl} alt={photoCaptions[photo.id] || t('est.projectPhoto')} />
+                            <button className="eb-photo-del" onClick={() => handleEstimatePhotoDeleted(photo.id)} aria-label={t('est.deletePhoto')}><Trash2 size={13} /></button>
                           </div>
                           <input
                             className="lv-input eb-cap"
                             value={photoCaptions[photo.id] || ''}
                             onChange={(e) => setPhotoCaptions(prev => ({ ...prev, [photo.id]: e.target.value }))}
                             onBlur={(e) => handleCaptionSave(photo.id, e.target.value)}
-                            placeholder="Add a label"
+                            placeholder={t('est.photoLabelPlaceholder')}
                           />
                         </figure>
                       ))}
@@ -674,25 +727,77 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         {/* --- the action bar: everything that finishes this estimate, together --- */}
         <footer className="eb-foot">
           <div className="lv-actions">
-            <button className="lv-btn quiet lv-hide-mobile" onClick={onClose}>{isReadOnly ? 'Close' : 'Cancel'}</button>
+            <button className="lv-btn quiet lv-hide-mobile" onClick={onClose}>{isReadOnly ? t('a.close') : t('a.cancel')}</button>
             <div className="spacer" />
             {isReadOnly ? (
               <>
-                <button className="lv-btn sec" onClick={() => setIsReadOnly(false)}><Edit size={16} /> Edit</button>
-                {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> Convert to invoice</button>}
-                <button className="lv-btn pri span" onClick={handleSendEstimate} disabled={isSaving}><Send size={16} /> {isSaving ? 'Saving…' : 'Send to client'}</button>
+                <button className="lv-btn sec" onClick={() => setIsReadOnly(false)}><Edit size={16} /> {t('a.edit')}</button>
+                {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> {t('est.convertToInvoice')}</button>}
+                <button className="lv-btn pri span" onClick={handleSendEstimate} disabled={isSaving}><Send size={16} /> {isSaving ? t('a.saving') : t('est.sendToClient')}</button>
               </>
             ) : (
               <>
-                <button className="lv-btn sec" onClick={handleDone} disabled={isSaving} title="Save and see it the way your client will"><Eye size={16} /> Preview</button>
-                {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> Convert to invoice</button>}
-                <button className="lv-btn dark" onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving…' : 'Save'}</button>
-                <button className="lv-btn pri" onClick={handleSendEstimate} disabled={isSaving}><Send size={16} /> {isSaving ? 'Saving…' : 'Send to client'}</button>
+                <button className="lv-btn sec" onClick={handleDone} disabled={isSaving} title={t('est.previewHint')}><Eye size={16} /> {t('a.preview')}</button>
+                {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> {t('est.convertToInvoice')}</button>}
+                <button className="lv-btn dark" onClick={handleSave} disabled={isSaving}>{isSaving ? t('a.saving') : t('a.save')}</button>
+                <button className="lv-btn pri" onClick={handleSendEstimate} disabled={isSaving}><Send size={16} /> {isSaving ? t('a.saving') : t('est.sendToClient')}</button>
               </>
             )}
           </div>
         </footer>
       </div>
+
+      {showTranslate && (
+        <div className="lv-scrim" onClick={() => !translating && setShowTranslate(false)}>
+          <div className="lv-modal wide" onClick={e => e.stopPropagation()}>
+            <div className="lv-modal-head">
+              <div>
+                <span className="lv-eyebrow">{direction === 'es-en' ? 'Español → English' : 'English → Español'}</span>
+                <h2 className="lv-h2" style={{ marginTop: 2 }}>{t('tr.title')}</h2>
+              </div>
+              <button className="lv-icon-btn" onClick={() => setShowTranslate(false)} disabled={translating} aria-label={t('a.close')}><X size={20} /></button>
+            </div>
+            <div className="lv-modal-body">
+              {translating ? (
+                <div className="eb-tr-loading">
+                  <Loader2 size={26} className="animate-spin" />
+                  <p className="lv-sub">{t('tr.translating')}</p>
+                </div>
+              ) : (
+                <>
+                  <p className="lv-sub" style={{ marginBottom: 16 }}>{t('tr.intro')}</p>
+                  <div className="eb-tr-list">
+                    {translated.map(tr => {
+                      const original = lineItems.find(i => i.id === tr.id);
+                      return (
+                        <div className="eb-tr-row" key={tr.id}>
+                          <div>
+                            <span className="lv-eyebrow">{t('tr.original')}</span>
+                            <p className="eb-tr-text was">{original ? original.description : ''}</p>
+                          </div>
+                          <div>
+                            <span className="lv-eyebrow">{t('tr.translated')}</span>
+                            <p className="eb-tr-text now">{tr.text}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="lv-modal-foot">
+              <div className="lv-actions">
+                <button className="lv-btn quiet" onClick={() => setShowTranslate(false)} disabled={translating}>{t('a.cancel')}</button>
+                <div className="spacer" />
+                <button className="lv-btn pri span" onClick={applyTranslation} disabled={translating || translated.length === 0}>
+                  <Check size={16} /> {t('tr.apply')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showSendModal && savedEstimateData && (
         <SendEstimateModal estimateData={savedEstimateData} onClose={handleSendModalClose} onSuccess={handleSendSuccess} />

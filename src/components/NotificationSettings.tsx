@@ -3,14 +3,17 @@ import { Bell } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { subscribeToPushNotifications, unsubscribeFromPushNotifications, isPushSubscribed } from '@/lib/pushNotifications';
+import { useT } from '@/i18n';
 
-const ALERTS = [
-  'An estimate is opened',
-  'An estimate is signed',
-  'A payment comes in',
-  'An invoice is paid',
-  'A referral signs up',
-  'A new message arrives',
+type T = (key: string, vars?: Record<string, string | number>) => string;
+
+const alerts = (t: T) => [
+  t('mod.alertEstimateOpened'),
+  t('mod.alertEstimateSigned'),
+  t('mod.alertPaymentComesIn'),
+  t('mod.alertInvoicePaid'),
+  t('mod.alertReferralSignsUp'),
+  t('mod.alertNewMessage'),
 ];
 
 function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
@@ -68,6 +71,7 @@ export function NotificationSettings() {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
   const { toast } = useToast();
+  const t = useT();
 
   useEffect(() => {
     loadPreferences();
@@ -92,14 +96,14 @@ export function NotificationSettings() {
       if (pushEnabled) {
         await unsubscribeFromPushNotifications();
         setPushEnabled(false);
-        toast({ title: 'Push notifications turned off' });
+        toast({ title: t('mod.pushTurnedOff') });
       } else {
         const success = await subscribeToPushNotifications('user-123');
         if (success) {
           setPushEnabled(true);
-          toast({ title: 'Push notifications turned on' });
+          toast({ title: t('mod.pushTurnedOn') });
         } else {
-          toast({ title: 'Could not turn on push notifications', description: 'Allow notifications for this site in your browser, then try again.', variant: 'destructive' });
+          toast({ title: t('mod.couldNotTurnOnPush'), description: t('mod.allowNotificationsInBrowser'), variant: 'destructive' });
         }
       }
     } finally {
@@ -115,31 +119,31 @@ export function NotificationSettings() {
     await supabase.functions.invoke('update-notification-preferences', {
       body: { userId: 'user-123', preferences: updated }
     });
-    toast({ title: 'Notification settings saved' });
+    toast({ title: t('mod.notificationSettingsSaved') });
   };
 
   return (
     <div style={{ maxWidth: 640 }}>
       <div className="lv-page-head">
         <div>
-          <h1 className="lv-h1">Notifications</h1>
-          <p className="lv-sub">Choose how you hear about your jobs.</p>
+          <h1 className="lv-h1">{t('nav.notifications')}</h1>
+          <p className="lv-sub">{t('mod.notificationsSub')}</p>
         </div>
       </div>
 
       <div className="lv-card" style={{ marginBottom: 16 }}>
         <div className="lv-card-head">
           <div>
-            <h2 className="lv-h2">On this device</h2>
-            <p className="lv-small" style={{ marginTop: 3 }}>Alerts on your phone or laptop, even when the app is closed.</p>
+            <h2 className="lv-h2">{t('mod.onThisDevice')}</h2>
+            <p className="lv-small" style={{ marginTop: 3 }}>{t('mod.onThisDeviceSub')}</p>
           </div>
-          <span className={`lv-pill ${pushEnabled ? 'green' : ''}`}>{pushEnabled ? 'On' : 'Off'}</span>
+          <span className={`lv-pill ${pushEnabled ? 'green' : ''}`}>{pushEnabled ? t('mod.on') : t('mod.off')}</span>
         </div>
 
         <div className="lv-row">
           <div style={{ minWidth: 0 }}>
-            <div className="lv-row-t">Push notifications</div>
-            <div className="lv-row-s">Get told the moment an estimate is opened, signed or paid.</div>
+            <div className="lv-row-t">{t('mod.pushNotifications')}</div>
+            <div className="lv-row-s">{t('mod.pushNotificationsSub')}</div>
           </div>
           <button
             className={`lv-btn ${pushEnabled ? 'sec' : 'pri'}`}
@@ -147,15 +151,15 @@ export function NotificationSettings() {
             disabled={pushLoading}
             style={{ flexShrink: 0 }}
           >
-            {pushLoading ? 'Working' : pushEnabled ? 'Turn off' : 'Turn on'}
+            {pushLoading ? t('mod.working') : pushEnabled ? t('mod.turnOff') : t('mod.turnOn')}
           </button>
         </div>
 
         {pushEnabled && (
           <div className="lv-card-pad">
-            <p className="lv-eyebrow" style={{ display: 'block', marginBottom: 10 }}>What you will be told about</p>
+            <p className="lv-eyebrow" style={{ display: 'block', marginBottom: 10 }}>{t('mod.whatYouWillBeToldAbout')}</p>
             <div style={{ display: 'grid', gap: 8 }}>
-              {ALERTS.map(item => (
+              {alerts(t).map(item => (
                 <div key={item} className="lv-small" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--lv-ink-2)' }}>
                   <Bell size={14} style={{ color: 'var(--lv-blue)', flexShrink: 0 }} />{item}
                 </div>
@@ -168,25 +172,25 @@ export function NotificationSettings() {
       <div className="lv-card">
         <div className="lv-card-head">
           <div>
-            <h2 className="lv-h2">Email</h2>
-            <p className="lv-small" style={{ marginTop: 3 }}>Which of these should also reach your inbox.</p>
+            <h2 className="lv-h2">{t('m.email')}</h2>
+            <p className="lv-small" style={{ marginTop: 3 }}>{t('mod.emailSettingsSub')}</p>
           </div>
         </div>
 
         {preferences.length === 0 ? (
           <div className="lv-card-pad">
-            <p className="lv-sub">No email settings to show yet. They appear once your account has sent its first estimate.</p>
+            <p className="lv-sub">{t('mod.noEmailSettingsYet')}</p>
           </div>
         ) : (
           preferences.map((pref) => (
             <div key={pref.eventType} className="lv-row">
               <div style={{ minWidth: 0 }}>
                 <div className="lv-row-t" style={{ textTransform: 'capitalize' }}>{pref.eventType.replace(/_/g, ' ')}</div>
-                <div className="lv-row-s">Send me an email when this happens.</div>
+                <div className="lv-row-s">{t('mod.emailMeWhenThisHappens')}</div>
               </div>
               <Toggle
                 on={!!pref.emailEnabled}
-                label={`Email me when ${pref.eventType.replace(/_/g, ' ')}`}
+                label={t('mod.emailMeWhen', { event: pref.eventType.replace(/_/g, ' ') })}
                 onChange={(v) => updatePreference(pref.eventType, 'emailEnabled', v)}
               />
             </div>

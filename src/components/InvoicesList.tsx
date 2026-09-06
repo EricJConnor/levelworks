@@ -4,6 +4,7 @@ import { FileText, DollarSign, Calendar, Trash2, Link, Check, Send, X, Search, P
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { sendInvoiceEmail } from '@/lib/edgeFunctions';
+import { useT } from '@/i18n';
 
 interface InvoicesListProps {
   onCreateInvoice?: () => void;
@@ -13,14 +14,15 @@ const money = (n: number) =>
   `$${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const STATUS_TONE: Record<string, string> = { unpaid: 'amber', partially_paid: 'blue', paid: 'green', overdue: 'red' };
-const STATUS_LABEL: Record<string, string> = { unpaid: 'Unpaid', partially_paid: 'Partly paid', paid: 'Paid', overdue: 'Overdue' };
+const STATUS_KEY: Record<string, string> = { unpaid: 's.unpaid', partially_paid: 's.partlyPaid', paid: 's.paid', overdue: 's.overdue' };
 
-const FILTERS: { key: string; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'unpaid', label: 'Unpaid' },
-  { key: 'partially_paid', label: 'Partly paid' },
-  { key: 'paid', label: 'Paid' },
-  { key: 'overdue', label: 'Overdue' },
+/* Labels are resolved at render time, so `t` is never called at module scope. */
+const FILTERS: { key: string; labelKey: string }[] = [
+  { key: 'all', labelKey: 'lst.filterAll' },
+  { key: 'unpaid', labelKey: 's.unpaid' },
+  { key: 'partially_paid', labelKey: 's.partlyPaid' },
+  { key: 'paid', labelKey: 's.paid' },
+  { key: 'overdue', labelKey: 's.overdue' },
 ];
 
 /* Scoped to the `iv-` prefix so nothing here can reach another screen. */
@@ -61,6 +63,7 @@ const styles = `
 export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) => {
   const { invoices, deleteInvoice, recordPayment, updateInvoice } = useInvoices();
   const { toast } = useToast();
+  const t = useT();
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [paymentDialog, setPaymentDialog] = useState<{ open: boolean; invoiceId: string | null }>({ open: false, invoiceId: null });
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -74,7 +77,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
     e?.stopPropagation();
     const balanceDue = invoice.total - invoice.amountPaid;
     if (balanceDue <= 0) return;
-    await recordPayment(invoice.id, balanceDue, 'Marked as paid');
+    await recordPayment(invoice.id, balanceDue, t('lst.markedAsPaidNote'));
     setSelectedInvoice(null);
   };
 
@@ -84,20 +87,20 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
     setPaymentDialog({ open: false, invoiceId: null });
     setPaymentAmount('');
     setPaymentNote('');
-    toast({ title: 'Payment recorded' });
+    toast({ title: t('lst.paymentRecorded') });
   };
 
   const copyPaymentLink = (invoice: any) => {
     const link = `${window.location.origin}/view-invoice/${invoice.viewToken}`;
     navigator.clipboard.writeText(link);
     setCopiedId(invoice.id);
-    toast({ title: 'Payment link copied' });
+    toast({ title: t('lst.paymentLinkCopied') });
     setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleSendInvoice = async (invoice: any) => {
     if (!invoice.clientEmail) {
-      toast({ title: 'No client email', description: 'Add a client email before sending this invoice.', variant: 'destructive' });
+      toast({ title: t('lst.noClientEmail'), description: t('lst.noClientEmailBody'), variant: 'destructive' });
       return;
     }
     setSendingId(invoice.id);
@@ -123,9 +126,9 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
       });
       if (result.error) throw result.error;
       await updateInvoice(invoice.id, { sentAt: new Date().toISOString() });
-      toast({ title: 'Invoice sent' });
+      toast({ title: t('lst.invoiceSent') });
     } catch (error: any) {
-      toast({ title: 'Could not send the invoice', description: error.message || 'Something went wrong. Try again.', variant: 'destructive' });
+      toast({ title: t('lst.invoiceSendFailed'), description: error.message || `${t('e.somethingWrong')} ${t('e.tryAgain')}`, variant: 'destructive' });
     } finally {
       setSendingId(null);
     }
@@ -133,7 +136,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
 
   const statusPill = (status: string) => (
     <span className={`lv-pill ${STATUS_TONE[status] ?? ''}`}>
-      {STATUS_LABEL[status] || String(status || '').replace('_', ' ')}
+      {STATUS_KEY[status] ? t(STATUS_KEY[status]) : String(status || '').replace('_', ' ')}
     </span>
   );
 
@@ -160,25 +163,25 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
 
       <div className="lv-page-head">
         <div>
-          <h1 className="lv-h1">Invoices</h1>
-          <p className="lv-sub">What you have billed, what has been paid, and what is still owed.</p>
+          <h1 className="lv-h1">{t('nav.invoices')}</h1>
+          <p className="lv-sub">{t('lst.invoicesSub')}</p>
         </div>
         <button className="lv-btn pri" onClick={onCreateInvoice}>
-          <Plus size={16} /> New invoice
+          <Plus size={16} /> {t('nav.newInvoice')}
         </button>
       </div>
 
       {invoices.length > 0 && (
         <div className="iv-tools">
           <div className="iv-segwrap">
-            <div className="lv-seg" role="group" aria-label="Filter by status">
+            <div className="lv-seg" role="group" aria-label={t('lst.filterByStatus')}>
               {FILTERS.map(f => (
                 <button
                   key={f.key}
                   className={statusFilter === f.key ? 'on' : ''}
                   onClick={() => setStatusFilter(f.key)}
                 >
-                  {f.label}
+                  {t(f.labelKey)}
                 </button>
               ))}
             </div>
@@ -192,8 +195,8 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                 type="search"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Search client, project or number"
-                aria-label="Search invoices"
+                placeholder={t('lst.searchInvoicesPlaceholder')}
+                aria-label={t('lst.searchInvoices')}
               />
             </div>
           </div>
@@ -203,16 +206,16 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
       {visibleInvoices.length === 0 ? (
         <div className="lv-empty">
           <FileText size={30} />
-          <h3>{isFiltered ? 'Nothing matches that' : 'No invoices yet'}</h3>
+          <h3>{isFiltered ? t('lst.nothingMatches') : t('lst.noInvoicesYet')}</h3>
           <p>
             {isFiltered
-              ? 'Try another status, or clear the search box.'
-              : 'Bill a job directly, or turn an approved estimate into an invoice.'}
+              ? t('lst.tryAnotherStatus')
+              : t('lst.noInvoicesBody')}
           </p>
           {isFiltered ? (
-            <button className="lv-btn sec" onClick={() => { setStatusFilter('all'); setQuery(''); }}>Clear filters</button>
+            <button className="lv-btn sec" onClick={() => { setStatusFilter('all'); setQuery(''); }}>{t('a.clearFilters')}</button>
           ) : (
-            <button className="lv-btn pri" onClick={onCreateInvoice}><Plus size={16} /> New invoice</button>
+            <button className="lv-btn pri" onClick={onCreateInvoice}><Plus size={16} /> {t('nav.newInvoice')}</button>
           )}
         </div>
       ) : (
@@ -232,15 +235,15 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                     <div className="iv-titleline">
                       <span className="lv-row-t lv-num">{invoice.invoiceNumber}</span>
                       {statusPill(invoice.status)}
-                      {!invoice.sentAt && <span className="lv-pill">Not sent</span>}
+                      {!invoice.sentAt && <span className="lv-pill">{t('lst.notSent')}</span>}
                     </div>
                     <span className="lv-row-s iv-sub">
-                      {invoice.clientName || 'No client'} · {invoice.projectName || 'Untitled project'}
+                      {invoice.clientName || t('lst.noClient')} · {invoice.projectName || t('lst.untitledProject')}
                     </span>
                   </div>
                   <div className="iv-amt">
                     <div className="lv-row-r lv-num">{money(invoice.total)}</div>
-                    <div className="lv-small lv-num">{due > 0 ? `${money(due)} due` : 'Paid in full'}</div>
+                    <div className="lv-small lv-num">{due > 0 ? t('lst.amountDue', { amount: money(due) }) : t('lst.paidInFull')}</div>
                   </div>
                   <ChevronRight className="iv-chev" size={18} />
                 </div>
@@ -248,7 +251,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                 <div className="iv-acts">
                   {invoice.status !== 'paid' && (
                     <button className="lv-btn go sm" onClick={(e) => handleMarkPaid(invoice, e)}>
-                      <Check size={14} /> Mark paid
+                      <Check size={14} /> {t('lst.markPaidShort')}
                     </button>
                   )}
                   <button
@@ -257,11 +260,11 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                     disabled={sendingId === invoice.id}
                   >
                     <Send size={14} />
-                    {sendingId === invoice.id ? 'Sending…' : invoice.sentAt ? 'Resend' : 'Send'}
+                    {sendingId === invoice.id ? t('a.sending') : invoice.sentAt ? t('a.resend') : t('a.send')}
                   </button>
                   <button className="lv-btn quiet sm" onClick={() => copyPaymentLink(invoice)} disabled={!invoice.viewToken}>
                     {copiedId === invoice.id ? <Check size={14} /> : <Link size={14} />}
-                    {copiedId === invoice.id ? 'Copied' : 'Copy link'}
+                    {copiedId === invoice.id ? t('a.copied') : t('a.copyLink')}
                   </button>
                 </div>
               </div>
@@ -278,7 +281,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                 <h2 className="lv-h2 lv-num">{selectedInvoice.invoiceNumber}</h2>
                 <p className="lv-small" style={{ marginTop: 3 }}>{selectedInvoice.clientName} · {selectedInvoice.projectName}</p>
               </div>
-              <button className="lv-icon-btn" onClick={() => setSelectedInvoice(null)} aria-label="Close">
+              <button className="lv-icon-btn" onClick={() => setSelectedInvoice(null)} aria-label={t('a.close')}>
                 <X size={20} />
               </button>
             </div>
@@ -286,17 +289,17 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
             <div className="lv-modal-body">
               <div className="lv-inline">
                 {statusPill(selectedInvoice.status)}
-                {!selectedInvoice.sentAt && <span className="lv-pill">Not sent</span>}
+                {!selectedInvoice.sentAt && <span className="lv-pill">{t('lst.notSent')}</span>}
                 <span className="lv-small lv-inline" style={{ gap: 5 }}>
-                  <Calendar size={13} /> Issued {new Date(selectedInvoice.issueDate).toLocaleDateString()}
+                  <Calendar size={13} /> {t('lst.issuedOn', { date: new Date(selectedInvoice.issueDate).toLocaleDateString() })}
                 </span>
                 {selectedInvoice.dueDate && (
-                  <span className="lv-small">Due {new Date(selectedInvoice.dueDate).toLocaleDateString()}</span>
+                  <span className="lv-small">{t('lst.dueOn', { date: new Date(selectedInvoice.dueDate).toLocaleDateString() })}</span>
                 )}
               </div>
 
               <div className="iv-sec" style={{ marginTop: 18 }}>
-                <span className="lv-eyebrow">Client</span>
+                <span className="lv-eyebrow">{t('m.client')}</span>
                 <div className="lv-card lv-card-pad">
                   <p className="lv-h3">{selectedInvoice.clientName}</p>
                   {selectedInvoice.clientEmail && <p className="lv-small" style={{ marginTop: 3 }}>{selectedInvoice.clientEmail}</p>}
@@ -305,7 +308,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
               </div>
 
               <div className="iv-sec">
-                <span className="lv-eyebrow">Line items</span>
+                <span className="lv-eyebrow">{t('lst.lineItems')}</span>
                 <div className="lv-card">
                   {parseLineItems(selectedInvoice.lineItems).map((item: any, idx: number) => (
                     <div className="lv-row" key={idx} style={{ alignItems: 'flex-start' }}>
@@ -321,13 +324,13 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
 
               <div className="iv-sec">
                 <div className="lv-card lv-card-pad">
-                  <div className="iv-sum"><span>Total</span><b className="lv-num">{money(selectedInvoice.total)}</b></div>
+                  <div className="iv-sum"><span>{t('m.total')}</span><b className="lv-num">{money(selectedInvoice.total)}</b></div>
                   <div className="iv-sum">
-                    <span>Paid</span>
+                    <span>{t('s.paid')}</span>
                     <b className="lv-num" style={{ color: 'var(--lv-green)' }}>−{money(selectedInvoice.amountPaid)}</b>
                   </div>
                   <div className="iv-sum total">
-                    <span>Balance due</span>
+                    <span>{t('m.balanceDue')}</span>
                     <b className="lv-num">{money(selectedInvoice.total - selectedInvoice.amountPaid)}</b>
                   </div>
                 </div>
@@ -335,7 +338,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
 
               {selectedInvoice.notes && (
                 <div className="iv-sec">
-                  <span className="lv-eyebrow">Notes</span>
+                  <span className="lv-eyebrow">{t('m.notes')}</span>
                   <div className="lv-card lv-card-pad">
                     <p className="lv-sub" style={{ whiteSpace: 'pre-wrap' }}>{selectedInvoice.notes}</p>
                   </div>
@@ -351,22 +354,22 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                   disabled={sendingId === selectedInvoice.id}
                 >
                   <Send size={16} />
-                  {sendingId === selectedInvoice.id ? 'Sending…' : selectedInvoice.sentAt ? 'Resend invoice' : 'Send invoice'}
+                  {sendingId === selectedInvoice.id ? t('a.sending') : selectedInvoice.sentAt ? t('lst.resendInvoice') : t('lst.sendInvoice')}
                 </button>
                 {selectedInvoice.status !== 'paid' && (
                   <>
                     <button className="lv-btn go" onClick={() => handleMarkPaid(selectedInvoice)}>
-                      <Check size={16} /> Mark as paid
+                      <Check size={16} /> {t('lst.markAsPaid')}
                     </button>
                     <button
                       className="lv-btn sec"
                       onClick={() => { setPaymentDialog({ open: true, invoiceId: selectedInvoice.id }); setSelectedInvoice(null); }}
                     >
-                      <DollarSign size={16} /> Record payment
+                      <DollarSign size={16} /> {t('lst.recordPayment')}
                     </button>
                     <button className="lv-btn quiet" onClick={() => copyPaymentLink(selectedInvoice)} disabled={!selectedInvoice.viewToken}>
                       {copiedId === selectedInvoice.id ? <Check size={16} /> : <Link size={16} />}
-                      {copiedId === selectedInvoice.id ? 'Copied' : 'Copy payment link'}
+                      {copiedId === selectedInvoice.id ? t('a.copied') : t('lst.copyPaymentLink')}
                     </button>
                   </>
                 )}
@@ -375,7 +378,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                   className="lv-btn danger"
                   onClick={() => { deleteInvoice(selectedInvoice.id); setSelectedInvoice(null); }}
                 >
-                  <Trash2 size={16} /> Delete
+                  <Trash2 size={16} /> {t('a.delete')}
                 </button>
               </div>
             </div>
@@ -387,12 +390,12 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
         <div className="lv-scrim" onClick={closePayment}>
           <div className="lv-modal" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
             <div className="lv-modal-head">
-              <h2 className="lv-h2">Record payment</h2>
-              <button className="lv-icon-btn" onClick={closePayment} aria-label="Close"><X size={20} /></button>
+              <h2 className="lv-h2">{t('lst.recordPayment')}</h2>
+              <button className="lv-icon-btn" onClick={closePayment} aria-label={t('a.close')}><X size={20} /></button>
             </div>
             <div className="lv-modal-body">
               <label className="lv-field" htmlFor="amount">
-                <span className="lv-label">Payment amount</span>
+                <span className="lv-label">{t('lst.paymentAmount')}</span>
                 <input
                   id="amount"
                   className="lv-input num"
@@ -405,22 +408,22 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                 />
               </label>
               <label className="lv-field" htmlFor="note">
-                <span className="lv-label">Note (optional)</span>
+                <span className="lv-label">{t('lst.noteOptional')}</span>
                 <textarea
                   id="note"
                   className="lv-textarea"
                   rows={3}
                   value={paymentNote}
                   onChange={(e) => setPaymentNote(e.target.value)}
-                  placeholder="Check number, cash, card, anything worth remembering"
+                  placeholder={t('lst.paymentNotePlaceholder')}
                 />
               </label>
             </div>
             <div className="lv-modal-foot">
               <div className="lv-actions">
-                <button className="lv-btn sec" onClick={closePayment}>Cancel</button>
+                <button className="lv-btn sec" onClick={closePayment}>{t('a.cancel')}</button>
                 <span className="spacer" />
-                <button className="lv-btn go" onClick={handleRecordPayment} disabled={!paymentAmount}>Record payment</button>
+                <button className="lv-btn go" onClick={handleRecordPayment} disabled={!paymentAmount}>{t('lst.recordPayment')}</button>
               </div>
             </div>
           </div>

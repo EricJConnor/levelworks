@@ -99,6 +99,67 @@ The shell (`src/components/AppLayout.tsx`) is a light sticky header with the mar
 and the primary "New estimate" action; on phones it drops to a five-item bottom tab bar plus a More
 sheet. `src/components/Mark.tsx` is the shared spirit-level mark, `currentColor` so it inherits.
 
+## Spanish (Sep 2026)
+
+The whole product speaks Spanish, for the trades. Eric's ask: *"a toggle somewhere on
+the page eng/span, and its as simple as that. same thing in the estimates."*
+
+- **`src/i18n/`** — a hand-rolled provider (no dependency; the need is one flat dictionary
+  and a `t()`). `en/` and `es/` each hold six files: common, estimates, lists, modals,
+  pages, landing. **956 keys, in exact parity.**
+- **`<LanguageToggle />`** shows EN | ES with both words always visible, so a Spanish
+  speaker can find it without reading English first. It sits in the app header, the phone
+  sheet, and the landing header. The choice is stored in `localStorage` under `lw-lang`
+  and read synchronously in the provider's `useState` initializer, so the first paint is
+  already in the right language. First-time visitors get their browser's language.
+- **A missing Spanish key falls back to English, never to a raw key.** Two scripts guard
+  this — regenerate them if needed: one checks en/es key parity, one checks that every
+  `t('...')` in the source is defined.
+
+**Rules for the Spanish itself.** Neutral Latin American Spanish, "tú" not "usted",
+written for a working contractor. Fixed terms: estimate = **presupuesto** (never
+"estimado"), invoice = **factura**, deposit = **anticipo**, line item = **partida**,
+job site = **obra**. Client-facing public views use "usted" — the client is a stranger.
+Phone install instructions deliberately keep the ENGLISH button names ("Add to Home
+Screen") in quotes, because that is what an English-language phone actually shows.
+
+**Layout, not just words.** Spanish runs about a fifth longer than English and it broke
+two things that are now guarded in `app-ui.css` and `landing.css`: the landing header CTA
+uses a short label under 880px (the full one pushed the menu button off a 390px screen),
+and the builder's action bar drops icons and shrinks type under 430px so "Convertir en
+factura" is not clipped. **Check both languages on a 390px screen after touching either
+file.** The Spanish hero headline is deliberately shorter than a literal translation —
+headlines get written for the language, not carried across from it.
+
+## Translating what the contractor typed
+
+The dictionaries handle the interface. `api/translate.js` handles the part that cannot be
+known ahead of time: the line items he writes himself. He taps **Traducir al inglés** in
+the estimate builder, reviews the original beside the translation, and applies it — or
+cancels, and nothing changes. **Never translate and send in one step.**
+
+- Claude (`claude-opus-5`) through the official SDK, structured output via `zodOutputFormat`
+  so line items come back keyed by id; ids not in the request are dropped, so a
+  hallucinated id can never overwrite a line the contractor didn't submit. Effort is
+  `medium` — translation is a transformation, not a reasoning problem, and he is standing
+  in a driveway.
+- The system prompt forbids adding or removing scope, and freezes numbers, measurements
+  and brand names. That matters: this text becomes a contract.
+- **Needs `ANTHROPIC_API_KEY` in Vercel.** Without it the route returns 503 with a plain
+  reason and the UI shows it — the same failure mode the Resend key taught us. Roughly
+  1.5 cents per estimate translated.
+- Direction is guessed from what he has already written (`looksSpanish` in
+  `src/lib/translate.ts`); on an empty estimate it falls back to the app's language.
+
+**Still open:** the four `Public*View.tsx` pages are what the *client* sees. They
+translate, but follow the viewer's own browser setting, not the contractor's. Whether a
+client link should carry the sender's language is a product decision Eric has not made.
+
+**One caveat to keep in mind:** the Spanish was written by Claude, not a native
+speaker in the trades. It is good, and every word sits in one file per area so any
+single term is a one-line fix. When a real Spanish-speaking contractor uses it, ask
+which words they would have said differently.
+
 ## Copy rules
 
 Sentence case. Plain contractor language. No exclamation marks. Errors say what went wrong and how to

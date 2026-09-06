@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { trackEvent } from '@/lib/pixel';
 import { useToast } from '@/hooks/use-toast';
 import { X, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
+import { useT } from '@/i18n';
 
 interface AuthModalProps {
   open: boolean;
@@ -23,6 +24,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
+  const t = useT();
 
   // Reset form fields when modal closes or mode changes
   const resetForm = useCallback(() => {
@@ -62,7 +64,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
     try {
       if (isSignUp) {
         if (password !== confirmPassword) {
-          toast({ title: 'Error', description: 'Passwords do not match', variant: 'destructive' });
+          toast({ title: t('e.somethingWrong'), description: t('mod.passwordsDoNotMatch'), variant: 'destructive' });
           setLoading(false);
           return;
         }
@@ -83,7 +85,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
         trackEvent('CompleteRegistration');
 
         if (data?.user && !data.session) {
-          toast({ title: 'Check your email', description: 'We sent you a confirmation link.', duration: 7000 });
+          toast({ title: t('mod.checkYourEmail'), description: t('mod.confirmationLinkSent'), duration: 7000 });
           setLoading(false);
           return;
         }
@@ -103,11 +105,11 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
         if (!session) throw new Error('Session not established');
       }
 
-      toast({ title: isSignUp ? 'Account created!' : 'Welcome back!' });
+      toast({ title: isSignUp ? t('mod.accountCreated') : t('mod.welcomeBack') });
       handleClose();
       onSuccess({ isNewUser: isSignUp });
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -116,7 +118,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast({ title: 'Please enter your email', variant: 'destructive' });
+      toast({ title: t('mod.enterYourEmail'), variant: 'destructive' });
       return;
     }
     setLoading(true);
@@ -125,25 +127,25 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
         redirectTo: `${window.location.origin}/reset-password`
       });
       if (error) throw error;
-      toast({ title: 'Check your email', description: 'We sent you a password reset link.', duration: 7000 });
+      toast({ title: t('mod.checkYourEmail'), description: t('mod.resetLinkSent'), duration: 7000 });
       setIsForgotPassword(false);
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: error.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
 
   const getTitle = () => {
-    if (isForgotPassword) return 'Reset your password';
-    return isSignUp ? 'Create your account' : 'Sign in';
+    if (isForgotPassword) return t('mod.resetYourPassword');
+    return isSignUp ? t('mod.createYourAccount') : t('a.signIn');
   };
 
   const getSub = () => {
-    if (isForgotPassword) return 'Enter the email you signed up with and we will send you a reset link.';
+    if (isForgotPassword) return t('mod.resetPasswordSub');
     return isSignUp
-      ? 'Estimates, invoices and job updates in one place. $5 a month after your 30-day trial.'
-      : 'Welcome back. Pick up where you left off.';
+      ? t('mod.signUpSub')
+      : t('mod.signInSub');
   };
 
   return (
@@ -158,7 +160,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                 onClick={() => setIsForgotPassword(false)}
                 className="lv-icon-btn"
                 style={{ marginLeft: -8 }}
-                aria-label="Go back"
+                aria-label={t('a.back')}
               >
                 <ArrowLeft size={20} />
               </button>
@@ -168,7 +170,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
               <DialogTitle className="lv-h2">{getTitle()}</DialogTitle>
             </div>
           </div>
-          <button type="button" onClick={handleClose} className="lv-icon-btn" aria-label="Close">
+          <button type="button" onClick={handleClose} className="lv-icon-btn" aria-label={t('a.close')}>
             <X size={20} />
           </button>
         </div>
@@ -184,13 +186,13 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
               <div>
                 {isSignUp && !isForgotPassword && (
                   <label className="lv-field">
-                    <span className="lv-label">Full name</span>
+                    <span className="lv-label">{t('mod.fullName')}</span>
                     <input
                       className="lv-input"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
-                      placeholder="John Smith"
+                      placeholder={t('mod.fullNamePlaceholder')}
                       autoComplete="name"
                       disabled={loading}
                     />
@@ -198,7 +200,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                 )}
 
                 <label className="lv-field">
-                  <span className="lv-label">Email</span>
+                  <span className="lv-label">{t('m.email')}</span>
                   <input
                     className="lv-input"
                     type="email"
@@ -206,7 +208,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    placeholder="you@email.com"
+                    placeholder={t('mod.emailPlaceholder')}
                     autoComplete="email"
                     disabled={loading}
                   />
@@ -214,7 +216,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
 
                 {!isForgotPassword && (
                   <label className="lv-field">
-                    <span className="lv-label">Password</span>
+                    <span className="lv-label">{t('mod.password')}</span>
                     <span style={{ position: 'relative', display: 'block' }}>
                       <input
                         className="lv-input"
@@ -223,7 +225,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         minLength={6}
-                        placeholder="At least 6 characters"
+                        placeholder={t('mod.atLeast6Characters')}
                         autoComplete={isSignUp ? 'new-password' : 'current-password'}
                         style={{ paddingRight: 46 }}
                         disabled={loading}
@@ -232,7 +234,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                         type="button"
                         className="lv-icon-btn"
                         onClick={() => setShowPassword(!showPassword)}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        aria-label={showPassword ? t('mod.hidePassword') : t('mod.showPassword')}
                         style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', width: 34, height: 34 }}
                       >
                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -243,7 +245,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
 
                 {isSignUp && !isForgotPassword && (
                   <label className="lv-field">
-                    <span className="lv-label">Confirm password</span>
+                    <span className="lv-label">{t('mod.confirmPassword')}</span>
                     <input
                       className="lv-input"
                       type="password"
@@ -251,7 +253,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       minLength={6}
-                      placeholder="Type it once more"
+                      placeholder={t('mod.typeItOnceMore')}
                       autoComplete="new-password"
                       disabled={loading}
                     />
@@ -268,14 +270,14 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                       onChange={(e) => setRememberMe(e.target.checked)}
                       style={{ width: 17, height: 17, accentColor: 'var(--lv-blue)', cursor: 'pointer' }}
                     />
-                    <span className="lv-small" style={{ color: 'var(--lv-ink-2)' }}>Keep me signed in</span>
+                    <span className="lv-small" style={{ color: 'var(--lv-ink-2)' }}>{t('mod.keepMeSignedIn')}</span>
                   </label>
                   <button
                     type="button"
                     className="lv-btn quiet sm"
                     onClick={() => setIsForgotPassword(true)}
                   >
-                    Forgot password?
+                    {t('mod.forgotPassword')}
                   </button>
                 </div>
               )}
@@ -286,21 +288,21 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
             {isForgotPassword ? (
               <div className="lv-actions">
                 <button type="button" className="lv-btn quiet" onClick={() => setIsForgotPassword(false)} disabled={loading}>
-                  Back
+                  {t('a.back')}
                 </button>
                 <span className="spacer" />
                 <button type="submit" className="lv-btn pri" disabled={loading}>
-                  {loading ? <><Loader2 size={16} className="animate-spin" /> Sending…</> : 'Send reset link'}
+                  {loading ? <><Loader2 size={16} className="animate-spin" /> {t('a.sending')}</> : t('mod.sendResetLink')}
                 </button>
               </div>
             ) : (
               <div className="lv-actions">
                 <button type="button" className="lv-btn quiet" onClick={handleModeSwitch}>
-                  {isSignUp ? 'Sign in instead' : 'Create an account'}
+                  {isSignUp ? t('mod.signInInstead') : t('mod.createAnAccount')}
                 </button>
                 <span className="spacer" />
                 <button type="submit" className="lv-btn pri" disabled={loading}>
-                  {loading ? <><Loader2 size={16} className="animate-spin" /> Please wait…</> : (isSignUp ? 'Create account' : 'Sign in')}
+                  {loading ? <><Loader2 size={16} className="animate-spin" /> {t('mod.pleaseWait')}</> : (isSignUp ? t('mod.createAccount') : t('a.signIn'))}
                 </button>
               </div>
             )}

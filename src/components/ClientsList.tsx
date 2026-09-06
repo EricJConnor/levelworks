@@ -4,6 +4,7 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { RecurringBillingPanel } from './RecurringBillingPanel';
 import { toast } from '@/components/ui/use-toast';
 import { X, Mail, Phone, MapPin, Plus, Users, Pencil, Trash2 } from 'lucide-react';
+import { useT } from '@/i18n';
 
 interface ClientsListProps {
   clients: Client[];
@@ -18,6 +19,7 @@ const money = (n: number) => `$${(Number(n) || 0).toLocaleString()}`;
 export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, onCreateEstimate, onConnectStripe }) => {
   const { deleteClient, updateClient, refreshClients, estimates } = useData();
   const { profile } = useProfile();
+  const t = useT();
   const [showAddClient, setShowAddClient] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -27,11 +29,11 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
     e.preventDefault();
     if (editingClient) {
       updateClient(editingClient.id, newClient);
-      toast({ title: 'Success', description: 'Client updated!' });
+      toast({ title: t('lst.clientUpdated'), description: t('lst.clientUpdatedBody') });
       setEditingClient(null);
     } else {
       onAddClient({ ...newClient, totalJobs: 0, totalValue: 0 });
-      toast({ title: 'Success', description: 'Client added!' });
+      toast({ title: t('lst.clientAdded'), description: t('lst.clientAddedBody') });
     }
     setNewClient({ name: '', email: '', phone: '', address: '' });
     setShowAddClient(false);
@@ -46,9 +48,9 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
 
   const handleDelete = (clientId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm('Delete this client?')) {
+    if (confirm(t('lst.confirmDeleteClient'))) {
       deleteClient(clientId);
-      toast({ title: 'Deleted' });
+      toast({ title: t('lst.clientDeleted') });
       if (selectedClient?.id === clientId) setSelectedClient(null);
     }
   };
@@ -83,9 +85,15 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
     setShowAddClient(true);
   };
 
+  const STATUS_KEY: Record<string, string> = { draft: 's.draft', sent: 's.sent', approved: 's.approved', rejected: 's.rejected' };
+
   const statusPill = (status: string) => {
     const tone = status === 'approved' ? 'green' : status === 'sent' ? 'blue' : status === 'rejected' ? 'red' : '';
-    return <span className={`lv-pill ${tone}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
+    return (
+      <span className={`lv-pill ${tone}`}>
+        {STATUS_KEY[status] ? t(STATUS_KEY[status]) : status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
   };
 
   return (
@@ -117,18 +125,18 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
 
       <div className="lv-page-head">
         <div>
-          <h1 className="lv-h1">Clients</h1>
-          <p className="lv-sub">Everyone you work for, with the estimates written for them.</p>
+          <h1 className="lv-h1">{t('nav.clients')}</h1>
+          <p className="lv-sub">{t('lst.clientsSub')}</p>
         </div>
-        <button className="lv-btn pri" onClick={openAddClient}><Plus size={16} /> Add client</button>
+        <button className="lv-btn pri" onClick={openAddClient}><Plus size={16} /> {t('lst.addClient')}</button>
       </div>
 
       {clients.length === 0 ? (
         <div className="lv-empty">
           <Users size={30} />
-          <h3>No clients yet</h3>
-          <p>Add the people you work for once, and their details fill in on every estimate and invoice after that.</p>
-          <button className="lv-btn pri" onClick={openAddClient}><Plus size={16} /> Add your first client</button>
+          <h3>{t('lst.noClientsYet')}</h3>
+          <p>{t('lst.noClientsBody')}</p>
+          <button className="lv-btn pri" onClick={openAddClient}><Plus size={16} /> {t('lst.addFirstClient')}</button>
         </div>
       ) : (
         <div className="lv-card">
@@ -140,21 +148,21 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
                   <div style={{ minWidth: 0 }}>
                     <div className="cl-name">
                       <span className="lv-row-t cl-clip">{client.name}</span>
-                      {client.billingStatus === 'past_due' && <span className="lv-pill red">Past due</span>}
+                      {client.billingStatus === 'past_due' && <span className="lv-pill red">{t('s.pastDue')}</span>}
                     </div>
                     <div className="lv-row-s cl-clip">
-                      {[client.email, client.phone].filter(Boolean).join(' · ') || 'No contact details saved'}
+                      {[client.email, client.phone].filter(Boolean).join(' · ') || t('lst.noContactDetails')}
                     </div>
                   </div>
                   <div className="cl-meta">
-                    <span className="lv-small lv-num">{count} {count === 1 ? 'estimate' : 'estimates'}</span>
+                    <span className="lv-small lv-num">{count === 1 ? t('lst.estimateCountOne', { count }) : t('lst.estimateCountMany', { count })}</span>
                     <span className="lv-row-r">{money(client.totalValue)}</span>
                   </div>
                 </button>
-                <button className="lv-icon-btn cl-act" onClick={(e) => handleEdit(client, e)} title="Edit client" aria-label={`Edit ${client.name}`}>
+                <button className="lv-icon-btn cl-act" onClick={(e) => handleEdit(client, e)} title={t('lst.editClient')} aria-label={t('lst.editNamed', { name: client.name })}>
                   <Pencil size={16} />
                 </button>
-                <button className="lv-icon-btn cl-act del" onClick={(e) => handleDelete(client.id, e)} title="Delete client" aria-label={`Delete ${client.name}`}>
+                <button className="lv-icon-btn cl-act del" onClick={(e) => handleDelete(client.id, e)} title={t('lst.deleteClient')} aria-label={t('lst.deleteNamed', { name: client.name })}>
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -168,32 +176,32 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
           <div className="lv-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={selectedClient.name}>
             <div className="lv-modal-head">
               <div style={{ minWidth: 0 }}>
-                <span className="lv-eyebrow">Client</span>
+                <span className="lv-eyebrow">{t('m.client')}</span>
                 <h2 className="lv-h2" style={{ marginTop: 2 }}>{selectedClient.name}</h2>
               </div>
-              <button className="lv-icon-btn" onClick={() => setSelectedClient(null)} aria-label="Close"><X size={20} /></button>
+              <button className="lv-icon-btn" onClick={() => setSelectedClient(null)} aria-label={t('a.close')}><X size={20} /></button>
             </div>
 
             <div className="lv-modal-body">
               <div className="lv-stack">
                 <div>
-                  <span className="lv-eyebrow">Contact</span>
+                  <span className="lv-eyebrow">{t('lst.contact')}</span>
                   <div className="lv-card lv-card-pad" style={{ marginTop: 8, paddingTop: 4, paddingBottom: 4 }}>
                     {selectedClient.email && <div className="cl-contact"><Mail size={16} /> {selectedClient.email}</div>}
                     {selectedClient.phone && <div className="cl-contact"><Phone size={16} /> {selectedClient.phone}</div>}
                     {selectedClient.address && <div className="cl-contact"><MapPin size={16} /> {selectedClient.address}</div>}
                     {!selectedClient.email && !selectedClient.phone && !selectedClient.address && (
-                      <div className="cl-contact"><span className="lv-small">No contact details saved.</span></div>
+                      <div className="cl-contact"><span className="lv-small">{t('lst.noContactDetailsSentence')}</span></div>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <span className="lv-eyebrow">Recurring billing</span>
+                  <span className="lv-eyebrow">{t('lst.recurringBilling')}</span>
                   <div style={{ marginTop: 8 }}>
                     {!selectedClient.email ? (
                       <div className="lv-card lv-card-pad">
-                        <p className="lv-small">Add an email address for this client to switch on recurring billing.</p>
+                        <p className="lv-small">{t('lst.addEmailForBilling')}</p>
                       </div>
                     ) : profile?.stripe_account_id ? (
                       <RecurringBillingPanel
@@ -203,9 +211,9 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
                       />
                     ) : (
                       <div className="lv-card lv-card-pad">
-                        <p className="lv-small">Connect your Stripe account to bill this client on a schedule.</p>
+                        <p className="lv-small">{t('lst.connectStripeForBilling')}</p>
                         {onConnectStripe && (
-                          <button className="lv-btn sec sm" style={{ marginTop: 12 }} onClick={onConnectStripe}>Connect Stripe</button>
+                          <button className="lv-btn sec sm" style={{ marginTop: 12 }} onClick={onConnectStripe}>{t('lst.connectStripe')}</button>
                         )}
                       </div>
                     )}
@@ -213,18 +221,18 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
                 </div>
 
                 <div>
-                  <span className="lv-eyebrow">Estimates</span>
+                  <span className="lv-eyebrow">{t('nav.estimates')}</span>
                   <div style={{ marginTop: 8 }}>
                     {getClientEstimates(selectedClient.name).length === 0 ? (
                       <div className="lv-card lv-card-pad">
-                        <p className="lv-small">No estimates written for this client yet.</p>
+                        <p className="lv-small">{t('lst.noEstimatesForClient')}</p>
                       </div>
                     ) : (
                       <div className="lv-card">
                         {getClientEstimates(selectedClient.name).map(est => (
                           <div className="lv-row" key={est.id}>
                             <div style={{ minWidth: 0 }}>
-                              <div className="lv-row-t cl-clip">{est.projectName || 'Unnamed project'}</div>
+                              <div className="lv-row-t cl-clip">{est.projectName || t('lst.unnamedProject')}</div>
                               <div className="lv-row-s">{new Date(est.createdAt).toLocaleDateString()}</div>
                             </div>
                             <div className="cl-meta">
@@ -246,12 +254,12 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
                   className="lv-btn sec"
                   onClick={() => { setSelectedClient(null); setEditingClient(selectedClient); setNewClient({ name: selectedClient.name, email: selectedClient.email, phone: selectedClient.phone, address: selectedClient.address }); setShowAddClient(true); }}
                 >
-                  <Pencil size={15} /> Edit client
+                  <Pencil size={15} /> {t('lst.editClient')}
                 </button>
                 <div className="spacer" />
                 {onCreateEstimate && (
                   <button className="lv-btn pri" onClick={() => { setSelectedClient(null); onCreateEstimate(); }}>
-                    <Plus size={16} /> New estimate
+                    <Plus size={16} /> {t('nav.newEstimate')}
                   </button>
                 )}
               </div>
@@ -262,37 +270,37 @@ export const ClientsList: React.FC<ClientsListProps> = ({ clients, onAddClient, 
 
       {showAddClient && (
         <div className="lv-scrim" onClick={() => setShowAddClient(false)}>
-          <div className="lv-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={editingClient ? 'Edit client' : 'Add client'}>
+          <div className="lv-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={editingClient ? t('lst.editClient') : t('lst.addClient')}>
             <form onSubmit={handleSubmit} className="cl-form">
               <div className="lv-modal-head">
-                <h2 className="lv-h2">{editingClient ? 'Edit client' : 'Add client'}</h2>
-                <button type="button" className="lv-icon-btn" onClick={() => setShowAddClient(false)} aria-label="Close"><X size={20} /></button>
+                <h2 className="lv-h2">{editingClient ? t('lst.editClient') : t('lst.addClient')}</h2>
+                <button type="button" className="lv-icon-btn" onClick={() => setShowAddClient(false)} aria-label={t('a.close')}><X size={20} /></button>
               </div>
 
               <div className="lv-modal-body">
                 <label className="lv-field">
-                  <span className="lv-label">Name *</span>
-                  <input className="lv-input" placeholder="Client name" value={newClient.name} onChange={e => setNewClient({ ...newClient, name: e.target.value })} required autoFocus />
+                  <span className="lv-label">{t('lst.nameRequired')}</span>
+                  <input className="lv-input" placeholder={t('lst.clientNamePlaceholder')} value={newClient.name} onChange={e => setNewClient({ ...newClient, name: e.target.value })} required autoFocus />
                 </label>
                 <label className="lv-field">
-                  <span className="lv-label">Email</span>
+                  <span className="lv-label">{t('m.email')}</span>
                   <input className="lv-input" type="email" placeholder="client@email.com" value={newClient.email} onChange={e => setNewClient({ ...newClient, email: e.target.value })} />
                 </label>
                 <label className="lv-field">
-                  <span className="lv-label">Phone</span>
+                  <span className="lv-label">{t('m.phone')}</span>
                   <input className="lv-input" placeholder="(555) 123-4567" value={newClient.phone} onChange={e => setNewClient({ ...newClient, phone: e.target.value })} />
                 </label>
                 <label className="lv-field">
-                  <span className="lv-label">Address</span>
-                  <input className="lv-input" placeholder="123 Main St" value={newClient.address} onChange={e => setNewClient({ ...newClient, address: e.target.value })} />
+                  <span className="lv-label">{t('m.address')}</span>
+                  <input className="lv-input" placeholder={t('lst.addressPlaceholder')} value={newClient.address} onChange={e => setNewClient({ ...newClient, address: e.target.value })} />
                 </label>
               </div>
 
               <div className="lv-modal-foot">
                 <div className="lv-actions">
-                  <button type="button" className="lv-btn sec" onClick={() => setShowAddClient(false)}>Cancel</button>
+                  <button type="button" className="lv-btn sec" onClick={() => setShowAddClient(false)}>{t('a.cancel')}</button>
                   <div className="spacer" />
-                  <button type="submit" className="lv-btn pri">{editingClient ? 'Save changes' : 'Add client'}</button>
+                  <button type="submit" className="lv-btn pri">{editingClient ? t('lst.saveChanges') : t('lst.addClient')}</button>
                 </div>
               </div>
             </form>

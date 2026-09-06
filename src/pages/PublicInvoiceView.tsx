@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useT } from '@/i18n';
 import { Loader2, CheckCircle, CreditCard } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import { getStripePromise } from '@/lib/stripe';
@@ -12,6 +13,7 @@ import { InvoicePaymentForm } from '@/components/InvoicePaymentForm';
 export default function PublicInvoiceView() {
   const { token } = useParams();
   const { toast } = useToast();
+  const t = useT();
   const [invoice, setInvoice] = useState<any>(null);
   const [branding, setBranding] = useState<{ company_name?: string; profile_photo_url?: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +34,7 @@ export default function PublicInvoiceView() {
       loadBranding();
     } catch (error: any) {
       console.error('Load invoice error:', error);
-      toast({ title: 'Error', description: 'Unable to load invoice', variant: 'destructive' });
+      toast({ title: t('e.somethingWrong'), description: t('pg.inv.loadFailed'), variant: 'destructive' });
     } finally { setLoading(false); }
   };
 
@@ -52,7 +54,7 @@ export default function PublicInvoiceView() {
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-  if (!invoice) return <div className="flex items-center justify-center min-h-screen"><p className="text-gray-600">Invoice not found</p></div>;
+  if (!invoice) return <div className="flex items-center justify-center min-h-screen"><p className="text-gray-600">{t('pg.inv.notFound')}</p></div>;
 
   // Safely parse line_items - handle both array and string formats
   const parseLineItems = (items: any) => {
@@ -88,24 +90,24 @@ export default function PublicInvoiceView() {
           <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
             <div className="flex items-start gap-3">
               {branding?.profile_photo_url && (
-                <img src={branding.profile_photo_url} alt="Logo" className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
+                <img src={branding.profile_photo_url} alt={t('pg.pub.logoAlt')} className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
               )}
               <div>
-                <h2 className="text-lg md:text-xl text-gray-600">Invoice</h2>
+                <h2 className="text-lg md:text-xl text-gray-600">{t('m.invoice')}</h2>
                 {branding?.company_name && <p className="text-sm font-medium text-gray-700 mt-1">{branding.company_name}</p>}
               </div>
             </div>
             <div className="md:text-right">
               <p className="text-base md:text-lg font-semibold">{invoice.invoice_number}</p>
-              <p className="text-sm text-gray-500">Issued: {new Date(invoice.issue_date || invoice.created_at).toLocaleDateString()}</p>
-              {invoice.due_date && <p className="text-sm text-gray-500">Due: {new Date(invoice.due_date).toLocaleDateString()}</p>}
+              <p className="text-sm text-gray-500">{t('pg.inv.issued')}: {new Date(invoice.issue_date || invoice.created_at).toLocaleDateString()}</p>
+              {invoice.due_date && <p className="text-sm text-gray-500">{t('pg.inv.due')}: {new Date(invoice.due_date).toLocaleDateString()}</p>}
             </div>
           </div>
 
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><p className="text-sm text-gray-500">Bill To</p><p className="font-semibold">{invoice.client_name}</p><p className="text-sm">{invoice.client_email}</p></div>
-              <div><p className="text-sm text-gray-500">Project</p><p className="font-semibold">{invoice.project_name}</p></div>
+              <div><p className="text-sm text-gray-500">{t('pg.inv.billTo')}</p><p className="font-semibold">{invoice.client_name}</p><p className="text-sm">{invoice.client_email}</p></div>
+              <div><p className="text-sm text-gray-500">{t('m.project')}</p><p className="font-semibold">{invoice.project_name}</p></div>
             </div>
 
             {/* Mobile-friendly line items */}
@@ -124,7 +126,7 @@ export default function PublicInvoiceView() {
             {/* Desktop table */}
             <div className="hidden md:block border rounded-lg overflow-hidden">
               <table className="w-full">
-                <thead className="bg-gray-50"><tr><th className="text-left p-3">Description</th><th className="text-right p-3">Qty</th><th className="text-right p-3">Rate</th><th className="text-right p-3">Amount</th></tr></thead>
+                <thead className="bg-gray-50"><tr><th className="text-left p-3">{t('m.description')}</th><th className="text-right p-3">{t('m.qty')}</th><th className="text-right p-3">{t('m.rate')}</th><th className="text-right p-3">{t('m.amount')}</th></tr></thead>
                 <tbody>
                   {lineItems.map((item: any, idx: number) => (
                     <tr key={idx} className="border-t">
@@ -140,26 +142,26 @@ export default function PublicInvoiceView() {
 
             {/* Totals */}
             <div className="bg-blue-50 p-4 rounded-lg space-y-2">
-              <div className="flex justify-between text-sm"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              {taxRate > 0 && <div className="flex justify-between text-sm"><span>Tax ({taxRate}%)</span><span>${taxAmount.toFixed(2)}</span></div>}
-              <div className="flex justify-between font-bold text-lg border-t pt-2"><span>Total</span><span>${total.toFixed(2)}</span></div>
-              {amountPaid > 0 && <div className="flex justify-between text-green-600"><span>Paid</span><span>-${amountPaid.toFixed(2)}</span></div>}
-              <div className="flex justify-between font-bold text-xl text-blue-700"><span>Amount Due</span><span>${amountDue.toFixed(2)}</span></div>
+              <div className="flex justify-between text-sm"><span>{t('m.subtotal')}</span><span>${subtotal.toFixed(2)}</span></div>
+              {taxRate > 0 && <div className="flex justify-between text-sm"><span>{t('m.tax')} ({taxRate}%)</span><span>${taxAmount.toFixed(2)}</span></div>}
+              <div className="flex justify-between font-bold text-lg border-t pt-2"><span>{t('m.total')}</span><span>${total.toFixed(2)}</span></div>
+              {amountPaid > 0 && <div className="flex justify-between text-green-600"><span>{t('s.paid')}</span><span>-${amountPaid.toFixed(2)}</span></div>}
+              <div className="flex justify-between font-bold text-xl text-blue-700"><span>{t('m.balanceDue')}</span><span>${amountDue.toFixed(2)}</span></div>
             </div>
 
             {invoice.notes && <div className="bg-gray-50 p-4 rounded-lg"><p className="text-sm text-gray-600">{invoice.notes}</p></div>}
 
-            <p className="text-sm text-gray-500 text-center italic">We appreciate the opportunity to work with you. Thanks for considering us!</p>
+            <p className="text-sm text-gray-500 text-center italic">{t('pg.pub.thanks')}</p>
 
             {isPaid || paymentSuccess ? (
               <div className="bg-green-50 border border-green-200 p-6 rounded-lg text-center">
                 <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-2" />
-                <p className="text-green-800 font-semibold text-lg">Invoice Paid</p>
-                <p className="text-sm text-green-600">Thank you!</p>
+                <p className="text-green-800 font-semibold text-lg">{t('pg.inv.paidTitle')}</p>
+                <p className="text-sm text-green-600">{t('pg.inv.thankYou')}</p>
               </div>
             ) : showPayment && stripe ? (
               <div className="border-t pt-6">
-                <h3 className="font-semibold text-lg mb-4 flex items-center gap-2"><CreditCard className="w-5 h-5" /> Pay Invoice</h3>
+                <h3 className="font-semibold text-lg mb-4 flex items-center gap-2"><CreditCard className="w-5 h-5" /> {t('pg.inv.payInvoice')}</h3>
                 <Elements stripe={stripe}>
                   <InvoicePaymentForm invoiceId={invoice.id} viewToken={token || ''} amount={amountDue} clientName={invoice.client_name} clientEmail={invoice.client_email} onSuccess={handlePaymentSuccess} />
                 </Elements>
@@ -167,16 +169,16 @@ export default function PublicInvoiceView() {
             ) : (
              <>
               <Button onClick={() => setShowPayment(true)} className="w-full bg-green-600 hover:bg-green-700 py-5 md:py-6 text-base md:text-lg">
-                <CreditCard className="w-5 h-5 mr-2" /> Pay ${amountDue.toFixed(2)} Now
+                <CreditCard className="w-5 h-5 mr-2" /> {t('pg.inv.payNow', { amount: `$${amountDue.toFixed(2)}` })}
               </Button>
               <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '13px', marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                🔒 100% secure payment through Stripe
+                🔒 {t('pg.inv.secure')}
               </p>
               </>
             )}
           </div>
         </Card>
-        <p className="text-center text-xs text-gray-400 mt-4">Powered by levelworks.org</p>
+        <p className="text-center text-xs text-gray-400 mt-4">{t('pg.pub.poweredBy')}</p>
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LanguageProvider } from "@/i18n";
 import { DataProvider } from "@/contexts/DataContext";
 import { InvoiceProvider } from "@/contexts/InvoiceContext";
 import { ProfileProvider } from "@/contexts/ProfileContext";
@@ -39,6 +40,7 @@ function PixelPageViewTracker() {
 
 const App = () => (
   <ThemeProvider defaultTheme="light">
+    <LanguageProvider>
     <QueryClientProvider client={queryClient}>
       <ProfileProvider>
         <DataProvider>
@@ -70,6 +72,7 @@ const App = () => (
         </DataProvider>
       </ProfileProvider>
     </QueryClientProvider>
+    </LanguageProvider>
   </ThemeProvider>
 );
 

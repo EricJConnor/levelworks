@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { PhotoUpload } from './PhotoUpload';
 import { PhotoGallery } from './PhotoGallery';
 import { EstimateBuilder } from './EstimateBuilder';
+import { useT } from '@/i18n';
 
 interface Photo { id: string; fileUrl: string; caption?: string; }
 
@@ -17,14 +18,15 @@ const money = (n: number) =>
   `$${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const STATUS_TONE: Record<string, string> = { draft: '', sent: 'blue', approved: 'green', rejected: 'red' };
-const STATUS_LABEL: Record<string, string> = { draft: 'Draft', sent: 'Sent', approved: 'Approved', rejected: 'Rejected' };
+const STATUS_KEY: Record<string, string> = { draft: 's.draft', sent: 's.sent', approved: 's.approved', rejected: 's.rejected' };
 
-const FILTERS: { key: string; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'draft', label: 'Draft' },
-  { key: 'sent', label: 'Sent' },
-  { key: 'approved', label: 'Approved' },
-  { key: 'rejected', label: 'Rejected' },
+/* Labels are resolved at render time, so `t` is never called at module scope. */
+const FILTERS: { key: string; labelKey: string }[] = [
+  { key: 'all', labelKey: 'lst.filterAll' },
+  { key: 'draft', labelKey: 's.draft' },
+  { key: 'sent', labelKey: 's.sent' },
+  { key: 'approved', labelKey: 's.approved' },
+  { key: 'rejected', labelKey: 's.rejected' },
 ];
 
 /* Scoped to the `el-` prefix so nothing here can reach another screen. */
@@ -72,6 +74,7 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
   const [estimatePhotos, setEstimatePhotos] = useState<Record<string, Photo[]>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
+  const t = useT();
 
   const loadPhotos = async (estimateId: string) => {
     try {
@@ -107,16 +110,16 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
         taxRate: estimate.taxRate, total: estimate.total,
         amountPaid: 0, paymentHistory: [], status: 'unpaid',
         issueDate: new Date().toISOString(),
-        notes: `Converted from estimate EST-${estimate.id.slice(-6)}`
+        notes: t('lst.convertedFromEstimate', { number: `EST-${estimate.id.slice(-6)}` })
       });
-      toast({ title: 'Invoice created' });
+      toast({ title: t('lst.invoiceCreated') });
     } catch (error: any) {
-      toast({ title: 'Could not create the invoice', description: error.message, variant: 'destructive' });
+      toast({ title: t('lst.invoiceCreateFailed'), description: error.message, variant: 'destructive' });
     }
   };
 
   const statusPill = (status: string) => (
-    <span className={`lv-pill ${STATUS_TONE[status] ?? ''}`}>{STATUS_LABEL[status] || status}</span>
+    <span className={`lv-pill ${STATUS_TONE[status] ?? ''}`}>{STATUS_KEY[status] ? t(STATUS_KEY[status]) : status}</span>
   );
 
   const term = query.trim().toLowerCase();
@@ -135,9 +138,9 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
     });
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this estimate?')) {
+    if (confirm(t('lst.confirmDeleteEstimate'))) {
       deleteEstimate(id);
-      toast({ title: 'Estimate deleted' });
+      toast({ title: t('lst.estimateDeleted') });
     }
   };
 
@@ -150,8 +153,8 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
   const handleCopyLink = (estimate: Estimate) => {
     if (!estimate.viewToken) {
       toast({
-        title: 'No link yet',
-        description: 'Send this estimate first and a client link is created for it.',
+        title: t('lst.noLinkYet'),
+        description: t('lst.noLinkYetBody'),
         variant: 'destructive'
       });
       return;
@@ -159,7 +162,7 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
     const url = `${window.location.origin}/view-estimate/${estimate.viewToken}`;
     navigator.clipboard.writeText(url);
     setCopiedId(estimate.id);
-    toast({ title: 'Link copied', description: 'The client link is on your clipboard.' });
+    toast({ title: t('lst.linkCopied'), description: t('lst.linkCopiedBody') });
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -171,25 +174,25 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
 
       <div className="lv-page-head">
         <div>
-          <h1 className="lv-h1">Estimates</h1>
-          <p className="lv-sub">Everything you have quoted, and where each one stands.</p>
+          <h1 className="lv-h1">{t('nav.estimates')}</h1>
+          <p className="lv-sub">{t('lst.estimatesSub')}</p>
         </div>
         <button className="lv-btn pri" onClick={() => setNewEstimate(true)}>
-          <Plus size={16} /> New estimate
+          <Plus size={16} /> {t('nav.newEstimate')}
         </button>
       </div>
 
       {estimates.length > 0 && (
       <div className="el-tools">
         <div className="el-segwrap">
-          <div className="lv-seg" role="group" aria-label="Filter by status">
+          <div className="lv-seg" role="group" aria-label={t('lst.filterByStatus')}>
             {FILTERS.map(f => (
               <button
                 key={f.key}
                 className={statusFilter === f.key ? 'on' : ''}
                 onClick={() => setStatusFilter(f.key)}
               >
-                {f.label}
+                {t(f.labelKey)}
               </button>
             ))}
           </div>
@@ -203,20 +206,20 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
               type="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Search client, project or number"
-              aria-label="Search estimates"
+              placeholder={t('lst.searchEstimatesPlaceholder')}
+              aria-label={t('lst.searchEstimates')}
             />
           </div>
           <select
             className="lv-select el-sort"
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
-            aria-label="Sort estimates"
+            aria-label={t('lst.sortEstimates')}
           >
-            <option value="date-desc">Newest</option>
-            <option value="date-asc">Oldest</option>
-            <option value="amount-desc">Highest</option>
-            <option value="amount-asc">Lowest</option>
+            <option value="date-desc">{t('lst.sortNewest')}</option>
+            <option value="date-asc">{t('lst.sortOldest')}</option>
+            <option value="amount-desc">{t('lst.sortHighest')}</option>
+            <option value="amount-asc">{t('lst.sortLowest')}</option>
           </select>
         </div>
       </div>
@@ -225,16 +228,16 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
       {filteredEstimates.length === 0 ? (
         <div className="lv-empty">
           <FileText size={30} />
-          <h3>{isFiltered ? 'Nothing matches that' : 'No estimates yet'}</h3>
+          <h3>{isFiltered ? t('lst.nothingMatches') : t('lst.noEstimatesYet')}</h3>
           <p>
             {isFiltered
-              ? 'Try another status, or clear the search box.'
-              : 'Write your first estimate and send it to the client from your phone.'}
+              ? t('lst.tryAnotherStatus')
+              : t('lst.noEstimatesBody')}
           </p>
           {isFiltered ? (
-            <button className="lv-btn sec" onClick={() => { setStatusFilter('all'); setQuery(''); }}>Clear filters</button>
+            <button className="lv-btn sec" onClick={() => { setStatusFilter('all'); setQuery(''); }}>{t('a.clearFilters')}</button>
           ) : (
-            <button className="lv-btn pri" onClick={() => setNewEstimate(true)}><Plus size={16} /> New estimate</button>
+            <button className="lv-btn pri" onClick={() => setNewEstimate(true)}><Plus size={16} /> {t('nav.newEstimate')}</button>
           )}
         </div>
       ) : (
@@ -246,10 +249,10 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
                   <div className="el-titleline">
                     <span className="lv-row-t lv-num">EST-{estimate.id.slice(-6)}</span>
                     {statusPill(estimate.status)}
-                    {estimate.signedAt && <span className="lv-pill green">Signed</span>}
+                    {estimate.signedAt && <span className="lv-pill green">{t('s.signed')}</span>}
                   </div>
                   <span className="lv-row-s el-sub">
-                    {estimate.clientName || 'No client'} · {estimate.projectName || 'Untitled project'}
+                    {estimate.clientName || t('lst.noClient')} · {estimate.projectName || t('lst.untitledProject')}
                   </span>
                 </div>
                 <div className="el-amt">
@@ -260,35 +263,35 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
 
               <div className="el-acts">
                 <button className="lv-btn sec sm" onClick={() => handleViewEstimate(estimate)} disabled={!estimate.viewToken}>
-                  <Eye size={14} /> View
+                  <Eye size={14} /> {t('a.view')}
                 </button>
                 <button className="lv-btn sec sm" onClick={() => setEditEstimate(estimate)}>
-                  <Pencil size={14} /> Edit
+                  <Pencil size={14} /> {t('a.edit')}
                 </button>
                 {(estimate.status === 'sent' || estimate.status === 'draft') && (
                   <button className="lv-btn pri sm" onClick={() => setResendEstimate(estimate)}>
-                    <Send size={14} /> {estimate.status === 'draft' ? 'Send' : 'Resend'}
+                    <Send size={14} /> {estimate.status === 'draft' ? t('a.send') : t('a.resend')}
                   </button>
                 )}
                 {estimate.status === 'approved' && (
                   <button className="lv-btn sec sm" onClick={() => handleConvertToInvoice(estimate)}>
-                    <Receipt size={14} /> Make invoice
+                    <Receipt size={14} /> {t('lst.makeInvoice')}
                   </button>
                 )}
                 <button className="lv-btn quiet sm" onClick={() => handleCopyLink(estimate)} disabled={!estimate.viewToken}>
                   {copiedId === estimate.id ? <Check size={14} /> : <Copy size={14} />}
-                  {copiedId === estimate.id ? 'Copied' : 'Copy link'}
+                  {copiedId === estimate.id ? t('a.copied') : t('a.copyLink')}
                 </button>
                 <button
                   className="lv-btn quiet sm"
                   onClick={() => handleExpand(estimate.id)}
                   aria-expanded={expandedEstimate === estimate.id}
                 >
-                  <ImageIcon size={14} /> Photos ({estimatePhotos[estimate.id]?.length || 0})
+                  <ImageIcon size={14} /> {t('lst.photosCount', { count: estimatePhotos[estimate.id]?.length || 0 })}
                   {expandedEstimate === estimate.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </button>
                 <button className="lv-btn danger sm el-del" onClick={() => handleDelete(estimate.id)}>
-                  <Trash2 size={14} /> Delete
+                  <Trash2 size={14} /> {t('a.delete')}
                 </button>
               </div>
 

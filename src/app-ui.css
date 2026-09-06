@@ -99,6 +99,12 @@
   color: var(--lv-ink);
 }
 .lv-brand svg { width: 24px; height: 24px; display: block; }
+.lv-brand { flex-shrink: 0; }
+/* On a narrow phone the mark stands in for the wordmark, so the language
+   switcher and the primary action both fit without covering the brand. */
+@media (max-width: 460px) {
+  .lv-brand span { display: none; }
+}
 .lv-brand b { color: var(--lv-blue); font-weight: 700; }
 
 .lv-nav { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
@@ -911,41 +917,73 @@ button.lv-row:hover, a.lv-row:hover { background: var(--lv-surface-2); }
 .eb-doc-photos figcaption { font-size: 12px; color: var(--lv-mute); text-align: center; margin-top: 5px; }
 .eb-doc-thanks { margin-top: 24px; text-align: center; font-size: 13.5px; color: var(--lv-mute); }
 
-/* ------------------------------------------------------- language toggle
+/* ----------------------------------------------------- language switcher
 
-   EN | ES, both words always visible so a Spanish speaker can find it
-   without reading English first. That is the whole point of the control.
+   The flag you are in now plus its abbreviation, with the other language one
+   tap behind a chevron. The flag makes it findable without reading; the
+   letters carry the meaning.
    ---------------------------------------------------------------------- */
-.lv-lang {
-  display: inline-flex;
-  background: var(--lv-sunken);
-  border-radius: 999px;
-  padding: 2px;
-  gap: 2px;
-  flex-shrink: 0;
-}
-.lv-lang button {
-  background: none;
-  border: 0;
-  cursor: pointer;
-  padding: 5px 11px;
-  border-radius: 999px;
-  font: 600 12.5px var(--lv-font);
-  letter-spacing: .03em;
-  color: var(--lv-mute);
-  transition: background var(--lv-t) var(--lv-ease), color var(--lv-t) var(--lv-ease);
-}
-.lv-lang button:hover { color: var(--lv-ink); }
-.lv-lang button.on {
-  background: var(--lv-surface);
-  color: var(--lv-ink);
-  box-shadow: var(--lv-shadow-sm);
-}
-.lv-lang button:focus-visible { outline: 2px solid var(--lv-blue); outline-offset: 1px; }
+.lv-lang { position: relative; flex-shrink: 0; }
 
-/* in the phone sheet it sits on its own row, full width */
-.lv-sheet .lv-lang { width: 100%; }
-.lv-sheet .lv-lang button { flex: 1; padding: 9px 11px; font-size: 14px; }
+.lv-lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 8px 0 7px;
+  background: var(--lv-surface);
+  border: 1px solid var(--lv-line-2);
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--lv-ink);
+  transition: border-color var(--lv-t) var(--lv-ease), background var(--lv-t) var(--lv-ease);
+}
+.lv-lang-btn:hover { border-color: #c3cad6; background: var(--lv-surface-2); }
+.lv-lang-btn:focus-visible { outline: 2px solid var(--lv-blue); outline-offset: 2px; }
+
+/* the flag carries a hairline so its white bands do not bleed into the page */
+.lv-flag {
+  width: 21px;
+  height: 15px;
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: block;
+  box-shadow: inset 0 0 0 1px rgba(11, 18, 32, .14);
+}
+.lv-flag svg { width: 100%; height: 100%; display: block; }
+
+.lv-lang-abbr { font: 600 13px var(--lv-font); letter-spacing: .03em; }
+.lv-lang-chev { width: 12px; height: 12px; color: var(--lv-faint); flex-shrink: 0; }
+
+.lv-lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 70;
+  background: var(--lv-surface);
+  border: 1px solid var(--lv-line);
+  border-radius: var(--lv-r);
+  box-shadow: var(--lv-shadow-lg);
+  padding: 4px;
+  min-width: 158px;
+}
+.lv-lang-menu button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: var(--lv-r-sm);
+  background: none;
+  cursor: pointer;
+  color: var(--lv-ink);
+  text-align: left;
+  white-space: nowrap;
+}
+.lv-lang-menu button:hover { background: var(--lv-blue-soft); }
+.lv-lang-name { font: 500 14px var(--lv-font); color: var(--lv-mute); }
 
 /* ------------------------------------------- the translation review sheet
 

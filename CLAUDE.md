@@ -107,11 +107,23 @@ the page eng/span, and its as simple as that. same thing in the estimates."*
 - **`src/i18n/`** — a hand-rolled provider (no dependency; the need is one flat dictionary
   and a `t()`). `en/` and `es/` each hold six files: common, estimates, lists, modals,
   pages, landing. **956 keys, in exact parity.**
-- **`<LanguageToggle />`** shows EN | ES with both words always visible, so a Spanish
-  speaker can find it without reading English first. It sits in the app header, the phone
-  sheet, and the landing header. The choice is stored in `localStorage` under `lw-lang`
-  and read synchronously in the provider's `useState` initializer, so the first paint is
-  already in the right language. First-time visitors get their browser's language.
+- **`<LanguageToggle />`** is a flag, its abbreviation and a chevron; opening it puts the
+  other language one tap away. It sits in the app header and the landing header **on every
+  size, phones included** — Eric's note was that it must not hide in the menu, and a Spanish
+  speaker should never have to read English to find it. The choice is stored in
+  `localStorage` under `lw-lang` and read synchronously in the provider's `useState`
+  initializer, so the first paint is already in the right language. First-time visitors get
+  their browser's language.
+- **The flags are drawn as SVG, not emoji.** Flag emoji do not render as flags on Windows —
+  Chrome there shows the two letters — so a laptop user would see "US" where a Mac user sees
+  a flag. They are simplified deliberately: at 21px the stars and the eagle are invisible.
+- **Which flag stands for Spanish is a judgment call, not a fact.** Language is not country.
+  Mexico is used because it is by far the largest share of Spanish-speaking trades in the US
+  and reads instantly to them; a Salvadoran or Dominican contractor may not see themselves in
+  it, which is why the abbreviation carries the meaning and the flag only makes it findable.
+  It is one line in `LANGS` to change.
+- **The header brand drops to the mark alone under 460px** so the switcher and the primary
+  action both fit without covering the wordmark.
 - **A missing Spanish key falls back to English, never to a raw key.** Two scripts guard
   this — regenerate them if needed: one checks en/es key parity, one checks that every
   `t('...')` in the source is defined.

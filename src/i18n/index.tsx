@@ -89,29 +89,104 @@ export function useT() {
 }
 
 /**
- * The toggle. Two words, always both visible, so a Spanish speaker can find it
- * without reading English — the point of the whole feature.
+ * The flags.
+ *
+ * Drawn as SVG rather than emoji on purpose: flag emoji do not render as flags
+ * on Windows at all — Chrome there shows the two letters instead — so a laptop
+ * user would see "US" where a Mac user sees a flag. These are simplified to
+ * read at 20px: the stars and the eagle are invisible at this size anyway.
+ */
+const FlagUS: React.FC = () => (
+  <svg viewBox="0 0 20 14" aria-hidden="true">
+    <rect width="20" height="14" fill="#b22234" />
+    {[1, 3, 5, 7, 9, 11].map((y) => (
+      <rect key={y} y={y} width="20" height="1" fill="#fff" />
+    ))}
+    <rect width="8.6" height="7.6" fill="#3c3b6e" />
+  </svg>
+);
+
+const FlagMX: React.FC = () => (
+  <svg viewBox="0 0 20 14" aria-hidden="true">
+    <rect width="20" height="14" fill="#fff" />
+    <rect width="6.67" height="14" fill="#006847" />
+    <rect x="13.33" width="6.67" height="14" fill="#ce1126" />
+    <circle cx="10" cy="7" r="1.7" fill="#8c6239" />
+  </svg>
+);
+
+interface LangOption { code: Lang; abbr: string; name: string; Flag: React.FC }
+
+/**
+ * Which flag stands for Spanish is a judgment call, not a fact: language is not
+ * country. Mexico is used because it is far the largest share of Spanish-speaking
+ * trades in the US and reads instantly to them. Swapping it is this one line.
+ */
+const LANGS: LangOption[] = [
+  { code: 'en', abbr: 'EN', name: 'English', Flag: FlagUS },
+  { code: 'es', abbr: 'ES', name: 'Español', Flag: FlagMX },
+];
+
+/**
+ * The switcher: the flag you are in now, its abbreviation, and a chevron. Open
+ * it and the other language is one tap away. The abbreviation carries the
+ * meaning — the flag is what makes it findable at a glance.
  */
 export const LanguageToggle: React.FC<{ className?: string }> = ({ className }) => {
   const { lang, setLang } = useLang();
+  const [open, setOpen] = useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const current = LANGS.find((l) => l.code === lang) || LANGS[0];
+  const others = LANGS.filter((l) => l.code !== lang);
+
   return (
-    <div className={`lv-lang${className ? ' ' + className : ''}`} role="group" aria-label="Language / Idioma">
+    <div className={`lv-lang${className ? ' ' + className : ''}`} ref={ref}>
       <button
         type="button"
-        className={lang === 'en' ? 'on' : ''}
-        aria-pressed={lang === 'en'}
-        onClick={() => setLang('en')}
+        className="lv-lang-btn"
+        onClick={() => setOpen(!open)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`${current.name} — Language / Idioma`}
       >
-        EN
+        <span className="lv-flag"><current.Flag /></span>
+        <span className="lv-lang-abbr">{current.abbr}</span>
+        <svg className="lv-lang-chev" viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M3 4.5 6 8l3-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
-      <button
-        type="button"
-        className={lang === 'es' ? 'on' : ''}
-        aria-pressed={lang === 'es'}
-        onClick={() => setLang('es')}
-      >
-        ES
-      </button>
+
+      {open && (
+        <div className="lv-lang-menu" role="menu">
+          {others.map((o) => (
+            <button
+              key={o.code}
+              type="button"
+              role="menuitem"
+              onClick={() => { setLang(o.code); setOpen(false); }}
+            >
+              <span className="lv-flag"><o.Flag /></span>
+              <span className="lv-lang-abbr">{o.abbr}</span>
+              <span className="lv-lang-name">{o.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

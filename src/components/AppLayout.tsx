@@ -156,7 +156,7 @@ export const AppLayout: React.FC = () => {
           <div className="lv-hdr-tools">
             <button className="lv-btn pri sm lv-hide-mobile" onClick={newEstimate}><Plus size={15} /> {t('nav.newEstimate')}</button>
             <button className="lv-btn sec sm lv-hide-mobile" onClick={newInvoice}><Plus size={15} /> {t('nav.invoice')}</button>
-            <LanguageToggle className="lv-hide-mobile" />
+            <LanguageToggle />
             <button className="lv-icon-btn lv-hide-mobile" onClick={handleHelpClick} title={t('nav.help')} aria-label={t('nav.help')}><HelpCircle size={19} /></button>
             <button className="lv-icon-btn lv-hide-mobile" onClick={() => handleNavClick('notifications')} title={t('nav.notifications')} aria-label={t('nav.notifications')}>
               <Bell size={19} />
@@ -209,8 +209,6 @@ export const AppLayout: React.FC = () => {
         <>
           <div className="lv-sheet-scrim lv-hide-desktop" onClick={() => setMobileMenuOpen(false)} />
           <div className="lv-sheet lv-hide-desktop">
-            <LanguageToggle />
-            <hr />
             {navItems.filter(i => !['dashboard', 'estimates', 'invoices', 'clients'].includes(i.key)).map(item => (
               <button key={item.key} className={currentView === item.key ? 'on' : ''} onClick={() => handleNavClick(item.key)}>
                 <item.icon size={17} /> {item.label}

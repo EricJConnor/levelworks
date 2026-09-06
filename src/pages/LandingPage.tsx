@@ -316,7 +316,6 @@ export default function LandingPage() {
           <button onClick={() => scrollTo('pricing')}>{t('lp.navPricing')}</button>
           <button onClick={() => scrollTo('faq')}>{t('lp.navFaq')}</button>
           <button onClick={openSignIn}>{t('lp.signIn')}</button>
-          <LanguageToggle className="lw-lang-fix" />
           <button className="lw-btn pri wide" onClick={openSignUp}>{t('lp.startTrial30')}</button>
         </div>
       </header>

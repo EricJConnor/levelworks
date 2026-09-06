@@ -406,9 +406,7 @@
 
 /* language toggle (component styles come from app-ui.css; only spacing here) */
 .lw-hdr-cta .lw-lang-fix { margin-right: 2px; }
-.lw-sheet .lw-lang-fix { width: 100%; margin-top: 14px; }
-.lw-sheet .lw-lang-fix button { flex: 1; width: auto; text-align: center; padding: 9px 11px; font-size: 14px; border-bottom: 0; }
-@media (max-width: 880px) { .lw-hdr-cta .lw-lang-fix { display: none; } }
+/* the switcher stays in the header on a phone — never hidden in the menu */
 
 /* The header CTA carries a shorter label on a phone: Spanish runs about a
    fifth longer than English, and the full label pushed the menu button off a

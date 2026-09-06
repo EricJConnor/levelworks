@@ -4,7 +4,7 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
 import { SendEstimateModal } from './SendEstimateModal';
 import { supabase } from '@/lib/supabase';
-import { X, Plus, Trash2, Users, Edit, ImageIcon } from 'lucide-react';
+import { X, Plus, Trash2, Users, Edit, ImageIcon, Send, FileText, Eye, Check, ChevronDown, Tag } from 'lucide-react';
 import { PhotoUpload } from './PhotoUpload';
 import { autoGrowTextarea } from '@/lib/utils';
 
@@ -21,6 +21,8 @@ const safeString = (val: any): string => {
   if (val === null || val === undefined) return '';
   return String(val);
 };
+
+const money = (n: number) => `$${(Number(n) || 0).toFixed(2)}`;
 
 const cleanLineItem = (item: any, index: number): LineItem | null => {
   if (!item) return null;
@@ -62,6 +64,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [newTitleInput, setNewTitleInput] = useState('');
   const [showNewTitleInput, setShowNewTitleInput] = useState(false);
   const titlePickerRef = useRef<HTMLDivElement>(null);
+  const clientPickerRef = useRef<HTMLDivElement>(null);
   const [estimatePhotos, setEstimatePhotos] = useState<{ id: string; fileUrl: string; caption: string }[]>([]);
   const [photoCaptions, setPhotoCaptions] = useState<Record<string, string>>({});
 
@@ -75,9 +78,19 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         setShowNewTitleInput(false);
         setNewTitleInput('');
       }
+      if (clientPickerRef.current && !clientPickerRef.current.contains(e.target as Node)) {
+        setShowClientPicker(false);
+      }
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // The builder covers the whole screen; stop the page behind it scrolling.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
   }, []);
 
   const loadEstimatePhotos = async (estimateId: string) => {
@@ -178,9 +191,9 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const removeItem = (id: string) => { if (lineItems.length > 1) setLineItems(lineItems.filter(item => item.id !== id)); };
 
   const saveEstimate = async (forSending = false): Promise<any> => {
-    if (!clientName.trim()) { toast({ title: 'Error', description: 'Please enter client name', variant: 'destructive' }); return null; }
-    if (!projectName.trim()) { toast({ title: 'Error', description: 'Please enter project name', variant: 'destructive' }); return null; }
-    if (forSending && !clientEmail.trim()) { toast({ title: 'Error', description: 'Client email is required to send estimate', variant: 'destructive' }); return null; }
+    if (!clientName.trim()) { toast({ title: 'Client name needed', description: 'Add the client’s name before saving.', variant: 'destructive' }); return null; }
+    if (!projectName.trim()) { toast({ title: 'Project name needed', description: 'Give this estimate a project name so you can find it later.', variant: 'destructive' }); return null; }
+    if (forSending && !clientEmail.trim()) { toast({ title: 'Client email needed', description: 'Add an email address to send this estimate.', variant: 'destructive' }); return null; }
 
     setIsSaving(true);
     try {
@@ -192,7 +205,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         .filter((item): item is LineItem => item !== null);
 
       if (validItems.length === 0) {
-        toast({ title: 'Error', description: 'Please add at least one line item with a description and quantity', variant: 'destructive' });
+        toast({ title: 'Add a line item', description: 'Every estimate needs at least one item with a description and a quantity.', variant: 'destructive' });
         setIsSaving(false);
         return null;
       }
@@ -235,7 +248,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
       const result = { id: resultId, ...estimateData, viewToken: resultViewToken };
       return result;
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to save estimate', variant: 'destructive' });
+      toast({ title: 'Could not save', description: error.message || 'Something went wrong saving this estimate.', variant: 'destructive' });
       return null;
     } finally {
       setIsSaving(false);
@@ -244,7 +257,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
   const handleSave = async () => {
     const result = await saveEstimate(false);
-    if (result) { toast({ title: 'Success', description: 'Estimate saved successfully' }); onClose(); }
+    if (result) { toast({ title: 'Saved', description: 'This estimate is in your list.' }); onClose(); }
   };
 
   const handleDone = async () => {
@@ -261,7 +274,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
       setSavedEstimateData(result);
       setShowSendModal(true);
     } else if (result) {
-      toast({ title: 'Error', description: 'Failed to prepare estimate for sending. Please try again.', variant: 'destructive' });
+      toast({ title: 'Could not send', description: 'This estimate could not be prepared for sending. Try again.', variant: 'destructive' });
     }
   };
 
@@ -270,215 +283,204 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     setShowSendModal(true);
   };
 
+  const handleConvert = () => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit });
+
   const handleSendModalClose = () => { setShowSendModal(false); setSavedEstimateData(null); };
   const handleSendSuccess = () => { setShowSendModal(false); setSavedEstimateData(null); onClose(); };
 
+  const canConvert = !!onConvertToInvoice;
+  const itemCount = lineItems.filter(i => safeString(i.description).trim()).length;
+
+  /* ------------------------------------------------------------------
+     Line item — one card per item: what it is, then what it costs.
+     ------------------------------------------------------------------ */
   const renderItem = (item: LineItem, idx: number) => (
-    <div key={item.id} className="mb-4">
-      <div className="bg-gray-50 p-4 rounded-lg border">
-        <div className="flex justify-between items-start mb-3">
-          <span className="text-sm font-semibold text-gray-600">Item {idx + 1}</span>
-          {!isReadOnly && <button onClick={() => removeItem(item.id)} className="text-red-600 p-1"><Trash2 size={18} /></button>}
-        </div>
-        <div className="space-y-3">
-
-          {/* Section Title */}
-          {!isReadOnly && (
-            <div className="relative" ref={openTitlePicker === item.id ? titlePickerRef : undefined}>
-              <label className="block text-xs text-gray-500 mb-1">Section Title (optional)</label>
-              <input
-                value={item.sectionTitle || ''}
-                onChange={(e) => updateItem(item.id, 'sectionTitle', e.target.value)}
-                onFocus={() => { setOpenTitlePicker(item.id); setShowNewTitleInput(false); }}
-                placeholder="e.g. Demo, Plumbing, Labor..."
-                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-400 focus:outline-none bg-white"
-              />
-              {openTitlePicker === item.id && (
-                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
-                  <div className="flex justify-between items-center px-4 py-3 border-b bg-gray-50">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-gray-500">Saved Titles</span>
-                      <button onClick={() => setOpenTitlePicker(null)} className="text-gray-400 hover:text-gray-600 leading-none" title="Close">✕</button>
-                    </div>
-                    {!showNewTitleInput ? (
-                      <button onClick={() => setShowNewTitleInput(true)} className="bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">+ New Title</button>
-                    ) : (
-                      <div className="flex gap-2">
-                        <input
-                          autoFocus
-                          value={newTitleInput}
-                          onChange={e => setNewTitleInput(e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter') addNewTitle(item.id); if (e.key === 'Escape') setShowNewTitleInput(false); }}
-                          placeholder="Type new title..."
-                          className="border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-400 w-40"
-                        />
-                        <button onClick={() => addNewTitle(item.id)} className="bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">Add</button>
-                      </div>
-                    )}
-                  </div>
-                  {(() => {
-                    const typed = (item.sectionTitle || '').trim().toLowerCase();
-                    const matches = typed ? savedTitles.filter(t => t.toLowerCase().includes(typed)) : savedTitles;
-                    return matches.length === 0 ? (
-                      <p className="text-sm text-gray-400 text-center py-4">{savedTitles.length === 0 ? 'No saved titles yet — add your first one above' : 'No matches — add it as a new title above'}</p>
-                    ) : (
-                      <div className="max-h-48 overflow-y-auto p-2">
-                        {matches.map((t, i) => (
-                          <button key={i} onClick={() => applyTitle(item.id, t)} className="w-full text-left px-3 py-2.5 hover:bg-blue-50 rounded-lg text-sm text-gray-800 font-medium" style={{ borderLeft: item.sectionTitle === t ? '3px solid #3b82f6' : '3px solid transparent' }}>
-                            {t}
-                          </button>
-                        ))}
-                      </div>
-                    );
-                  })()}
+    <div className="eb-item" key={item.id}>
+      <div className="eb-item-head">
+        <span className="eb-item-n">{idx + 1}</span>
+        {isReadOnly ? (
+          item.sectionTitle ? <span className="lv-pill blue">{item.sectionTitle}</span> : <span className="lv-small">Item</span>
+        ) : (
+          <div className="eb-title-wrap" ref={openTitlePicker === item.id ? titlePickerRef : undefined}>
+            <button
+              type="button"
+              className={`eb-title-btn${item.sectionTitle ? ' has' : ''}`}
+              onClick={() => setOpenTitlePicker(openTitlePicker === item.id ? null : item.id)}
+            >
+              <Tag size={13} />
+              {item.sectionTitle || 'Add a section'}
+              <ChevronDown size={13} />
+            </button>
+            {openTitlePicker === item.id && (
+              <div className="lv-pop eb-title-pop">
+                <div className="lv-pop-head">
+                  <span className="lv-eyebrow">Saved sections</span>
+                  <button type="button" className="lv-btn quiet sm" onClick={() => setShowNewTitleInput(true)}>+ New</button>
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* Read-only title */}
-          {isReadOnly && item.sectionTitle && (
-            <div style={{ borderLeft: '3px solid #3b82f6', background: '#eff6ff', borderRadius: '0 6px 6px 0', padding: '7px 14px' }}>
-              <span className="font-semibold text-gray-800 text-sm">{item.sectionTitle}</span>
-            </div>
-          )}
-
-          {/* Description */}
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Description</label>
-            <textarea
-              ref={autoGrowTextarea}
-              value={item.description}
-              onChange={(e) => { updateItem(item.id, 'description', e.target.value); autoGrowTextarea(e.target); }}
-              className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none resize-none disabled:bg-gray-100 min-h-[7.75rem] md:min-h-[10.75rem] max-h-[31.75rem] overflow-y-auto"
-              placeholder="Description"
-              disabled={isReadOnly}
-            />
+                {showNewTitleInput && (
+                  <div className="eb-title-new">
+                    <input
+                      className="lv-input"
+                      value={newTitleInput}
+                      onChange={(e) => setNewTitleInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') addNewTitle(item.id); }}
+                      placeholder="e.g. Kitchen"
+                      autoFocus
+                    />
+                    <button type="button" className="lv-btn pri sm" onClick={() => addNewTitle(item.id)}>Add</button>
+                  </div>
+                )}
+                {savedTitles.length === 0 ? (
+                  <p className="lv-small eb-pop-empty">No saved sections yet — add your first above.</p>
+                ) : (
+                  savedTitles.map((t, i) => (
+                    <button key={i} type="button" onClick={() => applyTitle(item.id, t)}>
+                      {t}{item.sectionTitle === t && <Check size={14} style={{ float: 'right', color: 'var(--lv-blue)' }} />}
+                    </button>
+                  ))
+                )}
+                {item.sectionTitle && (
+                  <button type="button" className="eb-title-clear" onClick={() => { updateItem(item.id, 'sectionTitle', undefined); setOpenTitlePicker(null); }}>
+                    Remove section
+                  </button>
+                )}
+              </div>
+            )}
           </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Qty</label>
-              <input type="number" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Rate</label>
-              <input type="number" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-blue-500 focus:outline-none disabled:bg-gray-100" disabled={isReadOnly} />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Total</label>
-              <div className="w-full border-2 border-gray-200 bg-gray-100 rounded-lg px-3 py-3 text-base text-center font-semibold">${(Number(item.total) || 0).toFixed(2)}</div>
-            </div>
-          </div>
-        </div>
+        )}
+        <div className="eb-item-total lv-num">{money(item.total)}</div>
+        {!isReadOnly && lineItems.length > 1 && (
+          <button className="lv-icon-btn eb-del" onClick={() => removeItem(item.id)} title="Remove item" aria-label={`Remove item ${idx + 1}`}>
+            <Trash2 size={16} />
+          </button>
+        )}
       </div>
 
-      {/* Add another item button below each item */}
-      {!isReadOnly && (
-        <button onClick={addLineItem} className="w-full mt-2 py-2 border border-dashed border-gray-300 rounded-lg text-sm text-gray-400 hover:border-gray-400 hover:text-gray-600 flex items-center justify-center gap-1">
-          <Plus size={14} /> Add Another Item
-        </button>
-      )}
+      <textarea
+        ref={autoGrowTextarea}
+        className="lv-textarea eb-desc"
+        value={item.description}
+        onChange={(e) => { updateItem(item.id, 'description', e.target.value); autoGrowTextarea(e.target); }}
+        placeholder="Describe the work — materials, prep, coats, anything the client should see"
+        disabled={isReadOnly}
+      />
+
+      <div className="eb-qr">
+        <label className="lv-field">
+          <span className="lv-label">Qty</span>
+          <input type="number" inputMode="decimal" className="lv-input num" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} />
+        </label>
+        <label className="lv-field">
+          <span className="lv-label">Rate</span>
+          <input type="number" inputMode="decimal" className="lv-input num" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} />
+        </label>
+        <div className="lv-field">
+          <span className="lv-label">Line total</span>
+          <div className="eb-linetotal lv-num">{money(item.total)}</div>
+        </div>
+      </div>
     </div>
   );
 
+  /* ------------------------------------------------------------------
+     Preview — the document exactly as the client receives it.
+     ------------------------------------------------------------------ */
   if (showPreview && previewData) {
-    const previewSubtotal = (previewData.lineItems || []).reduce((sum: number, item: any) => sum + (Number(item.total) || 0), 0);
-    const previewTax = previewSubtotal * (Number(previewData.taxRate) / 100);
+    const previewSubtotal = (previewData.lineItems || []).reduce((s: number, i: any) => s + (Number(i.total) || 0), 0);
+    const previewTax = previewSubtotal * ((Number(previewData.taxRate) || 0) / 100);
     const previewTotal = previewSubtotal + previewTax;
+    const previewDeposit = Number(previewData.deposit) || 0;
 
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 md:p-4">
-        <div className="bg-white rounded-lg w-full max-w-3xl max-h-[95vh] overflow-auto">
-          <div className="sticky top-0 text-white p-3 md:p-4 flex justify-between items-center z-10" style={{ background: '#1c1c1e' }}>
-            <h2 className="text-lg md:text-2xl font-bold">Preview — What Your Customer Sees</h2>
-            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded"><X size={24} /></button>
-          </div>
+      <div className="lv-scrim eb-scrim">
+        <div className="eb-shell">
+          <header className="eb-head-bar">
+            <div className="eb-head-l">
+              <span className="lv-eyebrow">Client view</span>
+              <h2 className="lv-h2">{previewData.projectName || 'Estimate'}</h2>
+            </div>
+            <div className="lv-inline">
+              <span className="lv-pill blue lv-hide-mobile">This is what your client sees</span>
+              <button className="lv-icon-btn" onClick={onClose} aria-label="Close"><X size={20} /></button>
+            </div>
+          </header>
 
-          <div className="bg-gradient-to-b from-gray-50 to-gray-100 py-6 md:py-10 px-3 md:px-4">
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-white rounded-lg shadow-lg p-4 md:p-8">
-                <div className="border-b pb-6 mb-6">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
-                    <div>
-                      <h2 className="text-xl md:text-2xl font-bold text-gray-900">Estimate</h2>
-                      <p className="text-sm text-gray-500">{previewData.projectName || 'Project Estimate'}</p>
-                    </div>
-                    <div className="sm:text-right">
-                      <p className="text-sm font-semibold text-gray-700">#{safeString(previewData.id).slice(-6).toUpperCase() || 'DRAFT'}</p>
-                      <p className="text-xs text-gray-500">{previewData.createdAt ? new Date(previewData.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex items-start gap-3">
-                      {profile?.profile_photo_url && (
-                        <img src={profile.profile_photo_url} alt="Logo" className="w-12 h-12 rounded-lg object-contain border bg-white shrink-0" />
-                      )}
-                      <div>
-                        <p className="font-semibold text-gray-900">{profile?.company_name || profile?.full_name || 'Your Business'}</p>
-                        {profile?.phone_number && <p className="text-sm text-gray-500">{profile.phone_number}</p>}
-                        {profile?.business_address && <p className="text-sm text-gray-500">{profile.business_address}</p>}
-                      </div>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">{previewData.clientName}</p>
-                      {previewData.clientEmail && <p className="text-sm text-gray-500">{previewData.clientEmail}</p>}
-                      {previewData.clientPhone && <p className="text-sm text-gray-500">{previewData.clientPhone}</p>}
-                    </div>
+          <div className="eb-body eb-body-preview">
+            <div className="eb-doc">
+              <div className="eb-doc-top">
+                <div className="eb-doc-biz">
+                  {profile?.profile_photo_url && <img src={profile.profile_photo_url} alt="" className="eb-doc-logo" />}
+                  <div>
+                    <p className="eb-doc-name">{profile?.company_name || profile?.full_name || 'Your Business'}</p>
+                    {profile?.phone_number && <p className="lv-small">{profile.phone_number}</p>}
+                    {profile?.business_address && <p className="lv-small">{profile.business_address}</p>}
                   </div>
                 </div>
-
-                <div className="bg-gray-50 rounded-lg overflow-hidden">
-                  {(previewData.lineItems || []).map((item: any, idx: number) => (
-                    <div key={idx} className="p-3 border-b border-gray-200 last:border-0">
-                      {item.sectionTitle && <p className="text-xs font-semibold text-blue-600 mb-1">{item.sectionTitle}</p>}
-                      <p className="font-medium text-gray-800 whitespace-pre-wrap">{item.description}</p>
-                      <p className="text-right font-semibold">${Number(item.total || 0).toFixed(2)}</p>
-                    </div>
-                  ))}
+                <div className="eb-doc-meta">
+                  <p className="eb-doc-num">Estimate #{safeString(previewData.id).slice(-6).toUpperCase() || 'DRAFT'}</p>
+                  <p className="lv-small">{previewData.createdAt ? new Date(previewData.createdAt).toLocaleDateString() : new Date().toLocaleDateString()}</p>
                 </div>
-
-                <div className="mt-6 bg-blue-50 rounded-lg p-4 space-y-2">
-                  <div className="flex justify-between text-sm"><span>Subtotal:</span><span>${previewSubtotal.toFixed(2)}</span></div>
-                  {Number(previewData.taxRate) > 0 && <div className="flex justify-between text-sm"><span>Tax ({previewData.taxRate}%):</span><span>${previewTax.toFixed(2)}</span></div>}
-                  <div className="flex justify-between text-xl font-bold text-gray-900 border-t pt-2">
-                    <span>Total:</span>
-                    <span className="text-blue-600">${previewTotal.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {estimatePhotos.length > 0 && (
-                  <div className="mt-6 border-t pt-6">
-                    <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wide">Project Photos</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {estimatePhotos.map(photo => (
-                        <div key={photo.id} className="space-y-1">
-                          <img src={photo.fileUrl} alt={photoCaptions[photo.id] || 'Project photo'} className="w-full aspect-square object-cover rounded-lg border border-gray-100" />
-                          {photoCaptions[photo.id] && <p className="text-xs text-gray-500 text-center truncate">{photoCaptions[photo.id]}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <p className="mt-6 text-sm text-gray-500 text-center italic">We appreciate the opportunity to work with you. Thanks for considering us!</p>
               </div>
-              <p className="text-center text-xs text-gray-400 mt-4">Powered by levelworks.org</p>
+
+              <div className="eb-doc-for">
+                <span className="lv-eyebrow">Prepared for</span>
+                <p className="eb-doc-name">{previewData.clientName}</p>
+                {previewData.clientEmail && <p className="lv-small">{previewData.clientEmail}</p>}
+                {previewData.clientPhone && <p className="lv-small">{previewData.clientPhone}</p>}
+              </div>
+
+              <div className="eb-doc-items">
+                {(previewData.lineItems || []).map((item: any, idx: number) => (
+                  <div className="eb-doc-item" key={idx}>
+                    <div>
+                      {item.sectionTitle && <p className="eb-doc-sec">{item.sectionTitle}</p>}
+                      <p className="eb-doc-desc">{item.description}</p>
+                      {Number(item.quantity) !== 1 && <p className="lv-small">{item.quantity} × {money(item.rate)}</p>}
+                    </div>
+                    <span className="lv-num eb-doc-amt">{money(item.total)}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="eb-doc-sum">
+                <div className="row"><span>Subtotal</span><span className="lv-num">{money(previewSubtotal)}</span></div>
+                {Number(previewData.taxRate) > 0 && <div className="row"><span>Tax ({previewData.taxRate}%)</span><span className="lv-num">{money(previewTax)}</span></div>}
+                <div className="row total"><span>Total</span><span className="lv-num">{money(previewTotal)}</span></div>
+                {previewDeposit > 0 && (
+                  <>
+                    <div className="row"><span>Deposit due at signing</span><span className="lv-num">{money(previewDeposit)}</span></div>
+                    <div className="row balance"><span>Balance on completion</span><span className="lv-num">{money(previewTotal - previewDeposit)}</span></div>
+                  </>
+                )}
+              </div>
+
+              {estimatePhotos.length > 0 && (
+                <div className="eb-doc-photos">
+                  <span className="lv-eyebrow">Project photos</span>
+                  <div className="eb-photo-grid">
+                    {estimatePhotos.map(photo => (
+                      <figure key={photo.id}>
+                        <img src={photo.fileUrl} alt={photoCaptions[photo.id] || 'Project photo'} />
+                        {photoCaptions[photo.id] && <figcaption>{photoCaptions[photo.id]}</figcaption>}
+                      </figure>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p className="eb-doc-thanks">We appreciate the opportunity to work with you. Thanks for considering us.</p>
             </div>
           </div>
 
-          <div className="p-4 md:p-6 border-t bg-gray-50">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-2xl mx-auto">
-              <button onClick={() => { setShowPreview(false); setIsReadOnly(false); }} className="px-4 py-4 text-white rounded-lg font-semibold text-base flex items-center justify-center gap-2" style={{ background: '#1c1c1e' }}>
-                <Edit size={18} /> Edit
-              </button>
-              <button onClick={handlePreviewSend} disabled={isSaving} className="px-4 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-base disabled:opacity-50">Send</button>
-              {onConvertToInvoice && (
-                <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-4 py-4 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-semibold text-base">Convert to Invoice</button>
-              )}
-              <button onClick={onClose} className="px-4 py-4 border-2 rounded-lg hover:bg-gray-50 font-semibold text-base">Close</button>
+          <footer className="eb-foot">
+            <div className="lv-actions">
+              <button className="lv-btn quiet lv-hide-mobile" onClick={onClose}>Close</button>
+              <div className="spacer" />
+              <button className="lv-btn sec" onClick={() => { setShowPreview(false); setIsReadOnly(false); }}><Edit size={16} /> Edit</button>
+              {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> Convert to invoice</button>}
+              <button className="lv-btn pri span" onClick={handlePreviewSend} disabled={isSaving}><Send size={16} /> Send to client</button>
             </div>
-          </div>
+          </footer>
         </div>
 
         {showSendModal && savedEstimateData && (
@@ -488,191 +490,208 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     );
   }
 
+  /* ------------------------------------------------------------------
+     The builder.
+     ------------------------------------------------------------------ */
+  const summary = (
+    <div className="eb-sum">
+      <div className="eb-sum-head">
+        <span className="lv-eyebrow">Totals</span>
+        <span className="lv-small">{itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
+      </div>
+      <div className="eb-sum-row"><span>Subtotal</span><span className="lv-num">{money(subtotal)}</span></div>
+      <div className="eb-sum-row">
+        <span>Tax</span>
+        <span className="eb-tax">
+          <input type="number" inputMode="decimal" className="lv-input num eb-tax-in" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} aria-label="Tax rate percent" />
+          <span className="lv-small">%</span>
+          <b className="lv-num">{money(tax)}</b>
+        </span>
+      </div>
+      <div className="eb-sum-row total"><span>Total</span><span className="lv-num">{money(total)}</span></div>
+      <div className="eb-sum-row">
+        <span>Deposit</span>
+        <input type="number" inputMode="decimal" className="lv-input num eb-dep-in" value={deposit} onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} aria-label="Deposit amount" />
+      </div>
+      <div className="eb-sum-row balance"><span>Balance due</span><span className="lv-num">{money(balanceDue)}</span></div>
+    </div>
+  );
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 md:p-4">
-      <div className="bg-white rounded-lg w-full max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
+    <div className="lv-scrim eb-scrim">
+      <div className="eb-shell">
 
-        <div className="text-white p-3 md:p-4 flex justify-between items-center z-10 flex-shrink-0" style={{ background: '#1c1c1e' }}>
-          <h2 className="text-lg md:text-2xl font-bold">
-            {isReadOnly ? 'View Estimate' : existingEstimate ? 'Edit Estimate' : 'Create Estimate'}
-          </h2>
-          <div className="flex items-center gap-2">
-            {isReadOnly && (
-              <button onClick={() => setIsReadOnly(false)} className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg font-bold text-sm" style={{ color: '#1c1c1e' }}>
-                <Edit size={16} /> Edit
-              </button>
-            )}
-            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded"><X size={24} /></button>
+        <header className="eb-head-bar">
+          <div className="eb-head-l">
+            <span className="lv-eyebrow">{isReadOnly ? 'Estimate' : existingEstimate ? 'Editing estimate' : 'New estimate'}</span>
+            <h2 className="lv-h2">{projectName?.trim() || (clientName?.trim() ? clientName : 'Untitled estimate')}</h2>
           </div>
-        </div>
+          <div className="lv-inline">
+            <span className="eb-head-total lv-num lv-hide-mobile">{money(total)}</span>
+            {isReadOnly && (
+              <button className="lv-btn sec sm" onClick={() => setIsReadOnly(false)}><Edit size={15} /> Edit</button>
+            )}
+            <button className="lv-icon-btn" onClick={onClose} aria-label="Close"><X size={20} /></button>
+          </div>
+        </header>
 
-        <div className="p-4 md:p-6 overflow-y-auto flex-1">
-          <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
-            {!isReadOnly && clients.length > 0 && (
-              <div className="md:col-span-3 mb-2">
-                <div className="relative">
-                  <button type="button" onClick={() => setShowClientPicker(!showClientPicker)} className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold text-sm">
-                    <Users size={16} /> Choose Saved Client
-                  </button>
-                  {showClientPicker && (
-                    <div className="absolute top-12 left-0 z-50 bg-white border-2 border-gray-200 rounded-xl shadow-xl w-80 max-h-64 overflow-auto">
-                      <div className="p-3 border-b bg-gray-50"><p className="text-sm font-semibold text-gray-700">Select a client</p></div>
-                      {clients.map((c) => (
-                        <button key={c.id} type="button" onClick={() => { setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientPicker(false); }} className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b last:border-0">
-                          <p className="font-semibold text-gray-900">{c.name}</p>
-                          {c.email && <p className="text-xs text-gray-500">{c.email}</p>}
-                          {c.phone && <p className="text-xs text-gray-500">{c.phone}</p>}
-                        </button>
+        <div className="eb-body">
+          <div className="eb-col">
+
+            {/* --- who it's for --- */}
+            <section className="lv-card eb-sec">
+              <div className="eb-sec-head">
+                <h3 className="lv-h3">Client</h3>
+                {!isReadOnly && clients.length > 0 && (
+                  <div className="eb-picker" ref={clientPickerRef}>
+                    <button type="button" className="lv-btn sec sm" onClick={() => setShowClientPicker(!showClientPicker)}>
+                      <Users size={15} /> Saved clients
+                    </button>
+                    {showClientPicker && (
+                      <div className="lv-pop eb-client-pop">
+                        <div className="lv-pop-head"><span className="lv-eyebrow">Choose a client</span></div>
+                        {clients.map((c) => (
+                          <button key={c.id} type="button" onClick={() => { setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientPicker(false); }}>
+                            {c.name}
+                            {(c.email || c.phone) && <small>{[c.email, c.phone].filter(Boolean).join(' · ')}</small>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="eb-sec-body">
+                <div className="eb-client-grid">
+                  <label className="lv-field eb-rel">
+                    <span className="lv-label">Name *</span>
+                    <input
+                      className="lv-input"
+                      value={clientName}
+                      onChange={(e) => { setClientName(e.target.value); setShowClientSuggest(true); }}
+                      onFocus={() => setShowClientSuggest(true)}
+                      onBlur={() => setTimeout(() => setShowClientSuggest(false), 150)}
+                      placeholder="Maria Keller"
+                      disabled={isReadOnly}
+                    />
+                    {showClientSuggest && filteredClients.length > 0 && (
+                      <div className="lv-pop">
+                        {filteredClients.map((c) => (
+                          <button key={c.id} type="button" onMouseDown={(e) => { e.preventDefault(); setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientSuggest(false); }}>
+                            {c.name}{c.email && <small>{c.email}</small>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </label>
+                  <label className="lv-field">
+                    <span className="lv-label">Email</span>
+                    <input className="lv-input" type="email" inputMode="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="client@email.com" disabled={isReadOnly} />
+                  </label>
+                  <label className="lv-field">
+                    <span className="lv-label">Phone</span>
+                    <input className="lv-input" type="tel" inputMode="tel" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="(555) 123-4567" disabled={isReadOnly} />
+                  </label>
+                  <label className="lv-field eb-rel eb-span">
+                    <span className="lv-label">Project *</span>
+                    <input
+                      className="lv-input"
+                      value={projectName}
+                      onChange={(e) => { setProjectName(e.target.value); setShowProjectSuggest(true); }}
+                      onFocus={() => setShowProjectSuggest(true)}
+                      onBlur={() => setTimeout(() => setShowProjectSuggest(false), 150)}
+                      placeholder="Exterior repaint"
+                      disabled={isReadOnly}
+                    />
+                    {showProjectSuggest && filteredProjectNames.length > 0 && (
+                      <div className="lv-pop">
+                        {filteredProjectNames.map((p, i) => (
+                          <button key={i} type="button" onMouseDown={(e) => { e.preventDefault(); setProjectName(p); setShowProjectSuggest(false); }}>{p}</button>
+                        ))}
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            {/* --- the work --- */}
+            <section className="lv-card eb-sec">
+              <div className="eb-sec-head">
+                <h3 className="lv-h3">The work</h3>
+                {!isReadOnly && (
+                  <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> Add item</button>
+                )}
+              </div>
+              <div className="eb-sec-body eb-items">
+                {lineItems.map((item, idx) => renderItem(item, idx))}
+                {!isReadOnly && (
+                  <button className="eb-add" onClick={addLineItem}><Plus size={16} /> Add another item</button>
+                )}
+              </div>
+            </section>
+
+            {/* --- totals, on mobile only; the desktop copy is the sticky rail --- */}
+            <div className="eb-sum-mobile">{summary}</div>
+
+            {/* --- photos --- */}
+            {existingEstimate?.id && (
+              <section className="lv-card eb-sec">
+                <div className="eb-sec-head">
+                  <h3 className="lv-h3"><ImageIcon size={16} style={{ verticalAlign: '-3px', marginRight: 6, color: 'var(--lv-faint)' }} />Project photos</h3>
+                  <PhotoUpload estimateId={existingEstimate.id} onPhotoUploaded={handleEstimatePhotoUploaded} />
+                </div>
+                <div className="eb-sec-body">
+                  {estimatePhotos.length === 0 ? (
+                    <p className="lv-small eb-nophotos">No photos yet. Add job-site photos and they go out with the estimate.</p>
+                  ) : (
+                    <div className="eb-photo-grid edit">
+                      {estimatePhotos.map(photo => (
+                        <figure key={photo.id}>
+                          <div className="eb-photo">
+                            <img src={photo.fileUrl} alt={photoCaptions[photo.id] || 'Project photo'} />
+                            <button className="eb-photo-del" onClick={() => handleEstimatePhotoDeleted(photo.id)} aria-label="Delete photo"><Trash2 size={13} /></button>
+                          </div>
+                          <input
+                            className="lv-input eb-cap"
+                            value={photoCaptions[photo.id] || ''}
+                            onChange={(e) => setPhotoCaptions(prev => ({ ...prev, [photo.id]: e.target.value }))}
+                            onBlur={(e) => handleCaptionSave(photo.id, e.target.value)}
+                            placeholder="Add a label"
+                          />
+                        </figure>
                       ))}
                     </div>
                   )}
                 </div>
-              </div>
+              </section>
             )}
-            <div className="relative">
-              <label className="block text-sm font-semibold mb-2">Client Name *</label>
-              <input
-                value={clientName}
-                onChange={(e) => { setClientName(e.target.value); setShowClientSuggest(true); }}
-                onFocus={() => setShowClientSuggest(true)}
-                onBlur={() => setTimeout(() => setShowClientSuggest(false), 150)}
-                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-600"
-                placeholder="Enter client name"
-                disabled={isReadOnly}
-              />
-              {showClientSuggest && filteredClients.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto">
-                  {filteredClients.map((c) => (
-                    <button key={c.id} type="button" onMouseDown={(e) => { e.preventDefault(); setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientSuggest(false); }} className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b last:border-0">
-                      <p className="font-semibold text-gray-900 text-sm">{c.name}</p>
-                      {c.email && <p className="text-xs text-gray-500">{c.email}</p>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Client Email</label>
-              <input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-600" placeholder="client@email.com" type="email" disabled={isReadOnly} />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Client Phone</label>
-              <input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-600" placeholder="(555) 123-4567" type="tel" disabled={isReadOnly} />
-            </div>
-            <div className="md:col-span-3 relative">
-              <label className="block text-sm font-semibold mb-2">Project Name *</label>
-              <input
-                value={projectName}
-                onChange={(e) => { setProjectName(e.target.value); setShowProjectSuggest(true); }}
-                onFocus={() => setShowProjectSuggest(true)}
-                onBlur={() => setTimeout(() => setShowProjectSuggest(false), 150)}
-                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-600"
-                placeholder="Enter project name"
-                disabled={isReadOnly}
-              />
-              {showProjectSuggest && filteredProjectNames.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto">
-                  {filteredProjectNames.map((p, i) => (
-                    <button key={i} type="button" onMouseDown={(e) => { e.preventDefault(); setProjectName(p); setShowProjectSuggest(false); }} className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b last:border-0 text-sm font-medium text-gray-800">
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
 
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold">Line Items</h3>
-              {!isReadOnly && (
-                <button onClick={addLineItem} className="flex items-center gap-2 px-4 py-2 text-white rounded-lg font-semibold text-sm" style={{ background: '#1c1c1e' }}>
-                  <Plus size={16} /> Add Item
-                </button>
-              )}
-            </div>
-            <div>{lineItems.map((item, idx) => renderItem(item, idx))}</div>
-          </div>
-
-          <div className="bg-blue-50 p-4 rounded-lg space-y-3 mb-6">
-            <div className="flex justify-between text-base"><span>Subtotal:</span><span className="font-semibold">${subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between items-center">
-              <span>Tax:</span>
-              <div className="flex items-center gap-2">
-                <input type="number" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-16 border-2 rounded px-2 py-2 text-center text-base disabled:bg-gray-100" disabled={isReadOnly} />
-                <span>%</span>
-                <span className="font-semibold">${tax.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="flex justify-between text-xl font-bold border-t pt-3"><span>Total:</span><span className="text-blue-600">${total.toFixed(2)}</span></div>
-            <div className="flex justify-between items-center border-t pt-3">
-              <span>Deposit:</span>
-              <input type="number" value={deposit} onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-32 border-2 rounded px-3 py-2 text-base font-semibold text-right disabled:bg-gray-100" disabled={isReadOnly} />
-            </div>
-            <div className="flex justify-between text-lg font-bold"><span>Balance Due:</span><span className="text-green-600">${balanceDue.toFixed(2)}</span></div>
-          </div>
-
-          {existingEstimate?.id && (
-            <div className="mb-6 border-t pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-gray-500" />
-                  <h3 className="text-lg font-bold">Project Photos</h3>
-                </div>
-                <PhotoUpload estimateId={existingEstimate.id} onPhotoUploaded={handleEstimatePhotoUploaded} />
-              </div>
-              {estimatePhotos.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-6 bg-gray-50 rounded-lg">No photos yet — tap Camera or Upload above to add your first.</p>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {estimatePhotos.map(photo => (
-                    <div key={photo.id} className="space-y-1.5">
-                      <div className="relative aspect-square group">
-                        <img src={photo.fileUrl} alt={photoCaptions[photo.id] || 'Project photo'} className="w-full h-full object-cover rounded-lg border border-gray-100" />
-                        <button
-                          onClick={() => handleEstimatePhotoDeleted(photo.id)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition hover:bg-red-600"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                      <input
-                        value={photoCaptions[photo.id] || ''}
-                        onChange={(e) => setPhotoCaptions(prev => ({ ...prev, [photo.id]: e.target.value }))}
-                        onBlur={(e) => handleCaptionSave(photo.id, e.target.value)}
-                        placeholder="Add a label..."
-                        className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 bg-gray-50"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          <aside className="eb-rail">{summary}</aside>
         </div>
 
-        <div className="p-2 md:p-3 border-t bg-white flex-shrink-0">
-          {isReadOnly ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-              <button onClick={() => setIsReadOnly(false)} className="px-3 py-2 text-white rounded-lg font-semibold text-sm flex items-center justify-center gap-1.5" style={{ background: '#1c1c1e' }}>
-                <Edit size={14} /> Edit
-              </button>
-              <button onClick={handleSendEstimate} disabled={isSaving} className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm disabled:opacity-50">Send</button>
-              {(existingEstimate?.status === 'approved' || existingEstimate?.status === 'sent') && (
-                <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-3 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-semibold text-sm">Convert to Invoice</button>
-              )}
-              <button onClick={onClose} className="px-3 py-2 border-2 rounded-lg hover:bg-gray-50 font-semibold text-sm">Close</button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
-              <button onClick={handleDone} disabled={isSaving} className="px-3 py-2 text-white rounded-lg font-semibold text-sm disabled:opacity-50 bg-blue-500 hover:bg-blue-600">{isSaving ? 'Saving...' : 'Done'}</button>
-              <button onClick={handleSave} disabled={isSaving} className="px-3 py-2 text-white rounded-lg font-semibold text-sm disabled:opacity-50" style={{ background: '#1c1c1e' }}>{isSaving ? 'Saving...' : 'Save'}</button>
-              <button onClick={handleSendEstimate} disabled={isSaving} className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm disabled:opacity-50">{isSaving ? 'Saving...' : 'Send'}</button>
-              <button onClick={() => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit })} className="px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 font-semibold text-sm">Convert to Invoice</button>
-              <button onClick={onClose} className="px-3 py-2 border-2 rounded-lg hover:bg-gray-50 font-semibold text-sm">Cancel</button>
-            </div>
-          )}
-        </div>
+        {/* --- the action bar: everything that finishes this estimate, together --- */}
+        <footer className="eb-foot">
+          <div className="lv-actions">
+            <button className="lv-btn quiet lv-hide-mobile" onClick={onClose}>{isReadOnly ? 'Close' : 'Cancel'}</button>
+            <div className="spacer" />
+            {isReadOnly ? (
+              <>
+                <button className="lv-btn sec" onClick={() => setIsReadOnly(false)}><Edit size={16} /> Edit</button>
+                {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> Convert to invoice</button>}
+                <button className="lv-btn pri span" onClick={handleSendEstimate} disabled={isSaving}><Send size={16} /> {isSaving ? 'Saving…' : 'Send to client'}</button>
+              </>
+            ) : (
+              <>
+                <button className="lv-btn sec" onClick={handleDone} disabled={isSaving} title="Save and see it the way your client will"><Eye size={16} /> Preview</button>
+                {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> Convert to invoice</button>}
+                <button className="lv-btn dark" onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving…' : 'Save'}</button>
+                <button className="lv-btn pri" onClick={handleSendEstimate} disabled={isSaving}><Send size={16} /> {isSaving ? 'Saving…' : 'Send to client'}</button>
+              </>
+            )}
+          </div>
+        </footer>
       </div>
 
       {showSendModal && savedEstimateData && (

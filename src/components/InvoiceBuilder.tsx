@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useInvoices } from '@/contexts/InvoiceContext';
 import { useData } from '@/contexts/DataContext';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Send, X, FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { sendInvoiceEmail } from '@/lib/edgeFunctions';
@@ -15,6 +13,8 @@ interface InvoiceBuilderProps {
   onComplete?: () => void;
   onClose?: () => void;
 }
+
+const money = (n: number) => `$${(Number(n) || 0).toFixed(2)}`;
 
 export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, initialData, onComplete, onClose }) => {
   const { addInvoice, invoices } = useInvoices();
@@ -42,6 +42,13 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
 
   // Determine if this is a conversion from an estimate
   const isConversion = !!(estimateId || initialData);
+
+  // The builder covers the whole screen; stop the page behind it scrolling.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
 
   const addLineItem = () => setLineItems([...lineItems, { description: '', quantity: 1, rate: 0 }]);
   const removeLineItem = (index: number) => setLineItems(lineItems.filter((_: any, i: number) => i !== index));
@@ -118,7 +125,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
       });
 
       console.log('[InvoiceBuilder] Invoice created with ID:', invoiceId);
-      toast({ title: 'Invoice created successfully!', description: 'You can send it from the Invoices list.' });
+      toast({ title: 'Invoice created', description: 'You can send it from the Invoices list.' });
 
       onComplete?.();
       onClose?.();
@@ -239,7 +246,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
       if (responseData?.errors && responseData.errors.length > 0) {
         toast({ title: 'Invoice sent with warnings', description: responseData.errors.join(', ') });
       } else {
-        toast({ title: 'Invoice sent successfully!' });
+        toast({ title: 'Invoice sent' });
       }
 
       onComplete?.();
@@ -259,130 +266,215 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   // Choose the appropriate handler based on mode
   const handleSubmit = isConversion ? handleConvert : handleSendInvoice;
   const buttonText = isConversion 
-    ? (sending ? 'Converting...' : 'Convert to Invoice') 
-    : (sending ? 'Sending...' : 'Send Invoice');
-  const buttonIcon = isConversion ? <FileText className="h-5 w-5 mr-2" /> : <Send className="h-5 w-5 mr-2" />;
+    ? (sending ? 'Converting…' : 'Convert to invoice') 
+    : (sending ? 'Sending…' : 'Send invoice');
+  const buttonIcon = isConversion ? <FileText size={16} /> : <Send size={16} />;
+
+  const handleClose = () => { onClose?.(); onComplete?.(); };
+
+  /* ------------------------------------------------------------------
+     What the invoice adds up to. calculateTotal() stays the number the
+     handlers save; these are the same sum, broken out for the rail.
+     ------------------------------------------------------------------ */
+  const subtotal = lineItems.reduce((sum: number, item: any) => sum + ((Number(item.quantity) || 0) * (Number(item.rate) || 0)), 0);
+  const tax = subtotal * ((Number(taxRate) || 0) / 100);
+  const total = subtotal + tax;
+  const itemCount = lineItems.filter((i: any) => String(i.description || '').trim()).length;
+
+  const summary = (
+    <div className="eb-sum">
+      <div className="eb-sum-head">
+        <span className="lv-eyebrow">Totals</span>
+        <span className="lv-small">{itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
+      </div>
+      <div className="eb-sum-row"><span>Subtotal</span><span className="lv-num">{money(subtotal)}</span></div>
+      <div className="eb-sum-row">
+        <span>Tax</span>
+        <span className="eb-tax">
+          <input
+            type="number"
+            inputMode="decimal"
+            className="lv-input num eb-tax-in"
+            value={taxRate}
+            onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+            onFocus={(e) => e.target.select()}
+            aria-label="Tax rate percent"
+          />
+          <span className="lv-small">%</span>
+          <b className="lv-num">{money(tax)}</b>
+        </span>
+      </div>
+      <div className="eb-sum-row total"><span>Total</span><span className="lv-num">{money(total)}</span></div>
+    </div>
+  );
+
+  /* ------------------------------------------------------------------
+     Line item — one card per item: what it is, then what it costs.
+     ------------------------------------------------------------------ */
+  const renderItem = (item: any, index: number) => {
+    const lineTotal = (Number(item.quantity) || 0) * (Number(item.rate) || 0);
+    return (
+      <div className="eb-item" key={index}>
+        <div className="eb-item-head">
+          <span className="eb-item-n">{index + 1}</span>
+          <span className="lv-small">Item</span>
+          <div className="eb-item-total lv-num">{money(lineTotal)}</div>
+          {lineItems.length > 1 && (
+            <button className="lv-icon-btn eb-del" onClick={() => removeLineItem(index)} title="Remove item" aria-label={`Remove item ${index + 1}`}>
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
+
+        <textarea
+          ref={autoGrowTextarea}
+          className="lv-textarea eb-desc"
+          value={item.description}
+          onChange={(e) => { updateLineItem(index, 'description', e.target.value); autoGrowTextarea(e.target); }}
+          placeholder="Describe the work — materials, prep, coats, anything the client should see"
+        />
+
+        <div className="eb-qr">
+          <label className="lv-field">
+            <span className="lv-label">Qty</span>
+            <input type="number" inputMode="decimal" className="lv-input num" value={item.quantity} onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} />
+          </label>
+          <label className="lv-field">
+            <span className="lv-label">Rate</span>
+            <input type="number" inputMode="decimal" className="lv-input num" value={item.rate} onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} />
+          </label>
+          <div className="lv-field">
+            <span className="lv-label">Line total</span>
+            <div className="eb-linetotal lv-num">{money(lineTotal)}</div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 md:p-4">
-      <Card className="w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
-        <div className="text-white p-3 md:p-4 flex justify-between items-center z-10 flex-shrink-0" style={{background: '#1c1c1e'}}>
-          <h2 className="text-lg md:text-xl font-bold">{isConversion ? 'Convert to Invoice' : 'Create Invoice'}</h2>
-          <button onClick={() => { onClose?.(); onComplete?.(); }} className="p-2 hover:bg-green-700 rounded"><X size={24} /></button>
+    <div className="lv-scrim eb-scrim">
+      <div className="eb-shell">
+
+        <header className="eb-head-bar">
+          <div className="eb-head-l">
+            <span className="lv-eyebrow">{isConversion ? 'Convert to invoice' : 'New invoice'}</span>
+            <h2 className="lv-h2">{projectName?.trim() || (clientName?.trim() ? clientName : 'Untitled invoice')}</h2>
+          </div>
+          <div className="lv-inline">
+            <span className="eb-head-total lv-num lv-hide-mobile">{money(total)}</span>
+            <button className="lv-icon-btn" onClick={handleClose} aria-label="Close"><X size={20} /></button>
+          </div>
+        </header>
+
+        <div className="eb-body">
+          <div className="eb-col">
+
+            {/* --- who it's for --- */}
+            <section className="lv-card eb-sec">
+              <div className="eb-sec-head">
+                <h3 className="lv-h3">Client</h3>
+              </div>
+              <div className="eb-sec-body">
+                <div className="eb-client-grid">
+                  <label className="lv-field eb-rel">
+                    <span className="lv-label">Name *</span>
+                    <input
+                      className="lv-input"
+                      value={clientName}
+                      onChange={(e) => { setClientName(e.target.value); setShowClientSuggest(true); }}
+                      onFocus={() => setShowClientSuggest(true)}
+                      onBlur={() => setTimeout(() => setShowClientSuggest(false), 150)}
+                      placeholder="Maria Keller"
+                    />
+                    {showClientSuggest && filteredClients.length > 0 && (
+                      <div className="lv-pop">
+                        {filteredClients.map((c: any) => (
+                          <button key={c.id} type="button" onMouseDown={(e) => { e.preventDefault(); setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientSuggest(false); }}>
+                            {c.name}{c.email && <small>{c.email}</small>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </label>
+                  <label className="lv-field">
+                    <span className="lv-label">{isConversion ? 'Email' : 'Email *'}</span>
+                    <input className="lv-input" type="email" inputMode="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} placeholder="client@email.com" />
+                    {isConversion && <span className="lv-small" style={{ display: 'block', marginTop: 6 }}>Optional here — you can send this invoice later from the Invoices list.</span>}
+                  </label>
+                  <label className="lv-field">
+                    <span className="lv-label">Phone</span>
+                    <input className="lv-input" type="tel" inputMode="tel" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder="(555) 123-4567" />
+                  </label>
+                  <label className="lv-field eb-rel eb-span">
+                    <span className="lv-label">Project *</span>
+                    <input
+                      className="lv-input"
+                      value={projectName}
+                      onChange={(e) => { setProjectName(e.target.value); setShowProjectSuggest(true); }}
+                      onFocus={() => setShowProjectSuggest(true)}
+                      onBlur={() => setTimeout(() => setShowProjectSuggest(false), 150)}
+                      placeholder="Exterior repaint"
+                    />
+                    {showProjectSuggest && filteredProjectNames.length > 0 && (
+                      <div className="lv-pop">
+                        {filteredProjectNames.map((p: any, i: number) => (
+                          <button key={i} type="button" onMouseDown={(e) => { e.preventDefault(); setProjectName(p); setShowProjectSuggest(false); }}>{p}</button>
+                        ))}
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            {/* --- the work --- */}
+            <section className="lv-card eb-sec">
+              <div className="eb-sec-head">
+                <h3 className="lv-h3">The work</h3>
+                <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> Add item</button>
+              </div>
+              <div className="eb-sec-body eb-items">
+                {lineItems.map((item: any, index: number) => renderItem(item, index))}
+                <button className="eb-add" onClick={addLineItem}><Plus size={16} /> Add another item</button>
+              </div>
+            </section>
+
+            {/* --- totals, on mobile only; the desktop copy is the sticky rail --- */}
+            <div className="eb-sum-mobile">{summary}</div>
+
+            {/* --- when it's due, and anything the client should know --- */}
+            <section className="lv-card eb-sec">
+              <div className="eb-sec-head">
+                <h3 className="lv-h3">Invoice details</h3>
+              </div>
+              <div className="eb-sec-body">
+                <label className="lv-field">
+                  <span className="lv-label">Due date</span>
+                  <input className="lv-input" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                </label>
+                <label className="lv-field">
+                  <span className="lv-label">Notes</span>
+                  <textarea className="lv-textarea" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Payment terms, or anything else the client should know" />
+                </label>
+              </div>
+            </section>
+          </div>
+
+          <aside className="eb-rail">{summary}</aside>
         </div>
-        <div className="p-4 md:p-6 space-y-4 overflow-y-auto flex-1">
-          <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
-            <div className="relative">
-              <label className="block text-sm font-semibold mb-2">Client Name *</label>
-              <input
-                value={clientName}
-                onChange={(e) => { setClientName(e.target.value); setShowClientSuggest(true); }}
-                onFocus={() => setShowClientSuggest(true)}
-                onBlur={() => setTimeout(() => setShowClientSuggest(false), 150)}
-                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none"
-                placeholder="Client name"
-              />
-              {showClientSuggest && filteredClients.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto">
-                  {filteredClients.map((c: any) => (
-                    <button key={c.id} type="button" onMouseDown={(e) => { e.preventDefault(); setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientSuggest(false); }} className="w-full text-left px-4 py-2.5 hover:bg-green-50 border-b last:border-0">
-                      <p className="font-semibold text-gray-900 text-sm">{c.name}</p>
-                      {c.email && <p className="text-xs text-gray-500">{c.email}</p>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Client Email {!isConversion && '*'}</label>
-              <input type="email" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" placeholder="client@email.com" />
-              {isConversion && <p className="text-xs text-gray-500 mt-1">Email is optional for conversion. You can send the invoice later.</p>}
-            </div>
-          </div>
-          <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-2">Client Phone</label>
-              <input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" placeholder="(555) 123-4567" />
-            </div>
-            <div className="relative">
-              <label className="block text-sm font-semibold mb-2">Project Name *</label>
-              <input
-                value={projectName}
-                onChange={(e) => { setProjectName(e.target.value); setShowProjectSuggest(true); }}
-                onFocus={() => setShowProjectSuggest(true)}
-                onBlur={() => setTimeout(() => setShowProjectSuggest(false), 150)}
-                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none"
-                placeholder="Project name"
-              />
-              {showProjectSuggest && filteredProjectNames.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto">
-                  {filteredProjectNames.map((p: any, i: number) => (
-                    <button key={i} type="button" onMouseDown={(e) => { e.preventDefault(); setProjectName(p); setShowProjectSuggest(false); }} className="w-full text-left px-4 py-2.5 hover:bg-green-50 border-b last:border-0 text-sm font-medium text-gray-800">
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-2">Due Date</label>
-              <input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Tax Rate (%)</label>
-              <input type="number" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold mb-3">Line Items *</label>
-            <div className="space-y-3">
-              {lineItems.map((item: any, index: number) => (
-                <div key={index} className="bg-gray-50 p-4 rounded-lg border space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold text-gray-600">Item {index + 1}</span>
-                    <button onClick={() => removeLineItem(index)} className="text-red-600 p-1"><Trash2 size={18} /></button>
-                  </div>
-                  <textarea
-                    ref={autoGrowTextarea}
-                    placeholder="Description"
-                    value={item.description}
-                    onChange={(e) => { updateLineItem(index, 'description', e.target.value); autoGrowTextarea(e.target); }}
-                    className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none resize-none min-h-[7.75rem] md:min-h-[10.75rem] max-h-[31.75rem] overflow-y-auto"
-                  />
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">Qty</label>
-                      <input type="number" placeholder="Qty" value={item.quantity} onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-green-500 focus:outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-600 mb-1">Rate ($)</label>
-                      <input type="number" placeholder="Rate" value={item.rate} onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} className="w-full border-2 rounded-lg px-3 py-3 text-base text-center focus:border-green-500 focus:outline-none" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button onClick={addLineItem} className="mt-3 flex items-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg hover:bg-gray-50 text-gray-600">
-              <Plus size={18} /> Add Line Item
+
+        {/* --- the action bar: everything that finishes this invoice, together --- */}
+        <footer className="eb-foot">
+          <div className="lv-actions">
+            <button className="lv-btn quiet lv-hide-mobile" onClick={handleClose}>Cancel</button>
+            <div className="spacer" />
+            <button className="lv-btn pri span" onClick={handleSubmit} disabled={sending}>
+              {buttonIcon} {buttonText}
             </button>
           </div>
-          <div>
-            <label className="block text-sm font-semibold mb-2">Notes</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Payment terms, additional information..." className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none resize-none" rows={3} />
-          </div>
-          <div className="bg-green-50 p-4 rounded-lg">
-            <div className="text-right text-2xl font-bold text-green-700">Total: ${calculateTotal().toFixed(2)}</div>
-          </div>
-        </div>
-        <div className="p-4 md:p-6 border-t bg-background flex-shrink-0">
-          <Button onClick={handleSubmit} disabled={sending} className="w-full py-4 text-base bg-green-600 hover:bg-green-700">
-            {buttonIcon}{buttonText}
-          </Button>
-        </div>
-      </Card>
+        </footer>
+      </div>
     </div>
   );
 };
-

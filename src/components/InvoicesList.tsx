@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { useInvoices } from '@/contexts/InvoiceContext';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { FileText, DollarSign, Calendar, Trash2, Link, Check, Send, ChevronDown, X } from 'lucide-react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { FileText, DollarSign, Calendar, Trash2, Link, Check, Send, X, Search, Plus, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { sendInvoiceEmail } from '@/lib/edgeFunctions';
@@ -13,6 +8,55 @@ import { sendInvoiceEmail } from '@/lib/edgeFunctions';
 interface InvoicesListProps {
   onCreateInvoice?: () => void;
 }
+
+const money = (n: number) =>
+  `$${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+const STATUS_TONE: Record<string, string> = { unpaid: 'amber', partially_paid: 'blue', paid: 'green', overdue: 'red' };
+const STATUS_LABEL: Record<string, string> = { unpaid: 'Unpaid', partially_paid: 'Partly paid', paid: 'Paid', overdue: 'Overdue' };
+
+const FILTERS: { key: string; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'unpaid', label: 'Unpaid' },
+  { key: 'partially_paid', label: 'Partly paid' },
+  { key: 'paid', label: 'Paid' },
+  { key: 'overdue', label: 'Overdue' },
+];
+
+/* Scoped to the `iv-` prefix so nothing here can reach another screen. */
+const styles = `
+.iv-tools { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.iv-segwrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin: -3px; padding: 3px; }
+.iv-segwrap::-webkit-scrollbar { display: none; }
+.iv-find { display: flex; gap: 10px; min-width: 0; }
+.iv-find .lv-search { flex: 1; min-width: 0; }
+@media (min-width: 900px) {
+  .iv-tools { flex-direction: row; align-items: center; justify-content: space-between; }
+  .iv-find { flex: 0 1 460px; }
+}
+.iv-list { overflow: hidden; }
+.iv-item + .iv-item { border-top: 1px solid var(--lv-line); }
+.iv-row { align-items: flex-start; border-bottom: 0; padding-bottom: 10px; cursor: pointer; }
+.iv-row:hover { background: var(--lv-surface-2); }
+.iv-row:focus-visible { outline: 2px solid var(--lv-blue); outline-offset: -2px; }
+.iv-main { min-width: 0; flex: 1; }
+.iv-titleline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.iv-sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.iv-amt { flex-shrink: 0; text-align: right; }
+.iv-amt .lv-small { margin-top: 2px; }
+.iv-chev { flex-shrink: 0; color: var(--lv-faint); margin-top: 2px; }
+.iv-acts { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
+.iv-sec + .iv-sec { margin-top: 18px; }
+.iv-sec > .lv-eyebrow { display: block; margin-bottom: 8px; }
+.iv-sum { display: flex; justify-content: space-between; gap: 16px; padding: 5px 0; font-size: 14.5px; color: var(--lv-mute); }
+.iv-sum b { color: var(--lv-ink); font-weight: 650; }
+.iv-sum.total { border-top: 1px solid var(--lv-line); margin-top: 6px; padding-top: 12px; font-size: 15px; font-weight: 600; color: var(--lv-ink); }
+.iv-sum.total b { font-size: 19px; font-weight: 700; letter-spacing: -.02em; }
+@media (max-width: 520px) {
+  .iv-row { padding-left: 14px; padding-right: 14px; }
+  .iv-acts { padding: 0 14px 14px; }
+}
+`;
 
 export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) => {
   const { invoices, deleteInvoice, recordPayment, updateInvoice } = useInvoices();
@@ -23,6 +67,8 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
   const [paymentNote, setPaymentNote] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [query, setQuery] = useState('');
 
   const handleMarkPaid = async (invoice: any, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -38,20 +84,20 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
     setPaymentDialog({ open: false, invoiceId: null });
     setPaymentAmount('');
     setPaymentNote('');
-    toast({ title: 'Payment recorded!' });
+    toast({ title: 'Payment recorded' });
   };
 
   const copyPaymentLink = (invoice: any) => {
     const link = `${window.location.origin}/view-invoice/${invoice.viewToken}`;
     navigator.clipboard.writeText(link);
     setCopiedId(invoice.id);
-    toast({ title: 'Payment link copied!' });
+    toast({ title: 'Payment link copied' });
     setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleSendInvoice = async (invoice: any) => {
     if (!invoice.clientEmail) {
-      toast({ title: 'Error', description: 'Client email is required to send invoice', variant: 'destructive' });
+      toast({ title: 'No client email', description: 'Add a client email before sending this invoice.', variant: 'destructive' });
       return;
     }
     setSendingId(invoice.id);
@@ -77,22 +123,19 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
       });
       if (result.error) throw result.error;
       await updateInvoice(invoice.id, { sentAt: new Date().toISOString() });
-      toast({ title: 'Invoice sent successfully!' });
+      toast({ title: 'Invoice sent' });
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message || 'Failed to send invoice', variant: 'destructive' });
+      toast({ title: 'Could not send the invoice', description: error.message || 'Something went wrong. Try again.', variant: 'destructive' });
     } finally {
       setSendingId(null);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'partially_paid': return 'bg-yellow-100 text-yellow-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const statusPill = (status: string) => (
+    <span className={`lv-pill ${STATUS_TONE[status] ?? ''}`}>
+      {STATUS_LABEL[status] || String(status || '').replace('_', ' ')}
+    </span>
+  );
 
   const parseLineItems = (items: any) => {
     if (!items) return [];
@@ -100,155 +143,237 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
     try { return JSON.parse(items); } catch { return []; }
   };
 
+  const term = query.trim().toLowerCase();
+  const visibleInvoices = invoices
+    .filter(i => statusFilter === 'all' || i.status === statusFilter)
+    .filter(i => !term
+      || (i.clientName || '').toLowerCase().includes(term)
+      || (i.projectName || '').toLowerCase().includes(term)
+      || (i.invoiceNumber || '').toLowerCase().includes(term));
+
+  const isFiltered = statusFilter !== 'all' || term.length > 0;
+  const closePayment = () => setPaymentDialog({ open: false, invoiceId: null });
+
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl md:text-2xl font-bold text-white">Invoices</h2>
-        <Button onClick={onCreateInvoice} className="bg-green-600 hover:bg-green-700">+ New Invoice</Button>
+    <div>
+      <style>{styles}</style>
+
+      <div className="lv-page-head">
+        <div>
+          <h1 className="lv-h1">Invoices</h1>
+          <p className="lv-sub">What you have billed, what has been paid, and what is still owed.</p>
+        </div>
+        <button className="lv-btn pri" onClick={onCreateInvoice}>
+          <Plus size={16} /> New invoice
+        </button>
       </div>
 
-      {invoices.length === 0 ? (
-        <Card className="p-6 md:p-8 text-center bg-[#1c1c1e] border-white/10">
-          <FileText className="h-10 w-10 mx-auto text-gray-500 mb-3" />
-          <p className="text-sm text-gray-400 mb-4">No invoices yet. Create one directly, or convert an approved estimate.</p>
-          <Button onClick={onCreateInvoice} className="bg-green-600 hover:bg-green-700">Create Your First Invoice</Button>
-        </Card>
+      {invoices.length > 0 && (
+        <div className="iv-tools">
+          <div className="iv-segwrap">
+            <div className="lv-seg" role="group" aria-label="Filter by status">
+              {FILTERS.map(f => (
+                <button
+                  key={f.key}
+                  className={statusFilter === f.key ? 'on' : ''}
+                  onClick={() => setStatusFilter(f.key)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="iv-find">
+            <div className="lv-search">
+              <Search size={16} />
+              <input
+                className="lv-input"
+                type="search"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="Search client, project or number"
+                aria-label="Search invoices"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {visibleInvoices.length === 0 ? (
+        <div className="lv-empty">
+          <FileText size={30} />
+          <h3>{isFiltered ? 'Nothing matches that' : 'No invoices yet'}</h3>
+          <p>
+            {isFiltered
+              ? 'Try another status, or clear the search box.'
+              : 'Bill a job directly, or turn an approved estimate into an invoice.'}
+          </p>
+          {isFiltered ? (
+            <button className="lv-btn sec" onClick={() => { setStatusFilter('all'); setQuery(''); }}>Clear filters</button>
+          ) : (
+            <button className="lv-btn pri" onClick={onCreateInvoice}><Plus size={16} /> New invoice</button>
+          )}
+        </div>
       ) : (
-        <div className="space-y-3">
-          {invoices.map(invoice => (
-            <Card
-              key={invoice.id}
-              className="p-3 md:p-4 cursor-pointer hover:shadow-md transition-shadow bg-[#1c1c1e] border-white/10"
-              onClick={() => setSelectedInvoice(invoice)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h3 className="text-base font-semibold text-white">{invoice.invoiceNumber}</h3>
-                    <Badge className={`${getStatusColor(invoice.status)} text-xs`}>{invoice.status.replace('_', ' ').toUpperCase()}</Badge>
-                    {!invoice.sentAt && <Badge className="bg-orange-100 text-orange-800 text-xs">Not Sent</Badge>}
+        <div className="lv-card iv-list">
+          {visibleInvoices.map(invoice => {
+            const due = invoice.total - invoice.amountPaid;
+            return (
+              <div className="iv-item" key={invoice.id}>
+                <div
+                  className="lv-row iv-row"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedInvoice(invoice)}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedInvoice(invoice); } }}
+                >
+                  <div className="iv-main">
+                    <div className="iv-titleline">
+                      <span className="lv-row-t lv-num">{invoice.invoiceNumber}</span>
+                      {statusPill(invoice.status)}
+                      {!invoice.sentAt && <span className="lv-pill">Not sent</span>}
+                    </div>
+                    <span className="lv-row-s iv-sub">
+                      {invoice.clientName || 'No client'} · {invoice.projectName || 'Untitled project'}
+                    </span>
                   </div>
-                  <p className="text-sm text-gray-300 truncate">{invoice.clientName} — {invoice.projectName}</p>
-                  <div className="flex gap-4 mt-1 text-xs text-gray-400">
-                    <span>${invoice.total.toFixed(2)} total</span>
-                    <span className="text-green-400">${invoice.amountPaid.toFixed(2)} paid</span>
-                    <span className="text-blue-400">${(invoice.total - invoice.amountPaid).toFixed(2)} due</span>
+                  <div className="iv-amt">
+                    <div className="lv-row-r lv-num">{money(invoice.total)}</div>
+                    <div className="lv-small lv-num">{due > 0 ? `${money(due)} due` : 'Paid in full'}</div>
                   </div>
+                  <ChevronRight className="iv-chev" size={18} />
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+
+                <div className="iv-acts">
                   {invoice.status !== 'paid' && (
-                    <button
-                      onClick={(e) => handleMarkPaid(invoice, e)}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-xs"
-                    >
-                      <Check size={14} /> Paid
+                    <button className="lv-btn go sm" onClick={(e) => handleMarkPaid(invoice, e)}>
+                      <Check size={14} /> Mark paid
                     </button>
                   )}
-                  <ChevronDown className="h-5 w-5 text-gray-500" />
+                  <button
+                    className="lv-btn sec sm"
+                    onClick={() => handleSendInvoice(invoice)}
+                    disabled={sendingId === invoice.id}
+                  >
+                    <Send size={14} />
+                    {sendingId === invoice.id ? 'Sending…' : invoice.sentAt ? 'Resend' : 'Send'}
+                  </button>
+                  <button className="lv-btn quiet sm" onClick={() => copyPaymentLink(invoice)} disabled={!invoice.viewToken}>
+                    {copiedId === invoice.id ? <Check size={14} /> : <Link size={14} />}
+                    {copiedId === invoice.id ? 'Copied' : 'Copy link'}
+                  </button>
                 </div>
               </div>
-            </Card>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {selectedInvoice && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-3">
-          <div className="rounded-xl w-full max-w-2xl max-h-[90vh] overflow-auto shadow-2xl" style={{ background: '#1c1c1e' }}>
-            <div className="text-white p-4 flex justify-between items-center rounded-t-xl sticky top-0" style={{background: '#1c1c1e', borderBottom: '0.5px solid rgba(255,255,255,0.1)'}}>
-              <div>
-                <h2 className="text-lg font-bold">{selectedInvoice.invoiceNumber}</h2>
-                <p className="text-blue-300 text-sm">{selectedInvoice.clientName} — {selectedInvoice.projectName}</p>
+        <div className="lv-scrim" onClick={() => setSelectedInvoice(null)}>
+          <div className="lv-modal" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+            <div className="lv-modal-head">
+              <div style={{ minWidth: 0 }}>
+                <h2 className="lv-h2 lv-num">{selectedInvoice.invoiceNumber}</h2>
+                <p className="lv-small" style={{ marginTop: 3 }}>{selectedInvoice.clientName} · {selectedInvoice.projectName}</p>
               </div>
-              <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-white/10 rounded-lg">
-                <X size={22} />
+              <button className="lv-icon-btn" onClick={() => setSelectedInvoice(null)} aria-label="Close">
+                <X size={20} />
               </button>
             </div>
 
-            <div className="p-5 space-y-5">
-              <div className="flex flex-wrap gap-3 items-center">
-                <Badge className={`${getStatusColor(selectedInvoice.status)} text-sm px-3 py-1`}>
-                  {selectedInvoice.status.replace('_', ' ').toUpperCase()}
-                </Badge>
-                {!selectedInvoice.sentAt && <Badge className="bg-orange-100 text-orange-800 text-sm px-3 py-1">Not Sent</Badge>}
-                <span className="text-sm text-gray-400 flex items-center gap-1">
-                  <Calendar className="h-3 w-3" /> Issued: {new Date(selectedInvoice.issueDate).toLocaleDateString()}
+            <div className="lv-modal-body">
+              <div className="lv-inline">
+                {statusPill(selectedInvoice.status)}
+                {!selectedInvoice.sentAt && <span className="lv-pill">Not sent</span>}
+                <span className="lv-small lv-inline" style={{ gap: 5 }}>
+                  <Calendar size={13} /> Issued {new Date(selectedInvoice.issueDate).toLocaleDateString()}
                 </span>
                 {selectedInvoice.dueDate && (
-                  <span className="text-sm text-gray-400">Due: {new Date(selectedInvoice.dueDate).toLocaleDateString()}</span>
+                  <span className="lv-small">Due {new Date(selectedInvoice.dueDate).toLocaleDateString()}</span>
                 )}
               </div>
 
-              <div className="bg-white/5 rounded-lg p-4">
-                <p className="text-xs text-gray-400 font-semibold uppercase mb-2">Client</p>
-                <p className="font-semibold text-white">{selectedInvoice.clientName}</p>
-                {selectedInvoice.clientEmail && <p className="text-sm text-gray-300">{selectedInvoice.clientEmail}</p>}
-                {selectedInvoice.clientPhone && <p className="text-sm text-gray-300">{selectedInvoice.clientPhone}</p>}
+              <div className="iv-sec" style={{ marginTop: 18 }}>
+                <span className="lv-eyebrow">Client</span>
+                <div className="lv-card lv-card-pad">
+                  <p className="lv-h3">{selectedInvoice.clientName}</p>
+                  {selectedInvoice.clientEmail && <p className="lv-small" style={{ marginTop: 3 }}>{selectedInvoice.clientEmail}</p>}
+                  {selectedInvoice.clientPhone && <p className="lv-small" style={{ marginTop: 2 }}>{selectedInvoice.clientPhone}</p>}
+                </div>
               </div>
 
-              <div>
-                <p className="text-xs text-gray-400 font-semibold uppercase mb-2">Line Items</p>
-                <div className="space-y-2">
+              <div className="iv-sec">
+                <span className="lv-eyebrow">Line items</span>
+                <div className="lv-card">
                   {parseLineItems(selectedInvoice.lineItems).map((item: any, idx: number) => (
-                    <div key={idx} className="flex justify-between items-start bg-white/5 rounded-lg p-3">
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-200 text-sm whitespace-pre-wrap">{item.description}</p>
-                        <p className="text-xs text-gray-400">Qty: {item.quantity} × ${Number(item.rate).toFixed(2)}</p>
+                    <div className="lv-row" key={idx} style={{ alignItems: 'flex-start' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div className="lv-row-t" style={{ whiteSpace: 'pre-wrap', fontWeight: 500 }}>{item.description}</div>
+                        <div className="lv-row-s lv-num">{item.quantity} × {money(Number(item.rate))}</div>
                       </div>
-                      <p className="font-semibold text-white ml-4">${Number(item.total || item.quantity * item.rate).toFixed(2)}</p>
+                      <span className="lv-row-r lv-num">{money(Number(item.total || item.quantity * item.rate))}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="bg-blue-500/10 rounded-lg p-4 space-y-2">
-                <div className="flex justify-between text-sm"><span className="text-gray-300">Total</span><span className="font-semibold text-white">${selectedInvoice.total.toFixed(2)}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-green-400">Amount Paid</span><span className="font-semibold text-green-400">-${selectedInvoice.amountPaid.toFixed(2)}</span></div>
-                <div className="flex justify-between text-lg font-bold border-t border-white/10 pt-2"><span className="text-white">Balance Due</span><span className="text-blue-400">${(selectedInvoice.total - selectedInvoice.amountPaid).toFixed(2)}</span></div>
+              <div className="iv-sec">
+                <div className="lv-card lv-card-pad">
+                  <div className="iv-sum"><span>Total</span><b className="lv-num">{money(selectedInvoice.total)}</b></div>
+                  <div className="iv-sum">
+                    <span>Paid</span>
+                    <b className="lv-num" style={{ color: 'var(--lv-green)' }}>−{money(selectedInvoice.amountPaid)}</b>
+                  </div>
+                  <div className="iv-sum total">
+                    <span>Balance due</span>
+                    <b className="lv-num">{money(selectedInvoice.total - selectedInvoice.amountPaid)}</b>
+                  </div>
+                </div>
               </div>
 
               {selectedInvoice.notes && (
-                <div className="bg-white/5 rounded-lg p-4">
-                  <p className="text-xs text-gray-400 font-semibold uppercase mb-1">Notes</p>
-                  <p className="text-sm text-gray-300">{selectedInvoice.notes}</p>
+                <div className="iv-sec">
+                  <span className="lv-eyebrow">Notes</span>
+                  <div className="lv-card lv-card-pad">
+                    <p className="lv-sub" style={{ whiteSpace: 'pre-wrap' }}>{selectedInvoice.notes}</p>
+                  </div>
                 </div>
               )}
+            </div>
 
-              <div className="flex flex-wrap gap-3 pt-2">
+            <div className="lv-modal-foot">
+              <div className="lv-actions">
                 <button
-                    onClick={() => handleSendInvoice(selectedInvoice)}
-                    disabled={sendingId === selectedInvoice.id}
-                    className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm disabled:opacity-50"
-                  >
-                    <Send size={16} />
-                    {sendingId === selectedInvoice.id ? 'Sending...' : selectedInvoice.sentAt ? 'Resend Invoice' : 'Send Invoice'}
-                  </button>
+                  className="lv-btn pri span"
+                  onClick={() => handleSendInvoice(selectedInvoice)}
+                  disabled={sendingId === selectedInvoice.id}
+                >
+                  <Send size={16} />
+                  {sendingId === selectedInvoice.id ? 'Sending…' : selectedInvoice.sentAt ? 'Resend invoice' : 'Send invoice'}
+                </button>
                 {selectedInvoice.status !== 'paid' && (
                   <>
-                    <button
-                      onClick={() => handleMarkPaid(selectedInvoice)}
-                      className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-sm"
-                    >
-                      <Check size={16} /> Mark as Paid
+                    <button className="lv-btn go" onClick={() => handleMarkPaid(selectedInvoice)}>
+                      <Check size={16} /> Mark as paid
                     </button>
                     <button
+                      className="lv-btn sec"
                       onClick={() => { setPaymentDialog({ open: true, invoiceId: selectedInvoice.id }); setSelectedInvoice(null); }}
-                      className="flex items-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm"
                     >
-                      <DollarSign size={16} /> Record Payment
+                      <DollarSign size={16} /> Record payment
                     </button>
-                    <button
-                      onClick={() => copyPaymentLink(selectedInvoice)}
-                      className="flex items-center gap-2 px-4 py-3 border border-white/20 rounded-lg hover:bg-white/10 font-semibold text-sm text-gray-200"
-                    >
+                    <button className="lv-btn quiet" onClick={() => copyPaymentLink(selectedInvoice)} disabled={!selectedInvoice.viewToken}>
                       {copiedId === selectedInvoice.id ? <Check size={16} /> : <Link size={16} />}
-                      {copiedId === selectedInvoice.id ? 'Copied!' : 'Copy Payment Link'}
+                      {copiedId === selectedInvoice.id ? 'Copied' : 'Copy payment link'}
                     </button>
                   </>
                 )}
+                <span className="spacer" />
                 <button
+                  className="lv-btn danger"
                   onClick={() => { deleteInvoice(selectedInvoice.id); setSelectedInvoice(null); }}
-                  className="flex items-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold text-sm"
                 >
                   <Trash2 size={16} /> Delete
                 </button>
@@ -258,24 +383,49 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
         </div>
       )}
 
-      <Dialog open={paymentDialog.open} onOpenChange={(open) => setPaymentDialog({ open, invoiceId: null })}>
-        <DialogContent className="mx-2 max-w-md p-0 overflow-hidden bg-[#1c1c1e] border-white/10">
-          <div className="bg-green-600 text-white p-4">
-            <DialogTitle className="text-lg font-bold">Record Payment</DialogTitle>
-          </div>
-          <div className="p-5 space-y-4">
-            <div>
-              <Label htmlFor="amount" className="block text-sm font-semibold mb-2 text-gray-200">Payment Amount *</Label>
-              <input id="amount" type="number" step="0.01" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="0.00" className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none" />
+      {paymentDialog.open && (
+        <div className="lv-scrim" onClick={closePayment}>
+          <div className="lv-modal" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+            <div className="lv-modal-head">
+              <h2 className="lv-h2">Record payment</h2>
+              <button className="lv-icon-btn" onClick={closePayment} aria-label="Close"><X size={20} /></button>
             </div>
-            <div>
-              <Label htmlFor="note" className="block text-sm font-semibold mb-2 text-gray-200">Note (optional)</Label>
-              <textarea id="note" value={paymentNote} onChange={(e) => setPaymentNote(e.target.value)} placeholder="Payment method, check number, etc." className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-green-500 focus:outline-none resize-none" rows={3} />
+            <div className="lv-modal-body">
+              <label className="lv-field" htmlFor="amount">
+                <span className="lv-label">Payment amount</span>
+                <input
+                  id="amount"
+                  className="lv-input num"
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  placeholder="0.00"
+                />
+              </label>
+              <label className="lv-field" htmlFor="note">
+                <span className="lv-label">Note (optional)</span>
+                <textarea
+                  id="note"
+                  className="lv-textarea"
+                  rows={3}
+                  value={paymentNote}
+                  onChange={(e) => setPaymentNote(e.target.value)}
+                  placeholder="Check number, cash, card, anything worth remembering"
+                />
+              </label>
             </div>
-            <Button onClick={handleRecordPayment} className="w-full py-4 text-base">Record Payment</Button>
+            <div className="lv-modal-foot">
+              <div className="lv-actions">
+                <button className="lv-btn sec" onClick={closePayment}>Cancel</button>
+                <span className="spacer" />
+                <button className="lv-btn go" onClick={handleRecordPayment} disabled={!paymentAmount}>Record payment</button>
+              </div>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 };

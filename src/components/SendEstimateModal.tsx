@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useData } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
-import { X, Mail, MessageSquare, Loader2, AlertCircle, CheckCircle, Copy, Check } from 'lucide-react';
+import { X, Mail, MessageSquare, Loader2, AlertCircle, CheckCircle, Copy, Check, ChevronRight } from 'lucide-react';
 
 interface Props {
   estimateData?: any;
@@ -159,143 +159,170 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-3">
-      <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-auto shadow-2xl">
+  const money = `$${totalAmount.toFixed(2)}`;
 
-        <div className="text-white p-4 flex justify-between items-center rounded-t-xl" style={{background: '#1c1c1e'}}>
-          <h2 className="text-lg md:text-xl font-bold">Send Estimate</h2>
-          <button onClick={onClose} className="p-2 hover:bg-green-700 rounded-lg" disabled={isSending}>
-            <X size={24} />
+  return (
+    <div className="lv-scrim">
+      <div className="lv-modal">
+
+        <div className="lv-modal-head">
+          <div>
+            <span className="lv-eyebrow">Estimate</span>
+            <h2 className="lv-h2">Send to your client</h2>
+          </div>
+          <button className="lv-icon-btn" onClick={onClose} disabled={isSending} aria-label="Close">
+            <X size={20} />
           </button>
         </div>
 
-        <div className="p-5 space-y-4">
+        <div className="lv-modal-body">
+          <div className="lv-stack">
 
-          <div className="bg-gray-50 rounded-xl p-4">
-            <p className="text-sm text-gray-500 mb-1">Project</p>
-            <p className="font-bold text-gray-900 text-lg">{projectName}</p>
-            <p className="text-sm text-gray-500 mt-2 mb-1">Client</p>
-            <p className="font-semibold text-gray-700">{clientName}</p>
-          </div>
-
-          {isGeneratingToken && (
-            <div className="flex items-center justify-center gap-2 p-4 rounded-xl bg-blue-50 text-blue-700">
-              <Loader2 size={20} className="animate-spin" />
-              <span>Preparing estimate link...</span>
-            </div>
-          )}
-
-          {!sendMethod && !isGeneratingToken && (
-            <>
-              <p className="text-center text-gray-600 font-medium">How would you like to send this?</p>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setSendMethod('email')}
-                  className="flex flex-col items-center gap-3 p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all"
-                >
-                  <Mail size={32} className="text-green-600" />
-                  <span className="font-bold text-gray-800">Email</span>
-                  <span className="text-xs text-gray-500 text-center">We'll send it directly to your client</span>
-                </button>
-                <button
-                  onClick={() => setSendMethod('text')}
-                  className="flex flex-col items-center gap-3 p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all"
-                >
-                  <MessageSquare size={32} className="text-blue-600" />
-                  <span className="font-bold text-gray-800">Text Message</span>
-                  <span className="text-xs text-gray-500 text-center">Copy the link and paste into your texts</span>
-                </button>
-              </div>
-            </>
-          )}
-
-          {sendMethod === 'email' && sendStatus !== 'success' && (
-            <>
-              <button onClick={() => setSendMethod(null)} className="text-sm text-gray-500 hover:text-gray-700">
-                ← Back
-              </button>
-
-              {sendStatus === 'error' && errorMessage && (
-                <div className="flex items-start gap-2 p-4 rounded-xl bg-red-50 text-red-700 border border-red-200">
-                  <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
-                  <span className="text-sm">{errorMessage}</span>
+            <div className="lv-card">
+              <div className="lv-row">
+                <div style={{ minWidth: 0 }}>
+                  <div className="lv-row-t">{projectName}</div>
+                  <div className="lv-row-s">{clientName}</div>
                 </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Client's Email Address</label>
-                <input
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  className="w-full border-2 rounded-xl px-4 py-4 text-base focus:border-green-500 focus:outline-none"
-                  type="email"
-                  placeholder="client@email.com"
-                  disabled={isSending}
-                />
+                <div className="lv-row-r lv-num">{money}</div>
               </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <button
-                  onClick={() => setSendMethod(null)}
-                  disabled={isSending}
-                  className="px-4 py-4 border-2 rounded-xl hover:bg-gray-50 font-semibold text-base text-gray-700 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSendEmail}
-                  disabled={isSending || !viewToken || isGeneratingToken}
-                  className="px-4 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 font-semibold text-base flex items-center justify-center gap-2"
-                >
-                  {isSending ? <><Loader2 size={20} className="animate-spin" /> Sending...</> : 'Send Estimate'}
-                </button>
-              </div>
-            </>
-          )}
-
-          {sendStatus === 'success' && (
-            <div className="text-center py-4">
-              <CheckCircle size={48} className="text-green-600 mx-auto mb-3" />
-              <p className="font-bold text-xl text-gray-900">Estimate Sent!</p>
-              <p className="text-gray-500 mt-1">Your client will receive it shortly.</p>
-              <button onClick={onClose} className="mt-4 w-full px-4 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 font-semibold text-base">
-                Done
-              </button>
             </div>
-          )}
 
-          {sendMethod === 'text' && (
-            <>
-              <button onClick={() => setSendMethod(null)} className="text-sm text-gray-500 hover:text-gray-700">
-                ← Back
-              </button>
+            {isGeneratingToken && (
+              <p className="lv-small lv-inline">
+                <Loader2 size={16} className="animate-spin" /> Getting the client link ready…
+              </p>
+            )}
 
-              <div className="bg-blue-50 rounded-xl p-5 text-center space-y-4">
-                <MessageSquare size={40} className="text-blue-600 mx-auto" />
-                <div>
-                  <p className="font-bold text-gray-900 text-lg">Send via Text</p>
-                  <p className="text-gray-600 text-sm mt-1">Tap the button below to copy the estimate link, then open your text message app and paste it to your client.</p>
-                </div>
-                <button
-                  onClick={handleCopyLink}
-                  disabled={!viewToken || isGeneratingToken}
-                  className="w-full py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 font-bold text-base flex items-center justify-center gap-2"
-                >
-                  {linkCopied ? <><Check size={20} /> Link Copied!</> : <><Copy size={20} /> Copy Estimate Link</>}
+            {!sendMethod && !isGeneratingToken && sendStatus !== 'success' && (
+              <div className="lv-card">
+                <button type="button" className="lv-row" onClick={() => setSendMethod('email')}>
+                  <span className="lv-inline" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
+                    <Mail size={18} style={{ color: 'var(--lv-blue)', flexShrink: 0 }} />
+                    <span>
+                      <span className="lv-row-t" style={{ display: 'block' }}>Email it</span>
+                      <span className="lv-row-s" style={{ display: 'block' }}>We send it straight to your client</span>
+                    </span>
+                  </span>
+                  <ChevronRight size={18} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
                 </button>
-                {linkCopied && (
-                  <p className="text-green-600 font-semibold text-sm">Now open your texts and paste the link!</p>
+                <button type="button" className="lv-row" onClick={() => setSendMethod('text')}>
+                  <span className="lv-inline" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
+                    <MessageSquare size={18} style={{ color: 'var(--lv-blue)', flexShrink: 0 }} />
+                    <span>
+                      <span className="lv-row-t" style={{ display: 'block' }}>Text it</span>
+                      <span className="lv-row-s" style={{ display: 'block' }}>Copy the link and paste it into your messages</span>
+                    </span>
+                  </span>
+                  <ChevronRight size={18} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
+                </button>
+              </div>
+            )}
+
+            {sendMethod === 'email' && sendStatus !== 'success' && (
+              <>
+                {sendStatus === 'error' && errorMessage && (
+                  <div
+                    className="lv-card lv-card-pad"
+                    style={{ background: 'var(--lv-red-soft)', borderColor: 'var(--lv-red)', display: 'flex', gap: 10, alignItems: 'flex-start' }}
+                  >
+                    <AlertCircle size={18} style={{ color: 'var(--lv-red)', flexShrink: 0, marginTop: 2 }} />
+                    <p className="lv-small" style={{ color: 'var(--lv-red)' }}>
+                      The estimate did not go out: {errorMessage}. Check the email address and send it again.
+                    </p>
+                  </div>
                 )}
+
+                <div>
+                  <label className="lv-field">
+                    <span className="lv-label">Client's email address</span>
+                    <input
+                      className="lv-input"
+                      value={clientEmail}
+                      onChange={(e) => setClientEmail(e.target.value)}
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      placeholder="client@email.com"
+                      disabled={isSending}
+                    />
+                  </label>
+                </div>
+                <p className="lv-small">They get a link to open the estimate and approve it.</p>
+              </>
+            )}
+
+            {sendStatus === 'success' && (
+              <div className="lv-empty">
+                <CheckCircle size={40} style={{ color: 'var(--lv-green)' }} />
+                <h3>Estimate sent</h3>
+                <p>{clientEmail.trim() || 'Your client'} will have it in a moment.</p>
               </div>
+            )}
 
-              <button onClick={onClose} className="w-full px-4 py-3 border-2 rounded-xl hover:bg-gray-50 font-semibold text-base text-gray-700">
-                Done
-              </button>
-            </>
-          )}
+            {sendMethod === 'text' && sendStatus !== 'success' && (
+              <>
+                <div className="lv-card lv-card-pad">
+                  <h3 className="lv-h3">Send it in a text</h3>
+                  <p className="lv-sub" style={{ marginTop: 6 }}>
+                    Copy the link, then open your messages and paste it to your client.
+                  </p>
+                  {estimateUrl && (
+                    <p className="lv-small" style={{ marginTop: 10, wordBreak: 'break-all', color: 'var(--lv-faint)' }}>
+                      {estimateUrl}
+                    </p>
+                  )}
+                </div>
+                {linkCopied && (
+                  <p className="lv-small lv-inline" style={{ color: 'var(--lv-green)' }}>
+                    <Check size={16} /> Link copied. Paste it into your messages.
+                  </p>
+                )}
+              </>
+            )}
 
+          </div>
         </div>
+
+        <div className="lv-modal-foot">
+          {sendStatus === 'success' ? (
+            <div className="lv-actions">
+              <span className="spacer" />
+              <button className="lv-btn pri span" onClick={onClose}>Done</button>
+            </div>
+          ) : sendMethod === 'email' ? (
+            <div className="lv-actions">
+              <button className="lv-btn quiet" onClick={() => setSendMethod(null)} disabled={isSending}>Back</button>
+              <span className="spacer" />
+              <button
+                className="lv-btn go"
+                onClick={handleSendEmail}
+                disabled={isSending || !viewToken || isGeneratingToken}
+              >
+                {isSending
+                  ? <><Loader2 size={16} className="animate-spin" /> Sending…</>
+                  : <><Mail size={16} /> Send estimate</>}
+              </button>
+            </div>
+          ) : sendMethod === 'text' ? (
+            <div className="lv-actions">
+              <button className="lv-btn quiet" onClick={onClose}>Done</button>
+              <span className="spacer" />
+              <button
+                className="lv-btn pri"
+                onClick={handleCopyLink}
+                disabled={!viewToken || isGeneratingToken}
+              >
+                {linkCopied ? <><Check size={16} /> Link copied</> : <><Copy size={16} /> Copy link</>}
+              </button>
+            </div>
+          ) : (
+            <div className="lv-actions">
+              <button className="lv-btn quiet span" onClick={onClose} disabled={isSending}>Cancel</button>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

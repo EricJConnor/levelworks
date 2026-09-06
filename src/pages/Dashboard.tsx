@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/contexts/ProfileContext';
@@ -15,7 +12,12 @@ import { PricingCountdown } from '@/components/PricingCountdown';
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
 import { EdgeFunctionDiagnostic } from '@/components/EdgeFunctionDiagnostic';
 import AuthModal from '@/components/AuthModal';
-import { Loader2, Gift, User, Mail, Calendar, Lock, AlertTriangle, Wrench } from 'lucide-react';
+import { Loader2, Gift, User, Mail, Calendar, Lock, AlertTriangle, Wrench, ArrowLeft } from 'lucide-react';
+
+// One class list for the six tabs, so the strip reads as the app's own
+// segmented control rather than the shadcn default.
+const TAB_LIST = 'grid grid-cols-3 sm:inline-flex sm:w-auto w-full h-auto gap-1 p-1 rounded-[10px] bg-[var(--lv-sunken)]';
+const TAB = 'gap-1.5 rounded-[7px] px-2.5 py-2 text-[13px] font-medium text-[var(--lv-mute)] data-[state=active]:bg-[var(--lv-surface)] data-[state=active]:text-[var(--lv-ink)] data-[state=active]:font-semibold data-[state=active]:shadow-sm';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -43,9 +45,9 @@ export default function Dashboard() {
     }
   }, []);
 
-  useEffect(() => { 
+  useEffect(() => {
     mountedRef.current = true;
-    
+
     const checkAuthWithRetry = async (retries = 3): Promise<any> => {
       for (let i = 0; i < retries; i++) {
         const { data: { session } } = await supabase.auth.getSession();
@@ -54,11 +56,11 @@ export default function Dashboard() {
       }
       return null;
     };
-    
+
     const initAuth = async () => {
       const session = await checkAuthWithRetry();
       if (!mountedRef.current) return;
-      
+
       if (session?.user) {
         setIsAuthenticated(true);
         setUserEmail(session.user.email || null);
@@ -69,9 +71,9 @@ export default function Dashboard() {
       }
       setLoading(false);
     };
-    
+
     initAuth();
-    
+
     const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mountedRef.current) return;
       if (event === 'SIGNED_OUT') window.location.href = '/';
@@ -81,120 +83,176 @@ export default function Dashboard() {
         setUserCreatedAt(session.user.created_at || null);
       }
     });
-    
+
     return () => { mountedRef.current = false; authSub.unsubscribe(); };
   }, [loadSubscriptionData, refreshProfile]);
 
   const handleBackToApp = () => { navigate('/app'); };
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-blue-600" /></div>;
-  
+  if (loading) return (
+    <div className="lv-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Loader2 size={30} className="animate-spin" style={{ color: 'var(--lv-blue)' }} />
+    </div>
+  );
+
   if (isAuthenticated === false) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="p-8 max-w-md text-center">
-          <h2 className="text-2xl font-bold mb-4">Sign In Required</h2>
-          <p className="text-gray-600 mb-6">Please sign in to access your account.</p>
-          <Button onClick={() => setShowAuthModal(true)} className="w-full">Sign In</Button>
-          <Button variant="outline" onClick={() => window.location.href = '/'} className="w-full mt-2">Back to Home</Button>
-        </Card>
+      <div className="lv-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div className="lv-card lv-card-pad" style={{ maxWidth: 380, width: '100%', textAlign: 'center' }}>
+          <h2 className="lv-h2">Sign in to continue</h2>
+          <p className="lv-sub" style={{ margin: '8px 0 20px' }}>Your account settings are behind a sign-in.</p>
+          <button className="lv-btn pri wide" onClick={() => setShowAuthModal(true)}>Sign in</button>
+          <button className="lv-btn quiet wide" style={{ marginTop: 8 }} onClick={() => window.location.href = '/'}>Back to home</button>
+        </div>
         <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} onSuccess={() => window.location.reload()} />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-4 md:p-6 max-w-6xl">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
-        <Button onClick={handleBackToApp} variant="outline" size="sm">← Back to App</Button>
-        <h1 className="text-xl md:text-2xl font-bold">Account Settings</h1>
-      </div>
-      
-      <ProfileCard profile={profile} userEmail={userEmail} userCreatedAt={userCreatedAt} />
+    <div className="lv-app">
+      <main className="lv-main" style={{ maxWidth: 1024 }}>
+        <button className="lv-btn quiet sm" style={{ marginBottom: 12, marginLeft: -10 }} onClick={handleBackToApp}>
+          <ArrowLeft size={15} /> Back to the app
+        </button>
 
-      <Tabs defaultValue={defaultTab} className="space-y-4">
-        <TabsList className="w-full sm:w-auto grid grid-cols-6 sm:flex gap-1">
-          <TabsTrigger value="profile" className="text-xs sm:text-sm"><User className="w-3 h-3 mr-1" />Profile</TabsTrigger>
-          <TabsTrigger value="subscription" className="text-xs sm:text-sm">Plan</TabsTrigger>
-          <TabsTrigger value="security" className="text-xs sm:text-sm"><Lock className="w-3 h-3 mr-1" />Security</TabsTrigger>
-          <TabsTrigger value="referrals" className="text-xs sm:text-sm"><Gift className="w-3 h-3 mr-1" />Refer</TabsTrigger>
-          <TabsTrigger value="diagnostic" className="text-xs sm:text-sm"><Wrench className="w-3 h-3 mr-1" />Fix</TabsTrigger>
-          <TabsTrigger value="danger" className="text-xs sm:text-sm text-red-600"><AlertTriangle className="w-3 h-3 mr-1" />Danger</TabsTrigger>
-        </TabsList>
-        <TabsContent value="profile"><ProfileEditor /></TabsContent>
-        <TabsContent value="subscription"><SubscriptionCard subscription={subscription} onCancel={() => setCancelDialogOpen(true)} onUpdatePayment={() => setUpdatePaymentOpen(true)} /><PricingCountdown className="mt-4" /></TabsContent>
-        <TabsContent value="security"><ChangePasswordForm /></TabsContent>
-        <TabsContent value="referrals"><ReferralProgram /></TabsContent>
-        <TabsContent value="diagnostic">
-          <EdgeFunctionDiagnostic />
-        </TabsContent>
-        <TabsContent value="danger">
-          <Card className="border-red-200 bg-red-50">
-            <CardHeader>
-              <CardTitle className="text-red-600 flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5" />
-                Danger Zone
-              </CardTitle>
-              <CardDescription>
-                Irreversible actions that will permanently affect your account
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 border border-red-200 rounded-lg bg-white">
-                <h3 className="font-semibold text-gray-900 mb-2">Delete Account</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Once you delete your account, there is no going back. All your data including estimates, invoices, clients, and settings will be permanently removed.
+        <div className="lv-page-head">
+          <div>
+            <h1 className="lv-h1">Account settings</h1>
+            <p className="lv-sub">Your business details, plan, security and referrals.</p>
+          </div>
+        </div>
+
+        <ProfileCard profile={profile} userEmail={userEmail} userCreatedAt={userCreatedAt} />
+
+        <Tabs defaultValue={defaultTab} className="space-y-4">
+          <TabsList className={TAB_LIST}>
+            <TabsTrigger value="profile" className={TAB}><User className="w-3.5 h-3.5" />Profile</TabsTrigger>
+            <TabsTrigger value="subscription" className={TAB}>Plan</TabsTrigger>
+            <TabsTrigger value="security" className={TAB}><Lock className="w-3.5 h-3.5" />Security</TabsTrigger>
+            <TabsTrigger value="referrals" className={TAB}><Gift className="w-3.5 h-3.5" />Refer</TabsTrigger>
+            <TabsTrigger value="diagnostic" className={TAB}><Wrench className="w-3.5 h-3.5" />Fix</TabsTrigger>
+            <TabsTrigger value="danger" className={TAB}><AlertTriangle className="w-3.5 h-3.5" />Delete</TabsTrigger>
+          </TabsList>
+          <TabsContent value="profile"><ProfileEditor /></TabsContent>
+          <TabsContent value="subscription"><SubscriptionCard subscription={subscription} onCancel={() => setCancelDialogOpen(true)} onUpdatePayment={() => setUpdatePaymentOpen(true)} /><PricingCountdown className="mt-4" /></TabsContent>
+          <TabsContent value="security"><ChangePasswordForm /></TabsContent>
+          <TabsContent value="referrals"><ReferralProgram /></TabsContent>
+          <TabsContent value="diagnostic">
+            <EdgeFunctionDiagnostic />
+          </TabsContent>
+          <TabsContent value="danger">
+            <div className="lv-card" style={{ maxWidth: 560 }}>
+              <div className="lv-card-head">
+                <h2 className="lv-h2">Delete your account</h2>
+              </div>
+              <div className="lv-card-pad">
+                <p className="lv-sub" style={{ marginBottom: 16 }}>
+                  This cannot be undone. Every estimate, invoice, client and setting is removed for good.
                 </p>
                 <DeleteAccountDialog userEmail={userEmail || undefined} />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </div>
+          </TabsContent>
+        </Tabs>
 
-
-      <CancelSubscriptionDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen} subscription={subscription} onSuccess={loadSubscriptionData} />
-      <UpdatePaymentDialog open={updatePaymentOpen} onOpenChange={setUpdatePaymentOpen} onSuccess={loadSubscriptionData} />
+        <CancelSubscriptionDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen} subscription={subscription} onSuccess={loadSubscriptionData} />
+        <UpdatePaymentDialog open={updatePaymentOpen} onOpenChange={setUpdatePaymentOpen} onSuccess={loadSubscriptionData} />
+      </main>
     </div>
   );
 }
 
 function ProfileCard({ profile, userEmail, userCreatedAt }: { profile: any; userEmail: string | null; userCreatedAt: string | null }) {
   return (
-    <Card className="mb-6">
-      <CardHeader className="p-4">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden border-2 border-white shadow">
-            {profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="Profile" className="w-full h-full object-cover" /> : <User className="w-7 h-7 text-blue-600" />}
+    <div className="lv-card" style={{ marginBottom: 20 }}>
+      <div className="lv-card-head">
+        <div className="lv-inline" style={{ gap: 14, minWidth: 0 }}>
+          <div
+            style={{
+              width: 46, height: 46, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
+              background: 'var(--lv-blue-soft)', color: 'var(--lv-blue)',
+              display: 'grid', placeItems: 'center',
+            }}
+          >
+            {profile?.profile_photo_url
+              ? <img src={profile.profile_photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <User size={22} />}
           </div>
-          <div><CardTitle className="text-lg">{profile?.full_name || 'Your Profile'}</CardTitle><CardDescription>{profile?.company_name || 'Account information'}</CardDescription></div>
+          <div style={{ minWidth: 0 }}>
+            <p className="lv-h3">{profile?.full_name || 'Your profile'}</p>
+            <p className="lv-small" style={{ marginTop: 2 }}>{profile?.company_name || 'Account information'}</p>
+          </div>
         </div>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <div className="grid sm:grid-cols-2 gap-3">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"><Mail className="w-5 h-5 text-gray-500" /><div><p className="text-xs text-gray-500">Email</p><p className="font-medium text-sm truncate">{userEmail || 'Not available'}</p></div></div>
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"><Calendar className="w-5 h-5 text-gray-500" /><div><p className="text-xs text-gray-500">Member Since</p><p className="font-medium text-sm">{userCreatedAt ? new Date(userCreatedAt).toLocaleDateString() : 'N/A'}</p></div></div>
+      </div>
+      <div className="lv-card-pad">
+        <div className="lv-grid-2">
+          <div className="lv-inline" style={{ gap: 11, padding: '11px 13px', background: 'var(--lv-sunken)', borderRadius: 'var(--lv-r)', flexWrap: 'nowrap', minWidth: 0 }}>
+            <Mail size={17} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <p className="lv-eyebrow">Email</p>
+              <p className="lv-small" style={{ color: 'var(--lv-ink)', fontWeight: 500, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {userEmail || 'Not available'}
+              </p>
+            </div>
+          </div>
+          <div className="lv-inline" style={{ gap: 11, padding: '11px 13px', background: 'var(--lv-sunken)', borderRadius: 'var(--lv-r)', flexWrap: 'nowrap', minWidth: 0 }}>
+            <Calendar size={17} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
+            <div style={{ minWidth: 0 }}>
+              <p className="lv-eyebrow">Member since</p>
+              <p className="lv-small lv-num" style={{ color: 'var(--lv-ink)', fontWeight: 500, marginTop: 2 }}>
+                {userCreatedAt ? new Date(userCreatedAt).toLocaleDateString() : 'Not available'}
+              </p>
+            </div>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
 function SubscriptionCard({ subscription, onCancel, onUpdatePayment }: any) {
   if (!subscription) return (
-    <Card className="mb-6">
-      <CardHeader className="p-4"><CardTitle className="text-lg">No Active Subscription</CardTitle></CardHeader>
-      <CardContent className="p-4 pt-0"><div className="bg-blue-50 border border-blue-200 rounded-lg p-4"><p className="text-sm text-blue-800 mb-3">Get started with a 14-day free trial.</p><Button className="bg-blue-600 hover:bg-blue-700">Start Free Trial</Button></div></CardContent>
-    </Card>
+    <div className="lv-card" style={{ maxWidth: 560 }}>
+      <div className="lv-card-head">
+        <h2 className="lv-h2">Your plan</h2>
+        <span className="lv-pill">No subscription</span>
+      </div>
+      <div className="lv-card-pad">
+        <p className="lv-sub" style={{ marginBottom: 16 }}>
+          There is no active subscription on this account. LevelWorks is $5 a month.
+        </p>
+        <button className="lv-btn pri">Start free trial</button>
+      </div>
+    </div>
   );
   const amount = subscription.plan?.amount ? (subscription.plan.amount / 100).toFixed(0) : null;
+  const status = subscription.status || '';
+  const tone = status === 'active' ? 'green' : status === 'canceled' || status === 'unpaid' ? 'red' : 'amber';
   return (
-    <Card className="mb-6">
-      <CardHeader className="p-4"><div className="flex justify-between items-start"><CardTitle className="text-lg">Subscription</CardTitle><Badge variant={subscription.status === 'active' ? 'default' : 'secondary'}>{subscription.status?.toUpperCase()}</Badge></div></CardHeader>
-      <CardContent className="p-4 pt-0 space-y-4">
-        <div className="grid grid-cols-2 gap-3"><div><p className="text-xs text-gray-600">Plan</p><p className="font-semibold">Professional</p></div><div><p className="text-xs text-gray-600">Rate</p><p className="font-semibold text-green-600">${amount}/mo</p></div></div>
-        <div className="flex gap-2"><Button onClick={onUpdatePayment} variant="outline" size="sm">Update Payment</Button><Button onClick={onCancel} variant="destructive" size="sm">Cancel</Button></div>
-      </CardContent>
-    </Card>
+    <div className="lv-card" style={{ maxWidth: 560 }}>
+      <div className="lv-card-head">
+        <h2 className="lv-h2">Your plan</h2>
+        <span className={`lv-pill ${tone}`}>{status ? status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ') : 'Unknown'}</span>
+      </div>
+      <div className="lv-card-pad">
+        <div className="lv-grid-2">
+          <div>
+            <p className="lv-eyebrow">Plan</p>
+            <p className="lv-h3" style={{ marginTop: 4 }}>Professional</p>
+          </div>
+          <div>
+            <p className="lv-eyebrow">Rate</p>
+            <p className="lv-h3 lv-num" style={{ marginTop: 4 }}>{amount ? `$${amount} a month` : '—'}</p>
+          </div>
+        </div>
+      </div>
+      <div className="lv-card-foot">
+        <div className="lv-inline">
+          <button className="lv-btn sec sm" onClick={onUpdatePayment}>Update payment</button>
+          <button className="lv-btn danger sm" onClick={onCancel}>Cancel subscription</button>
+        </div>
+      </div>
+    </div>
   );
 }

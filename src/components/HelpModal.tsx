@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, CheckCircle, Send } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
-import { Button } from './ui/button';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
 
@@ -66,84 +65,113 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={onClose}>
-      <div
-        style={{ background: '#fff', borderRadius: '14px', maxWidth: '480px', width: '100%', maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '0.5px solid #e4e4e7' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#18181b', margin: 0 }}>{showForm ? 'Contact Us' : 'Help & FAQs'}</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px' }}>
+    <div className="lv-scrim" onClick={onClose}>
+      <div className="lv-modal" onClick={e => e.stopPropagation()}>
+
+        <div className="lv-modal-head">
+          <div>
+            <span className="lv-eyebrow">Support</span>
+            <h2 className="lv-h2">{showForm ? 'Contact us' : 'Help and FAQs'}</h2>
+          </div>
+          <button className="lv-icon-btn" onClick={onClose} aria-label="Close">
             <X size={20} />
           </button>
         </div>
 
-        {!showForm && (
-          <>
-            <div style={{ padding: '8px 20px', overflowY: 'auto' }}>
+        <div className="lv-modal-body">
+          {!showForm && (
+            <>
               <Accordion type="single" collapsible>
                 {FAQS.map((item, i) => (
                   <AccordionItem key={i} value={`faq-${i}`}>
-                    <AccordionTrigger style={{ fontSize: '14px', color: '#18181b' }}>{item.q}</AccordionTrigger>
-                    <AccordionContent style={{ fontSize: '13px' }}>{item.a}</AccordionContent>
+                    <AccordionTrigger className="lv-h3">{item.q}</AccordionTrigger>
+                    <AccordionContent className="lv-sub">{item.a}</AccordionContent>
                   </AccordionItem>
                 ))}
               </Accordion>
-            </div>
+              <p className="lv-small" style={{ marginTop: 18 }}>
+                Still need help? Send us a message and we'll get back to you.
+              </p>
+            </>
+          )}
 
-            <div style={{ padding: '16px 20px', borderTop: '0.5px solid #e4e4e7', textAlign: 'center' }}>
-              <p style={{ fontSize: '13px', color: '#71717a', margin: '0 0 10px' }}>Still need help?</p>
-              <Button style={{ width: '100%' }} onClick={() => setShowForm(true)}>Contact Us</Button>
-            </div>
-          </>
-        )}
-
-        {showForm && (
-          <div style={{ padding: '20px' }}>
-            {sent ? (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <p style={{ fontSize: '15px', color: '#18181b', fontWeight: '500', marginBottom: '6px' }}>Message sent</p>
-                <p style={{ fontSize: '13px', color: '#71717a', marginBottom: '20px' }}>We'll get back to you as soon as we can.</p>
-                <Button style={{ width: '100%' }} onClick={onClose}>Close</Button>
-              </div>
-            ) : (
-              <>
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ fontSize: '13px', color: '#52525b', display: 'block', marginBottom: '4px' }}>Name</label>
+          {showForm && !sent && (
+            <div className="lv-stack">
+              <p className="lv-sub">Tell us what's going on and we'll come back to you by email.</p>
+              <div>
+                <label className="lv-field">
+                  <span className="lv-label">Your name</span>
                   <input
+                    className="lv-input"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', border: '1px solid #e4e4e7', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                    autoComplete="name"
+                    placeholder="Eric Connor"
+                    disabled={sending}
                   />
-                </div>
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ fontSize: '13px', color: '#52525b', display: 'block', marginBottom: '4px' }}>Email</label>
+                </label>
+                <label className="lv-field">
+                  <span className="lv-label">Your email</span>
                   <input
+                    className="lv-input"
                     type="email"
+                    inputMode="email"
+                    autoComplete="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    style={{ width: '100%', padding: '9px 12px', border: '1px solid #e4e4e7', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' }}
+                    placeholder="you@email.com"
+                    disabled={sending}
                   />
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ fontSize: '13px', color: '#52525b', display: 'block', marginBottom: '4px' }}>Message</label>
+                </label>
+                <label className="lv-field">
+                  <span className="lv-label">Message</span>
                   <textarea
+                    className="lv-textarea"
                     value={message}
                     onChange={e => setMessage(e.target.value)}
-                    rows={4}
-                    style={{ width: '100%', padding: '9px 12px', border: '1px solid #e4e4e7', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', resize: 'vertical' }}
+                    rows={5}
+                    placeholder="What can we help with?"
+                    disabled={sending}
                   />
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <Button variant="outline" style={{ flex: 1 }} onClick={() => setShowForm(false)} disabled={sending}>Back</Button>
-                  <Button style={{ flex: 1 }} onClick={handleSend} disabled={sending}>
-                    {sending ? <Loader2 size={16} className="animate-spin" /> : 'Send'}
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+                </label>
+              </div>
+            </div>
+          )}
+
+          {showForm && sent && (
+            <div className="lv-empty">
+              <CheckCircle size={40} style={{ color: 'var(--lv-green)' }} />
+              <h3>Message sent</h3>
+              <p>We'll get back to you at {email.trim() || 'your email'} as soon as we can.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="lv-modal-foot">
+          {!showForm ? (
+            <div className="lv-actions">
+              <button className="lv-btn quiet" onClick={onClose}>Close</button>
+              <span className="spacer" />
+              <button className="lv-btn pri" onClick={() => setShowForm(true)}>Contact us</button>
+            </div>
+          ) : sent ? (
+            <div className="lv-actions">
+              <span className="spacer" />
+              <button className="lv-btn pri span" onClick={onClose}>Close</button>
+            </div>
+          ) : (
+            <div className="lv-actions">
+              <button className="lv-btn quiet" onClick={() => setShowForm(false)} disabled={sending}>Back</button>
+              <span className="spacer" />
+              <button className="lv-btn pri" onClick={handleSend} disabled={sending}>
+                {sending
+                  ? <><Loader2 size={16} className="animate-spin" /> Sending…</>
+                  : <><Send size={16} /> Send message</>}
+              </button>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

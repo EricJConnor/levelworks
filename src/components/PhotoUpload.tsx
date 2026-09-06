@@ -1,8 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Upload, X, Loader2 } from 'lucide-react';
-import { Button } from './ui/button';
+import { Camera, Upload, Loader2 } from 'lucide-react';
 
 interface PhotoUploadProps {
   estimateId?: string;
@@ -49,7 +48,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({ estimateId, jobId, onP
       if (error) throw error;
 
       onPhotoUploaded({ id: data.id, fileUrl: publicUrl, caption: data.caption });
-      toast({ title: 'Photo uploaded successfully' });
+      toast({ title: 'Photo added' });
     } catch (error: any) {
       toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
     } finally {
@@ -64,18 +63,16 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({ estimateId, jobId, onP
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="lv-inline" style={{ gap: 8 }}>
       <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileChange} className="hidden" />
       <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileChange} className="hidden" />
-      
-      <Button variant="outline" size="sm" onClick={() => cameraInputRef.current?.click()} disabled={uploading} className="flex items-center gap-1">
-        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-        <span className="hidden sm:inline">Camera</span>
-      </Button>
-      <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="flex items-center gap-1">
-        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-        <span className="hidden sm:inline">Gallery</span>
-      </Button>
+
+      <button className="lv-btn sec sm" onClick={() => cameraInputRef.current?.click()} disabled={uploading}>
+        {uploading ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />} Camera
+      </button>
+      <button className="lv-btn sec sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+        {uploading ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />} Upload
+      </button>
     </div>
   );
 };

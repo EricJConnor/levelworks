@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { X, Trash2, Expand, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from './ui/button';
 
 interface Photo {
   id: string;
@@ -46,26 +45,35 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ photos, onPhotoDelet
 
   return (
     <>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+      <div className="pg-grid">
         {photos.map((photo, index) => (
-          <div key={photo.id} className="relative aspect-square group">
-            <img src={photo.fileUrl} alt={photo.caption || 'Project photo'} 
-              className="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition"
-              onClick={() => setLightboxIndex(index)} />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
-              <Button variant="ghost" size="sm" className="text-white bg-black/50 p-1 h-auto" onClick={() => setLightboxIndex(index)}>
-                <Expand className="w-4 h-4" />
-              </Button>
-            </div>
+          <div key={photo.id} className="pg-cell">
+            <img src={photo.fileUrl} alt={photo.caption || 'Project photo'} onClick={() => setLightboxIndex(index)} />
+            <button className="pg-zoom" onClick={() => setLightboxIndex(index)} aria-label="View larger"><Expand size={14} /></button>
             {!readOnly && (
-              <button onClick={() => handleDelete(photo.id)} disabled={deleting === photo.id}
-                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition hover:bg-red-600">
-                <Trash2 className="w-3 h-3" />
+              <button className="pg-del" onClick={() => handleDelete(photo.id)} disabled={deleting === photo.id} aria-label="Delete photo">
+                <Trash2 size={13} />
               </button>
             )}
           </div>
         ))}
       </div>
+
+      <style>{`
+        .pg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+        .pg-cell { position: relative; aspect-ratio: 1; }
+        .pg-cell img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--lv-r); border: 1px solid var(--lv-line); cursor: pointer; display: block; }
+        .pg-zoom, .pg-del {
+          position: absolute; width: 26px; height: 26px; border: 0; border-radius: 50%;
+          display: grid; place-items: center; cursor: pointer; color: #fff;
+          background: rgba(11,18,32,.62); opacity: 0; transition: opacity .18s var(--lv-ease), background .18s var(--lv-ease);
+        }
+        .pg-zoom { bottom: 6px; right: 6px; }
+        .pg-del { top: 6px; right: 6px; }
+        .pg-del:hover { background: var(--lv-red); }
+        .pg-cell:hover .pg-zoom, .pg-cell:hover .pg-del, .pg-cell:focus-within .pg-zoom, .pg-cell:focus-within .pg-del { opacity: 1; }
+        @media (hover: none) { .pg-zoom, .pg-del { opacity: 1; } }
+      `}</style>
 
       {lightboxIndex !== null && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center" onClick={() => setLightboxIndex(null)}>

@@ -1,12 +1,7 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Lock, Check, X, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Check, X, Loader2 } from 'lucide-react';
 
 export function ChangePasswordForm() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -28,100 +23,170 @@ export function ChangePasswordForm() {
 
   const strength = Object.values(checks).filter(Boolean).length;
   const strengthLabel = strength <= 2 ? 'Weak' : strength <= 4 ? 'Medium' : 'Strong';
-  const strengthColor = strength <= 2 ? 'bg-red-500' : strength <= 4 ? 'bg-yellow-500' : 'bg-green-500';
+  const strengthColor = strength <= 2 ? 'var(--lv-red)' : strength <= 4 ? 'var(--lv-amber)' : 'var(--lv-green)';
   const passwordsMatch = newPassword && confirmPassword && newPassword === confirmPassword;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passwordsMatch || strength < 3) {
-      toast({ title: 'Error', description: 'Please fix the errors before submitting', variant: 'destructive' });
+      toast({ title: 'Password not ready', description: 'Meet at least three of the rules and make both fields match.', variant: 'destructive' });
       return;
     }
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) throw new Error('User not found');
-      
+
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: user.email,
         password: currentPassword,
       });
       if (signInError) throw new Error('Current password is incorrect');
-      
+
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      
-      toast({ title: 'Success', description: 'Password updated successfully!' });
+
+      toast({ title: 'Password updated', description: 'Use the new one next time you sign in.' });
       setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: 'Could not change password', description: error.message, variant: 'destructive' });
     } finally { setLoading(false); }
   };
 
   const CheckItem = ({ ok, text }: { ok: boolean; text: string }) => (
-    <div className={`flex items-center gap-2 text-xs ${ok ? 'text-green-600' : 'text-gray-400'}`}>
-      {ok ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}<span>{text}</span>
-    </div>
+    <span
+      className="lv-small"
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: ok ? 'var(--lv-green)' : 'var(--lv-faint)' }}
+    >
+      {ok ? <Check size={13} /> : <X size={13} />}{text}
+    </span>
   );
 
+  const eyeBtn = {
+    position: 'absolute' as const,
+    right: 4,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: 40,
+    height: 40,
+    display: 'grid',
+    placeItems: 'center',
+    background: 'none',
+    border: 0,
+    borderRadius: 'var(--lv-r-sm)',
+    color: 'var(--lv-faint)',
+    cursor: 'pointer',
+  };
+
   return (
-    <Card className="bg-[#1c1c1e] border-white/10 text-white">
-      <CardHeader className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-500/15 flex items-center justify-center">
-            <Lock className="w-5 h-5 text-blue-400" />
-          </div>
-          <div><CardTitle className="text-lg text-white">Change Password</CardTitle><CardDescription className="text-gray-400">Update your account password</CardDescription></div>
+    <form className="lv-card" onSubmit={handleSubmit} style={{ maxWidth: 560 }}>
+      <div className="lv-card-head">
+        <div>
+          <h2 className="lv-h2">Change password</h2>
+          <p className="lv-small" style={{ marginTop: 3 }}>Enter the password you use now, then the new one twice.</p>
         </div>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="current" className="text-gray-200">Current Password</Label>
-            <div className="relative">
-              <Input id="current" type={showCurrent ? 'text' : 'password'} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required className="pr-10" />
-              <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+      </div>
+
+      <div className="lv-card-pad">
+        <label className="lv-field">
+          <span className="lv-label">Current password</span>
+          <span style={{ position: 'relative', display: 'block' }}>
+            <input
+              className="lv-input"
+              id="current"
+              type={showCurrent ? 'text' : 'password'}
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+              style={{ paddingRight: 46 }}
+            />
+            <button type="button" onClick={() => setShowCurrent(!showCurrent)} style={eyeBtn} aria-label={showCurrent ? 'Hide password' : 'Show password'}>
+              {showCurrent ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </span>
+        </label>
+
+        <label className="lv-field">
+          <span className="lv-label">New password</span>
+          <span style={{ position: 'relative', display: 'block' }}>
+            <input
+              className="lv-input"
+              id="new"
+              type={showNew ? 'text' : 'password'}
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              style={{ paddingRight: 46 }}
+            />
+            <button type="button" onClick={() => setShowNew(!showNew)} style={eyeBtn} aria-label={showNew ? 'Hide password' : 'Show password'}>
+              {showNew ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </span>
+        </label>
+
+        {newPassword && (
+          <div style={{ marginTop: 10 }}>
+            <div className="lv-inline" style={{ gap: 10, flexWrap: 'nowrap' }}>
+              <span style={{ flex: 1, height: 6, borderRadius: 999, background: 'var(--lv-sunken)', overflow: 'hidden' }}>
+                <span
+                  style={{
+                    display: 'block',
+                    height: '100%',
+                    width: `${strength * 20}%`,
+                    background: strengthColor,
+                    borderRadius: 999,
+                    transition: 'width var(--lv-t) var(--lv-ease)',
+                  }}
+                />
+              </span>
+              <span style={{ fontSize: 12.5, fontWeight: 600, color: strengthColor, whiteSpace: 'nowrap' }}>{strengthLabel}</span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', marginTop: 10 }}>
+              <CheckItem ok={checks.length} text="8 characters or more" />
+              <CheckItem ok={checks.upper} text="Capital letter" />
+              <CheckItem ok={checks.lower} text="Lower-case letter" />
+              <CheckItem ok={checks.number} text="Number" />
+              <CheckItem ok={checks.special} text="Symbol" />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="new" className="text-gray-200">New Password</Label>
-            <div className="relative">
-              <Input id="new" type={showNew ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className="pr-10" />
-              <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            {newPassword && (
-              <div className="space-y-2 mt-2">
-                <div className="flex items-center gap-2"><Progress value={strength * 20} className={`h-2 flex-1 ${strengthColor}`} /><span className={`text-xs font-medium ${strength <= 2 ? 'text-red-600' : strength <= 4 ? 'text-yellow-600' : 'text-green-600'}`}>{strengthLabel}</span></div>
-                <div className="grid grid-cols-2 gap-1">
-                  <CheckItem ok={checks.length} text="8+ characters" />
-                  <CheckItem ok={checks.upper} text="Uppercase" />
-                  <CheckItem ok={checks.lower} text="Lowercase" />
-                  <CheckItem ok={checks.number} text="Number" />
-                  <CheckItem ok={checks.special} text="Special char" />
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirm" className="text-gray-200">Confirm New Password</Label>
-            <div className="relative">
-              <Input id="confirm" type={showConfirm ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={`pr-10 ${confirmPassword && !passwordsMatch ? 'border-red-500' : ''}`} />
-              <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            {confirmPassword && !passwordsMatch && <p className="text-xs text-red-500">Passwords do not match</p>}
-            {passwordsMatch && <p className="text-xs text-green-500 flex items-center gap-1"><Check className="w-3 h-3" />Passwords match</p>}
-          </div>
-          <Button type="submit" disabled={loading || !passwordsMatch || strength < 3} className="w-full">
-            {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Updating...</> : 'Update Password'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        )}
+
+        <label className="lv-field">
+          <span className="lv-label">Confirm new password</span>
+          <span style={{ position: 'relative', display: 'block' }}>
+            <input
+              className="lv-input"
+              id="confirm"
+              type={showConfirm ? 'text' : 'password'}
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              style={{ paddingRight: 46, borderColor: confirmPassword && !passwordsMatch ? 'var(--lv-red)' : undefined }}
+            />
+            <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={eyeBtn} aria-label={showConfirm ? 'Hide password' : 'Show password'}>
+              {showConfirm ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </span>
+        </label>
+
+        {confirmPassword && !passwordsMatch && (
+          <p className="lv-small" style={{ marginTop: 7, color: 'var(--lv-red)' }}>The two passwords do not match.</p>
+        )}
+        {passwordsMatch && (
+          <p className="lv-small" style={{ marginTop: 7, color: 'var(--lv-green)', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Check size={13} />Passwords match
+          </p>
+        )}
+      </div>
+
+      <div className="lv-card-foot">
+        <button type="submit" className="lv-btn pri" disabled={loading || !passwordsMatch || strength < 3}>
+          {loading ? <><Loader2 size={15} className="animate-spin" /> Updating</> : 'Update password'}
+        </button>
+      </div>
+    </form>
   );
 }

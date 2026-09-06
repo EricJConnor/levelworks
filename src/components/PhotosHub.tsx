@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { supabase } from '@/lib/supabase';
-import { Camera, FileText, ChevronRight, Send, Clock } from 'lucide-react';
+import { Camera, FileText, ChevronRight, Send, Clock, Search, Plus, ExternalLink } from 'lucide-react';
 import { CreateUpdateModal } from './CreateUpdateModal';
 
 interface PhotosHubProps {
@@ -35,71 +35,91 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
   });
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-1">Photos</h2>
-        <p className="text-sm text-gray-400">Upload job-site photos to an estimate, or create a standalone update to send to your client.</p>
+    <div style={{ maxWidth: 760, margin: '0 auto' }}>
+      <style>{`
+        .ph-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+        @media (max-width: 640px) { .ph-acts { grid-template-columns: 1fr; } }
+        .ph-act {
+          display: flex; align-items: center; gap: 14px; text-align: left; width: 100%;
+          padding: 16px; cursor: pointer; background: var(--lv-surface);
+          border: 1px solid var(--lv-line); border-radius: var(--lv-r-lg);
+          box-shadow: var(--lv-shadow-sm); font: inherit; color: inherit;
+          transition: border-color var(--lv-t) var(--lv-ease), box-shadow var(--lv-t) var(--lv-ease);
+        }
+        .ph-act:hover { border-color: var(--lv-line-2); box-shadow: var(--lv-shadow); }
+        .ph-act.on { border-color: var(--lv-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+        .ph-act-ic {
+          width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--lv-r);
+          background: var(--lv-blue-soft); color: var(--lv-blue);
+          display: grid; place-items: center;
+        }
+        .ph-clip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ph-picker { margin-bottom: 18px; }
+        .ph-pick-list { max-height: 300px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .ph-when { display: inline-flex; align-items: center; gap: 5px; margin-top: 3px; }
+        .ph-link { flex-shrink: 0; text-decoration: none; }
+      `}</style>
+
+      <div className="lv-page-head">
+        <div>
+          <h1 className="lv-h1">Photos</h1>
+          <p className="lv-sub">Put site photos on an estimate, or build an update to send a client.</p>
+        </div>
+        <button className="lv-btn pri" onClick={() => setShowCreateUpdate(true)}><Plus size={16} /> New update</button>
       </div>
 
-      {/* Action buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="ph-acts">
         <button
+          className={`ph-act ${showEstimatePicker ? 'on' : ''}`}
           onClick={() => { setShowEstimatePicker(!showEstimatePicker); setSearch(''); }}
-          className="flex items-center gap-4 p-5 rounded-xl text-left transition-colors"
-          style={{ background: '#1c1c1e', border: `2px solid ${showEstimatePicker ? '#3b82f6' : 'rgba(255,255,255,0.1)'}` }}
+          aria-expanded={showEstimatePicker}
         >
-          <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
-            <Camera className="w-5 h-5 text-blue-400" />
-          </div>
-          <div>
-            <p className="font-semibold text-white">Upload Photos</p>
-            <p className="text-xs text-gray-400 mt-0.5">Add photos to an existing estimate</p>
-          </div>
+          <span className="ph-act-ic"><Camera size={19} /></span>
+          <span style={{ minWidth: 0 }}>
+            <span className="lv-h3" style={{ display: 'block' }}>Upload photos</span>
+            <span className="lv-small" style={{ display: 'block', marginTop: 2 }}>Add photos to an existing estimate</span>
+          </span>
         </button>
 
-        <button
-          onClick={() => setShowCreateUpdate(true)}
-          className="flex items-center gap-4 p-5 rounded-xl text-left transition-colors"
-          style={{ background: '#1c1c1e', border: '2px solid rgba(255,255,255,0.1)' }}
-        >
-          <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
-            <Send className="w-5 h-5 text-blue-400" />
-          </div>
-          <div>
-            <p className="font-semibold text-white">Create Update</p>
-            <p className="text-xs text-gray-400 mt-0.5">Build a photo update to send to a client</p>
-          </div>
+        <button className="ph-act" onClick={() => setShowCreateUpdate(true)}>
+          <span className="ph-act-ic"><Send size={18} /></span>
+          <span style={{ minWidth: 0 }}>
+            <span className="lv-h3" style={{ display: 'block' }}>Create update</span>
+            <span className="lv-small" style={{ display: 'block', marginTop: 2 }}>Build a photo update to send a client</span>
+          </span>
         </button>
       </div>
 
-      {/* Estimate picker */}
       {showEstimatePicker && (
-        <div className="rounded-xl overflow-hidden shadow-sm" style={{ background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <div className="px-4 pt-4 pb-3 border-b border-white/10">
-            <p className="text-sm font-semibold text-gray-200 mb-2">Choose an estimate to open:</p>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search by client or project name..."
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
-              autoFocus
-            />
+        <div className="lv-card ph-picker">
+          <div className="lv-card-head" style={{ display: 'block' }}>
+            <span className="lv-eyebrow">Choose an estimate to open</span>
+            <div className="lv-search" style={{ marginTop: 8 }}>
+              <Search size={16} />
+              <input
+                className="lv-input"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search by client or project"
+                autoFocus
+              />
+            </div>
           </div>
-          <div className="max-h-72 overflow-y-auto divide-y divide-white/5">
+          <div className="ph-pick-list">
             {filtered.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-8">No estimates found.</p>
+              <p className="lv-small" style={{ padding: '24px 18px', textAlign: 'center' }}>No estimates match that search.</p>
             ) : (
               filtered.map(est => (
                 <button
+                  className="lv-row"
                   key={est.id}
                   onClick={() => { onOpenEstimate(est); setShowEstimatePicker(false); }}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-blue-400/10 transition-colors"
                 >
-                  <div>
-                    <p className="font-medium text-white text-sm">{est.projectName || 'Unnamed Project'}</p>
-                    <p className="text-xs text-gray-400">{est.clientName}</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-500" />
+                  <span style={{ minWidth: 0 }}>
+                    <span className="lv-row-t ph-clip" style={{ display: 'block' }}>{est.projectName || 'Unnamed project'}</span>
+                    <span className="lv-row-s ph-clip" style={{ display: 'block' }}>{est.clientName}</span>
+                  </span>
+                  <ChevronRight size={16} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
                 </button>
               ))
             )}
@@ -107,46 +127,41 @@ export const PhotosHub: React.FC<PhotosHubProps> = ({ onOpenEstimate }) => {
         </div>
       )}
 
-      {/* Past updates */}
-      {updates.length > 0 && (
-        <div>
-          <h3 className="text-base font-semibold text-gray-200 mb-3">Sent Updates</h3>
-          <div className="space-y-2">
-            {updates.map(u => (
-              <div key={u.id} className="rounded-xl px-4 py-4 flex items-center justify-between gap-3" style={{ background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
-                    <FileText className="w-4 h-4 text-blue-400" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-white text-sm truncate">{u.name}</p>
-                    {u.description && <p className="text-xs text-gray-400 truncate">{u.description}</p>}
-                    <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {u.sent_at ? `Sent ${new Date(u.sent_at).toLocaleDateString()}` : `Created ${new Date(u.created_at).toLocaleDateString()}`}
-                    </p>
-                  </div>
-                </div>
-                {u.view_token && (
-                  <a
-                    href={`/view-update/${u.view_token}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-400 font-medium shrink-0 hover:underline"
-                  >
-                    View Link
-                  </a>
-                )}
-              </div>
-            ))}
+      {updates.length > 0 ? (
+        <div className="lv-card">
+          <div className="lv-card-head">
+            <h2 className="lv-h2">Sent updates</h2>
+            <span className="lv-small lv-num">{updates.length}</span>
           </div>
+          {updates.map(u => (
+            <div className="lv-row" key={u.id}>
+              <div style={{ minWidth: 0 }}>
+                <div className="lv-row-t ph-clip">{u.name}</div>
+                {u.description && <div className="lv-row-s ph-clip">{u.description}</div>}
+                <div className="lv-row-s ph-when">
+                  <Clock size={12} />
+                  {u.sent_at ? `Sent ${new Date(u.sent_at).toLocaleDateString()}` : `Created ${new Date(u.created_at).toLocaleDateString()}`}
+                </div>
+              </div>
+              {u.view_token && (
+                <a
+                  className="lv-btn sec sm ph-link"
+                  href={`/view-update/${u.view_token}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink size={14} /> View link
+                </a>
+              )}
+            </div>
+          ))}
         </div>
-      )}
-
-      {updates.length === 0 && !showEstimatePicker && (
-        <div className="rounded-xl p-8 text-center" style={{ background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.1)' }}>
-          <Camera className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-          <p className="text-sm text-gray-500">No photo updates yet. Use the buttons above to get started.</p>
+      ) : !showEstimatePicker && (
+        <div className="lv-empty">
+          <FileText size={30} />
+          <h3>No photo updates yet</h3>
+          <p>Build an update from your site photos and send your client a link they can open on their phone.</p>
+          <button className="lv-btn pri" onClick={() => setShowCreateUpdate(true)}><Plus size={16} /> Create an update</button>
         </div>
       )}
 

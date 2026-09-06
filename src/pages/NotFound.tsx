@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { FileQuestion } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -12,13 +13,18 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center p-8 rounded-lg border border-border bg-card shadow-md animate-slide-in">
-        <h1 className="text-5xl font-bold mb-6 text-primary">404</h1>
-        <p className="text-xl text-card-foreground mb-6">Page not found</p>
-        <a href="/" className="text-primary hover:text-primary/80 underline transition-colors">
-          Return to Home
-        </a>
+    <div
+      className="lv-app"
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+    >
+      <div className="lv-empty" style={{ maxWidth: 420, width: '100%' }}>
+        <FileQuestion size={30} />
+        <h3>Page not found</h3>
+        <p>That link doesn’t go anywhere. Your account and your work are still here.</p>
+        <div className="lv-inline" style={{ justifyContent: 'center' }}>
+          <a className="lv-btn pri" href="/dashboard">Go to your dashboard</a>
+          <a className="lv-btn quiet" href="/">Back to home</a>
+        </div>
       </div>
     </div>
   );

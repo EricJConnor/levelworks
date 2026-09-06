@@ -1,7 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Badge } from './ui/badge';
 import { ClientsList } from './ClientsList';
 import { EstimateBuilder } from './EstimateBuilder';
 import { InvoiceBuilder } from './InvoiceBuilder';
@@ -12,19 +9,21 @@ import { PhotosHub } from './PhotosHub';
 import { AddToHomeScreen } from './AddToHomeScreen';
 import { ProfileEditor } from './ProfileEditor';
 import { ChangePasswordForm } from './ChangePasswordForm';
-import { DeleteAccountDialog } from './DeleteAccountDialog';
 import { Notes } from './Notes';
 import AuthModal from './AuthModal';
 import { useData, Estimate } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
-import { Menu, Bell, Loader2, User, Users, LogOut, ArrowLeft, Receipt, FileText, ExternalLink, CheckCircle, Clock, Send, HelpCircle, Plus, CreditCard, Home } from 'lucide-react';
+import { Menu, Bell, Loader2, User, Users, LogOut, ArrowLeft, Receipt, FileText, CheckCircle, HelpCircle, Plus, CreditCard, Home, StickyNote, Camera, ChevronRight } from 'lucide-react';
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { HelpModal } from './HelpModal';
+import { Mark } from './Mark';
 
 type View = 'dashboard' | 'clients' | 'notifications' | 'estimates' | 'photos' | 'invoices' | 'account' | 'notes';
+
+const money = (n: number) => `$${(Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
 export const AppLayout: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -38,7 +37,7 @@ export const AppLayout: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const { clients, estimates, jobs, addClient, loading } = useData();
+  const { clients, estimates, addClient, loading } = useData();
   const { profile } = useProfile();
   const mountedRef = useRef(true);
 
@@ -93,13 +92,13 @@ export const AppLayout: React.FC = () => {
   const handleAccountClick = () => { setCurrentView('account'); setMobileMenuOpen(false); };
   const handleHelpClick = () => { setShowHelpModal(true); setMobileMenuOpen(false); };
 
-  const navItems = [
-    { key: 'dashboard', label: 'Dashboard' },
-    { key: 'clients', label: 'Clients' },
-    { key: 'estimates', label: 'Estimates' },
-    { key: 'photos', label: 'Photos' },
-    { key: 'invoices', label: 'Invoices' },
-    { key: 'notes', label: 'Notes' },
+  const navItems: { key: View; label: string; icon: React.ElementType }[] = [
+    { key: 'dashboard', label: 'Dashboard', icon: Home },
+    { key: 'estimates', label: 'Estimates', icon: FileText },
+    { key: 'invoices', label: 'Invoices', icon: Receipt },
+    { key: 'clients', label: 'Clients', icon: Users },
+    { key: 'photos', label: 'Photos', icon: Camera },
+    { key: 'notes', label: 'Notes', icon: StickyNote },
   ];
 
   const handleNavClick = (view: View) => {
@@ -107,190 +106,133 @@ export const AppLayout: React.FC = () => {
     setCurrentView(view);
     setMobileMenuOpen(false);
   };
-  const goToEstimates = (filter: 'all' | 'sent' = 'all') => { setEstimatesFilter(filter); setCurrentView('estimates'); };
+  const goToEstimates = (filter: 'all' | 'sent' = 'all') => { setEstimatesFilter(filter); setCurrentView(filter === 'sent' ? 'estimates' : 'estimates'); };
+  const newEstimate = () => { setSelectedEstimate(null); setShowEstimate(true); setMobileMenuOpen(false); };
+  const newInvoice = () => { setInvoiceInitialData(null); setShowInvoice(true); setMobileMenuOpen(false); };
 
   if (isAuthenticated === null || loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a' }}>
-      <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#3b82f6' }} />
+    <div className="lv-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Loader2 size={30} className="animate-spin" style={{ color: 'var(--lv-blue)' }} />
     </div>
   );
 
   if (isAuthenticated === false) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a', padding: '16px' }}>
-      <div style={{ background: '#fff', borderRadius: '12px', padding: '40px', maxWidth: '400px', width: '100%', textAlign: 'center', border: '0.5px solid #e4e4e7' }}>
-        <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#18181b', marginBottom: '8px' }}>Sign In Required</h2>
-        <p style={{ color: '#71717a', fontSize: '15px', marginBottom: '24px' }}>Please sign in to access LevelWorks.</p>
-        <button onClick={() => setShowAuthModal(true)} style={{ width: '100%', background: '#1c1c1e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '15px', fontWeight: '500', cursor: 'pointer', marginBottom: '10px' }}>Sign In</button>
-        <button onClick={() => window.location.href = '/'} style={{ width: '100%', background: 'none', color: '#71717a', border: '0.5px solid #e4e4e7', padding: '12px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }}>Back to Home</button>
+    <div className="lv-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div className="lv-card lv-card-pad" style={{ maxWidth: 380, width: '100%', textAlign: 'center' }}>
+        <h2 className="lv-h1" style={{ fontSize: 21, marginBottom: 6 }}>Sign in to continue</h2>
+        <p className="lv-sub" style={{ marginBottom: 20 }}>Your estimates and clients are waiting.</p>
+        <button className="lv-btn pri wide" onClick={() => setShowAuthModal(true)}>Sign in</button>
+        <button className="lv-btn quiet wide" style={{ marginTop: 8 }} onClick={() => (window.location.href = '/')}>Back to home</button>
       </div>
       <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} onSuccess={() => window.location.reload()} />
     </div>
   );
 
+  const viewTitle: Record<View, string> = {
+    dashboard: 'Dashboard', clients: 'Clients', notifications: 'Notifications', estimates: 'Estimates',
+    photos: 'Photos', invoices: 'Invoices', account: 'Account', notes: 'Notes',
+  };
+
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#e8e8e8', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-      <header style={{ background: '#1c1c1e', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 1px 0 rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-            <h1
-              style={{ fontSize: '17px', fontWeight: '600', color: '#fff', cursor: 'pointer', letterSpacing: '0.04em', margin: 0 }}
-              onClick={() => setCurrentView('dashboard')}
-            >
-              LEVEL<span style={{ color: '#3b82f6' }}>WORKS</span>
-            </h1>
-            <nav style={{ display: 'none' }} className="desktop-nav">
+    <div className="lv-app">
+      <header className="lv-hdr">
+        <div className="lv-hdr-in">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 26, minWidth: 0 }}>
+            <button className="lv-brand" onClick={() => setCurrentView('dashboard')}>
+              <Mark />
+              <span>Level<b>Works</b></span>
+            </button>
+            <nav className="lv-nav lv-hide-mobile" aria-label="Sections">
               {navItems.map(item => (
-                <button
-                  key={item.key}
-                  onClick={() => handleNavClick(item.key as View)}
-                  style={{
-                    background: currentView === item.key ? 'rgba(255,255,255,0.12)' : 'none',
-                    color: currentView === item.key ? '#fff' : '#a1a1aa',
-                    border: 'none',
-                    padding: '6px 14px',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: currentView === item.key ? '500' : '400',
-                    cursor: 'pointer',
-                  }}
-                >
+                <button key={item.key} className={currentView === item.key ? 'on' : ''} onClick={() => handleNavClick(item.key)}>
                   {item.label}
                 </button>
               ))}
             </nav>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <AddToHomeScreen />
-            <button onClick={handleHelpClick} className="hide-mobile" title="Help" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex' }}>
-              <HelpCircle size={20} />
+
+          <div className="lv-hdr-tools">
+            <button className="lv-btn pri sm lv-hide-mobile" onClick={newEstimate}><Plus size={15} /> New estimate</button>
+            <button className="lv-btn sec sm lv-hide-mobile" onClick={newInvoice}><Plus size={15} /> Invoice</button>
+            <button className="lv-icon-btn lv-hide-mobile" onClick={handleHelpClick} title="Help" aria-label="Help"><HelpCircle size={19} /></button>
+            <button className="lv-icon-btn lv-hide-mobile" onClick={() => handleNavClick('notifications')} title="Notifications" aria-label="Notifications">
+              <Bell size={19} />
+              {!pushEnabled && <span className="dot" />}
             </button>
-            <button onClick={() => handleNavClick('notifications')} className="hide-mobile" style={{ background: 'none', border: 'none', color: '#a1a1aa', padding: '8px', borderRadius: '6px', cursor: 'pointer', position: 'relative' }}>
-              <Bell size={20} />
-              {!pushEnabled && <span style={{ position: 'absolute', top: '6px', right: '6px', width: '7px', height: '7px', background: '#3b82f6', borderRadius: '50%' }} />}
+            <button className="lv-btn quiet sm lv-hide-mobile" onClick={handleAccountClick}>
+              {profile?.profile_photo_url
+                ? <img src={profile.profile_photo_url} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
+                : <User size={15} />}
+              {profile?.full_name?.split(' ')[0] || 'Account'}
             </button>
-            <button onClick={handleAccountClick} className="hide-mobile" style={{ background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.12)', color: '#e4e4e7', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              {profile?.profile_photo_url ? <img src={profile.profile_photo_url} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} /> : <User size={15} />}
-              <span>{profile?.full_name?.split(' ')[0] || 'Account'}</span>
-            </button>
-            <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="hide-mobile ghost-action" style={{ background: 'none', border: 'none', color: '#93c5fd', padding: '6px 8px', fontSize: '14px', fontWeight: '700', letterSpacing: '0.01em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Plus size={15} /> Estimate
-            </button>
-            <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="hide-mobile ghost-action" style={{ background: 'none', border: 'none', color: '#e4e4e7', padding: '6px 8px', fontSize: '14px', fontWeight: '700', letterSpacing: '0.01em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Plus size={15} /> Invoice
-            </button>
-            <button onClick={handleSignOut} className="hide-mobile" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '6px 12px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <LogOut size={15} /> Sign Out
-            </button>
+            <button className="lv-icon-btn lv-hide-mobile" onClick={handleSignOut} title="Sign out" aria-label="Sign out"><LogOut size={18} /></button>
+
+            {/* mobile: one primary action lives in the header, the rest in the tab bar */}
+            <button className="lv-btn pri sm lv-hide-desktop" onClick={newEstimate}><Plus size={15} /> Estimate</button>
           </div>
-        </div>
-        <div className="mobile-quick-add mobile-only" style={{ gap: '8px', padding: '10px 16px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
-          <button onClick={() => { setSelectedEstimate(null); setShowEstimate(true); }} className="ghost-action" style={{ flex: 1, background: 'none', color: '#93c5fd', border: 'none', padding: '9px', fontSize: '14px', fontWeight: '700', letterSpacing: '0.01em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-            <Plus size={15} /> Estimate
-          </button>
-          <button onClick={() => { setInvoiceInitialData(null); setShowInvoice(true); }} className="ghost-action" style={{ flex: 1, background: 'none', color: '#e4e4e7', border: 'none', padding: '9px', fontSize: '14px', fontWeight: '700', letterSpacing: '0.01em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
-            <Plus size={15} /> Invoice
-          </button>
         </div>
       </header>
 
-      <style>{`
-        @media (min-width: 1024px) {
-          .desktop-nav { display: flex !important; gap: 2px; }
-          .hide-mobile { display: inline !important; }
-          .mobile-only { display: none !important; }
-          .bottom-nav { display: none !important; }
-          .mobile-sheet { display: none !important; }
-        }
-        @media (max-width: 1023px) {
-          .hide-mobile { display: none !important; }
-          .mobile-only { display: block !important; }
-          .mobile-only.mobile-quick-add { display: flex !important; }
-          .bottom-nav { display: flex !important; }
-          .mobile-sheet { display: block !important; }
-          .app-main { padding-bottom: 88px !important; }
-        }
-        @media (max-width: 480px) {
-          .app-main { padding: 20px 14px 88px !important; }
-        }
-        .ghost-action { opacity: 0.9; transition: opacity 0.15s ease; }
-        .ghost-action:hover { opacity: 1; }
-        .ghost-action:active { opacity: 0.7; }
-      `}</style>
-
-      <main className="app-main" style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px' }}>
-        {currentView !== 'dashboard' && currentView !== 'account' && (
-          <button
-            onClick={() => setCurrentView('dashboard')}
-            style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '14px', padding: '0', marginBottom: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            <ArrowLeft size={16} /> Back to Dashboard
+      <main className="lv-main" style={{ paddingBottom: 96 }}>
+        {currentView !== 'dashboard' && (
+          <button className="lv-btn quiet sm" style={{ marginBottom: 12, marginLeft: -10 }} onClick={() => setCurrentView('dashboard')}>
+            <ArrowLeft size={15} /> Dashboard
           </button>
         )}
+
         {currentView === 'dashboard' && (
           <DashboardView
             clients={clients}
             estimates={estimates}
-            onCreateEstimate={() => { setSelectedEstimate(null); setShowEstimate(true); }}
-            onViewNotes={() => setCurrentView('notes')}
+            onCreateEstimate={newEstimate}
             onViewEstimates={(filter) => goToEstimates(filter)}
             onViewClients={() => setCurrentView('clients')}
             onViewEstimate={(estimate) => { setSelectedEstimate(estimate); setShowEstimate(true); }}
             onConnectStripe={handleConnectStripe}
             stripeConnected={!!profile?.stripe_account_id}
+            firstName={profile?.full_name?.split(' ')[0]}
           />
         )}
         {currentView === 'notifications' && <NotificationSettings />}
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} onConnectStripe={handleConnectStripe} />}
         {currentView === 'estimates' && <EstimatesList initialStatusFilter={estimatesFilter} />}
         {currentView === 'photos' && <PhotosHub onOpenEstimate={(est) => { setSelectedEstimate(est); setShowEstimate(true); }} />}
-        {currentView === 'invoices' && <InvoicesList onCreateInvoice={() => { setInvoiceInitialData(null); setShowInvoice(true); }} />}
+        {currentView === 'invoices' && <InvoicesList onCreateInvoice={newInvoice} />}
         {currentView === 'notes' && <Notes />}
         {currentView === 'account' && <AccountView onBack={() => setCurrentView('dashboard')} />}
       </main>
 
       {mobileMenuOpen && (
         <>
-          <div className="mobile-sheet" onClick={() => setMobileMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 39 }} />
-          <div className="mobile-sheet" style={{ position: 'fixed', bottom: '64px', left: 0, right: 0, background: '#141416', borderTop: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '14px 14px 0 0', padding: '12px 16px calc(16px + env(safe-area-inset-bottom))', zIndex: 41, boxShadow: '0 -4px 20px rgba(0,0,0,0.3)' }}>
-            {navItems.map(item => (
-              <button key={item.key} onClick={() => handleNavClick(item.key as View)} style={{ display: 'block', width: '100%', textAlign: 'left', background: currentView === item.key ? 'rgba(255,255,255,0.08)' : 'none', color: currentView === item.key ? '#fff' : '#a1a1aa', border: 'none', padding: '10px 14px', borderRadius: '7px', fontSize: '15px', fontWeight: currentView === item.key ? '500' : '400', cursor: 'pointer', marginBottom: '2px' }}>
-                {item.label}
+          <div className="lv-sheet-scrim lv-hide-desktop" onClick={() => setMobileMenuOpen(false)} />
+          <div className="lv-sheet lv-hide-desktop">
+            {navItems.filter(i => !['dashboard', 'estimates', 'invoices', 'clients'].includes(i.key)).map(item => (
+              <button key={item.key} className={currentView === item.key ? 'on' : ''} onClick={() => handleNavClick(item.key)}>
+                <item.icon size={17} /> {item.label}
               </button>
             ))}
-            <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', marginTop: '10px', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <button onClick={handleAccountClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><User size={16} /> Account</button>
-              <button onClick={handleHelpClick} style={{ background: 'rgba(255,255,255,0.06)', color: '#e4e4e7', border: 'none', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><HelpCircle size={16} /> Help</button>
-              <button onClick={handleSignOut} style={{ background: 'none', color: '#71717a', border: '0.5px solid rgba(255,255,255,0.08)', padding: '11px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}><LogOut size={16} /> Sign Out</button>
-            </div>
+            <button className={currentView === 'notifications' ? 'on' : ''} onClick={() => handleNavClick('notifications')}><Bell size={17} /> Notifications</button>
+            <hr />
+            <button onClick={newInvoice}><Plus size={17} /> New invoice</button>
+            <button onClick={handleAccountClick}><User size={17} /> Account</button>
+            <AddToHomeScreen />
+            <button onClick={handleHelpClick}><HelpCircle size={17} /> Help</button>
+            <button onClick={handleSignOut} style={{ color: 'var(--lv-mute)' }}><LogOut size={17} /> Sign out</button>
           </div>
         </>
       )}
 
-      <nav className="bottom-nav" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#1c1c1e', borderTop: '0.5px solid rgba(255,255,255,0.1)', zIndex: 40, paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        {[
-          { key: 'dashboard' as View, label: 'Dashboard', icon: Home },
-          { key: 'estimates' as View, label: 'Estimates', icon: FileText },
-          { key: 'invoices' as View, label: 'Invoices', icon: Receipt },
-          { key: 'clients' as View, label: 'Clients', icon: Users },
-        ].map(({ key, label, icon: Icon }) => {
-          const active = currentView === key;
-          return (
-            <button
-              key={key}
-              onClick={() => handleNavClick(key)}
-              style={{ flex: 1, background: 'none', border: 'none', padding: '8px 4px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', color: active ? '#60a5fa' : '#71717a', cursor: 'pointer' }}
-            >
-              <Icon size={22} />
-              <span style={{ fontSize: '11px', fontWeight: active ? 600 : 400 }}>{label}</span>
-            </button>
-          );
-        })}
+      <nav className="lv-tabs lv-hide-desktop" aria-label="Main">
+        {navItems.slice(0, 4).map(({ key, label, icon: Icon }) => (
+          <button key={key} className={currentView === key ? 'on' : ''} onClick={() => handleNavClick(key)}>
+            <Icon size={21} /><span>{label}</span>
+          </button>
+        ))}
         <button
+          className={mobileMenuOpen || !['dashboard', 'estimates', 'invoices', 'clients'].includes(currentView) ? 'on' : ''}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          style={{ flex: 1, background: 'none', border: 'none', padding: '8px 4px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', color: (mobileMenuOpen || !['dashboard', 'estimates', 'invoices', 'clients'].includes(currentView)) ? '#60a5fa' : '#71717a', cursor: 'pointer' }}
         >
-          <Menu size={22} />
-          <span style={{ fontSize: '11px', fontWeight: (mobileMenuOpen || !['dashboard', 'estimates', 'invoices', 'clients'].includes(currentView)) ? 600 : 400 }}>More</span>
+          <Menu size={21} /><span>More</span>
         </button>
       </nav>
 
@@ -313,6 +255,7 @@ export const AppLayout: React.FC = () => {
         />
       )}
       {showHelpModal && <HelpModal onClose={() => setShowHelpModal(false)} />}
+      <span style={{ display: 'none' }}>{viewTitle[currentView]}</span>
     </div>
   );
 };
@@ -321,133 +264,94 @@ interface DashboardViewProps {
   clients: any[];
   estimates: Estimate[];
   onCreateEstimate: () => void;
-  onViewNotes: () => void;
   onViewEstimates: (filter?: 'all' | 'sent') => void;
   onViewClients: () => void;
   onViewEstimate: (estimate: any) => void;
   onConnectStripe: () => void;
   stripeConnected: boolean;
+  firstName?: string;
 }
 
-function DashboardView({ clients, estimates, onCreateEstimate, onViewNotes, onViewEstimates, onViewClients, onViewEstimate, onConnectStripe, stripeConnected }: DashboardViewProps) {
-  const [receiptCount, setReceiptCount] = useState(0);
-
-  useEffect(() => {
-    const loadNoteCount = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { count } = await supabase
-        .from('notes')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-      setReceiptCount(count || 0);
-    };
-    loadNoteCount();
-  }, []);
-
-  const recentEstimates = estimates.slice(0, 3);
+function DashboardView({ clients, estimates, onCreateEstimate, onViewEstimates, onViewClients, onViewEstimate, onConnectStripe, stripeConnected, firstName }: DashboardViewProps) {
+  const recentEstimates = estimates.slice(0, 5);
   const pendingEstimates = estimates.filter(e => e.status === 'sent').length;
   const totalEstimateValue = estimates.reduce((sum, e) => sum + (e.total || 0), 0);
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, React.CSSProperties> = {
-      approved: { background: '#dcfce7', color: '#16a34a' },
-      sent: { background: '#dbeafe', color: '#1d4ed8' },
-      draft: { background: '#f4f4f5', color: '#52525b' },
-    };
-    const s = styles[status] || styles.draft;
-    return <span style={{ ...s, fontSize: '12px', padding: '3px 10px', borderRadius: '20px', fontWeight: '500' }}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
+  const statusPill = (status: string) => {
+    const tone = status === 'approved' ? 'green' : status === 'sent' ? 'blue' : '';
+    return <span className={`lv-pill ${tone}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
   };
 
   return (
     <div>
-     <div style={{ marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#fff', margin: 0 }}>Dashboard</h2>
+      <div className="lv-page-head">
+        <div>
+          <h1 className="lv-h1">{firstName ? `Hi ${firstName}` : 'Dashboard'}</h1>
+          <p className="lv-sub">Here’s where every job stands.</p>
+        </div>
+        <div className="lv-inline">
+          <button className="lv-btn pri" onClick={onCreateEstimate}><Plus size={16} /> New estimate</button>
+        </div>
       </div>
+
       {!stripeConnected && (
-        <div style={{ background: '#1c1c1e', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <CreditCard size={17} style={{ color: '#60a5fa' }} />
+        <div className="lv-card lv-card-pad" style={{ marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', borderColor: '#cfe0ff', background: 'linear-gradient(180deg, #f7faff, #ffffff)' }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--lv-blue-soft)', color: 'var(--lv-blue)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+              <CreditCard size={18} />
             </div>
             <div>
-              <p style={{ color: '#fff', fontSize: '15px', fontWeight: '600', margin: '0 0 2px' }}>Collect Client Payments</p>
-              <p style={{ color: '#a1a1aa', fontSize: '13px', margin: 0 }}>Accept credit cards directly. Money goes straight to your bank.</p>
+              <p className="lv-h3">Get paid by card</p>
+              <p className="lv-small" style={{ marginTop: 2 }}>Connect Stripe once and clients can pay any invoice online.</p>
             </div>
           </div>
-          <button onClick={onConnectStripe} style={{ background: 'none', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.4)', padding: '9px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            Set Up Payments
-          </button>
+          <button className="lv-btn sec" onClick={onConnectStripe}>Set up payments</button>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '28px' }} className="stats-grid">
-        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }} onClick={() => onViewEstimates()}>
-          <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Total Value</p>
-          <p className="stat-value" style={{ color: '#4ade80', fontSize: '24px', fontWeight: '600', margin: 0 }}>${totalEstimateValue.toLocaleString()}</p>
-        </div>
-        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }} onClick={() => onViewEstimates()}>
-          <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Estimates</p>
-          <p className="stat-value" style={{ color: '#60a5fa', fontSize: '24px', fontWeight: '600', margin: 0 }}>{estimates.length}</p>
-        </div>
-        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }} onClick={() => onViewEstimates('sent')}>
-          <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Pending</p>
-          <p className="stat-value" style={{ color: '#fbbf24', fontSize: '24px', fontWeight: '600', margin: 0 }}>{pendingEstimates}</p>
-        </div>
-        <div className="stat-card" style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 18px', border: '0.5px solid rgba(255,255,255,0.1)' }} onClick={onViewClients}>
-          <p style={{ color: '#a1a1aa', fontSize: '13px', margin: '0 0 8px' }}>Clients</p>
-          <p className="stat-value" style={{ color: '#fff', fontSize: '24px', fontWeight: '600', margin: 0 }}>{clients.length}</p>
-        </div>
+      <div className="lv-stats" style={{ marginBottom: 24 }}>
+        <button className="lv-stat" onClick={() => onViewEstimates()}>
+          <b>{money(totalEstimateValue)}</b><span>Total estimated</span>
+        </button>
+        <button className="lv-stat" onClick={() => onViewEstimates()}>
+          <b>{estimates.length}</b><span>Estimates</span>
+        </button>
+        <button className="lv-stat" onClick={() => onViewEstimates('sent')}>
+          <b>{pendingEstimates}</b><span>Awaiting a client</span>
+        </button>
+        <button className="lv-stat" onClick={onViewClients}>
+          <b>{clients.length}</b><span>Clients</span>
+        </button>
       </div>
 
-      <style>{`
-        .stats-grid { }
-        .stat-card { cursor: pointer; transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease; }
-        .stat-card:hover { border-color: rgba(255,255,255,0.25) !important; }
-        .stat-card:active { transform: scale(0.97); background: #232326 !important; }
-        @media (min-width: 640px) {
-          .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
-          .stat-value { font-size: 26px !important; }
-        }
-      `}</style>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <h3 style={{ fontSize: '17px', fontWeight: '500', color: '#fff', margin: 0 }}>Recent Estimates</h3>
-        <button onClick={() => onViewEstimates()} style={{ background: '#1c1c1e', border: '0.5px solid rgba(255,255,255,0.1)', color: '#e4e4e7', padding: '6px 14px', borderRadius: '7px', fontSize: '13px', cursor: 'pointer' }}>View All</button>
+      <div className="lv-page-head" style={{ marginBottom: 12, alignItems: 'center' }}>
+        <h2 className="lv-h2">Recent estimates</h2>
+        <button className="lv-btn quiet sm" onClick={() => onViewEstimates()}>View all <ChevronRight size={15} /></button>
       </div>
 
       {recentEstimates.length === 0 ? (
-        <div style={{ background: '#1c1c1e', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid rgba(255,255,255,0.1)' }}>
-          <FileText style={{ width: '40px', height: '40px', color: '#52525b', margin: '0 auto 12px' }} />
-          <p style={{ color: '#a1a1aa', fontSize: '15px', marginBottom: '16px' }}>No estimates yet</p>
-          <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>Create Your First Estimate</button>
+        <div className="lv-empty">
+          <FileText size={30} />
+          <h3>No estimates yet</h3>
+          <p>Write your first one now — it takes a couple of minutes, and your client can sign it from their phone.</p>
+          <button className="lv-btn pri" onClick={onCreateEstimate}><Plus size={16} /> Create your first estimate</button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="lv-card">
           {recentEstimates.map((estimate) => (
-            <div key={estimate.id} onClick={() => onViewEstimate(estimate)}
-              style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
-            >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '15px', fontWeight: '500', color: '#fff', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{estimate.projectName || 'Unnamed Project'}</p>
-                <p style={{ fontSize: '13px', color: '#a1a1aa', margin: '0 0 4px' }}>{estimate.clientName}</p>
-                <p style={{ fontSize: '12px', color: '#71717a', margin: 0 }}>EST-{estimate.id.slice(-6)} · {new Date(estimate.createdAt).toLocaleDateString()}</p>
+            <button className="lv-row" key={estimate.id} onClick={() => onViewEstimate(estimate)}>
+              <div style={{ minWidth: 0 }}>
+                <div className="lv-row-t" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{estimate.projectName || 'Unnamed project'}</div>
+                <div className="lv-row-s">{estimate.clientName} · EST-{estimate.id.slice(-6)} · {new Date(estimate.createdAt).toLocaleDateString()}</div>
               </div>
-              <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: '16px' }}>
-                <p style={{ fontSize: '17px', fontWeight: '600', color: '#fff', margin: '0 0 5px' }}>${(estimate.total || 0).toLocaleString()}</p>
-                {getStatusBadge(estimate.status)}
+              <div className="lv-inline" style={{ flexShrink: 0, gap: 12 }}>
+                <span className="lv-row-r">{money(estimate.total || 0)}</span>
+                {statusPill(estimate.status)}
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}
-
-      <div style={{ marginTop: '24px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <button onClick={onCreateEstimate} style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}>+ New Estimate</button>
-        <button onClick={() => onViewEstimates()} style={{ background: '#1c1c1e', color: '#fff', border: '0.5px solid rgba(255,255,255,0.1)', padding: '11px 20px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }}>All Estimates</button>
-      </div>
     </div>
   );
 }
@@ -488,32 +392,28 @@ function BillingSettings() {
   };
 
   return (
-    <div style={{ maxWidth: '480px' }}>
-      <div style={{ background: '#1c1c1e', borderRadius: '12px', padding: '20px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
-        <p style={{ fontSize: '12px', color: '#a1a1aa', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Subscription Status</p>
-        {status === 'active' && (
-          <div>
-            <p style={{ color: '#4ade80', fontSize: '17px', fontWeight: '500', marginBottom: '6px' }}>Active — $5/month</p>
-            <p style={{ color: '#a1a1aa', fontSize: '14px', marginBottom: '16px' }}>Your subscription is active. Thank you!</p>
-            <button onClick={handleCancel} disabled={cancelling} style={{ background: 'none', border: '0.5px solid rgba(248,113,113,0.4)', color: '#f87171', padding: '8px 16px', borderRadius: '8px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
-              {cancelling ? 'Cancelling...' : 'Cancel Subscription'}
-            </button>
-          </div>
-        )}
-        {status === 'trial' && (
-          <div>
-            <p style={{ color: '#60a5fa', fontSize: '17px', fontWeight: '500', marginBottom: '4px' }}>Free Trial</p>
-            <p style={{ color: '#a1a1aa', fontSize: '14px' }}>{daysLeft !== null ? `${daysLeft} days remaining` : 'Trial active'}</p>
-          </div>
-        )}
-        {status === 'cancelled' && (
-          <div>
-            <p style={{ color: '#a1a1aa', fontSize: '17px', fontWeight: '500', marginBottom: '4px' }}>Cancelled</p>
-            <p style={{ color: '#a1a1aa', fontSize: '14px' }}>Your subscription has been cancelled.</p>
-          </div>
-        )}
-        {status === null && <p style={{ color: '#a1a1aa', fontSize: '14px' }}>Loading...</p>}
-      </div>
+    <div className="lv-card lv-card-pad" style={{ maxWidth: 460 }}>
+      <span className="lv-eyebrow">Subscription</span>
+      {status === 'active' && (
+        <div style={{ marginTop: 10 }}>
+          <p className="lv-h2" style={{ color: 'var(--lv-green)' }}>Active — $5/month</p>
+          <p className="lv-sub" style={{ margin: '6px 0 16px' }}>Thanks for being here. Everything is switched on.</p>
+          <button className="lv-btn danger sm" onClick={handleCancel} disabled={cancelling}>{cancelling ? 'Cancelling…' : 'Cancel subscription'}</button>
+        </div>
+      )}
+      {status === 'trial' && (
+        <div style={{ marginTop: 10 }}>
+          <p className="lv-h2" style={{ color: 'var(--lv-blue)' }}>Free trial</p>
+          <p className="lv-sub" style={{ marginTop: 4 }}>{daysLeft !== null ? `${daysLeft} days remaining` : 'Trial active'}</p>
+        </div>
+      )}
+      {status === 'cancelled' && (
+        <div style={{ marginTop: 10 }}>
+          <p className="lv-h2">Cancelled</p>
+          <p className="lv-sub" style={{ marginTop: 4 }}>Your subscription has been cancelled.</p>
+        </div>
+      )}
+      {status === null && <p className="lv-sub" style={{ marginTop: 10 }}>Loading…</p>}
     </div>
   );
 }
@@ -521,11 +421,11 @@ function BillingSettings() {
 function AccountView({ onBack }: { onBack: () => void }) {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-        <button onClick={onBack} style={{ background: '#1c1c1e', border: '0.5px solid rgba(255,255,255,0.1)', color: '#e4e4e7', padding: '7px 14px', borderRadius: '7px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <ArrowLeft size={15} /> Back
-        </button>
-        <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#fff', margin: 0 }}>Account Settings</h2>
+      <div className="lv-page-head">
+        <div>
+          <h1 className="lv-h1">Account</h1>
+          <p className="lv-sub">Your business details, security and billing.</p>
+        </div>
       </div>
       <Tabs defaultValue="profile" className="space-y-4">
         <TabsList className="grid grid-cols-3 w-full max-w-lg">
@@ -537,6 +437,8 @@ function AccountView({ onBack }: { onBack: () => void }) {
         <TabsContent value="security"><ChangePasswordForm /></TabsContent>
         <TabsContent value="billing"><BillingSettings /></TabsContent>
       </Tabs>
+      <button className="lv-btn quiet sm" style={{ marginTop: 18, marginLeft: -10 }} onClick={onBack}><ArrowLeft size={15} /> Back to dashboard</button>
+      <span style={{ display: 'none' }}><CheckCircle size={1} /></span>
     </div>
   );
 }

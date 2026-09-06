@@ -13,9 +13,47 @@ interface Props {
   onUpdated: (updates: Partial<Client>) => void;
 }
 
+/* Stripe draws the card field inside its own iframe, so these have to be
+   literal values rather than the CSS variables used everywhere else. They are
+   the same tokens: ink, faint, Inter, and the 16px that stops iOS zooming. */
 const cardElementOptions = {
-  style: { base: { fontSize: '16px', color: '#1e293b', fontFamily: 'system-ui, sans-serif', '::placeholder': { color: '#94a3b8' } } },
+  style: {
+    base: {
+      fontSize: '16px',
+      color: '#0b1220',
+      fontFamily: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+      '::placeholder': { color: '#8a93a3' },
+    },
+  },
 };
+
+/* Scoped to the `rb-` prefix so nothing here can reach another screen. */
+const styles = `
+.rb-card-box {
+  background: var(--lv-surface);
+  border: 1px solid var(--lv-line-2);
+  border-radius: var(--lv-r);
+  padding: 12px;
+  transition: border-color var(--lv-t) var(--lv-ease), box-shadow var(--lv-t) var(--lv-ease);
+}
+.rb-card-box:focus-within { border-color: var(--lv-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .13); }
+.rb-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 18px 14px;
+  padding: 11px 12px;
+  border-radius: var(--lv-r);
+  background: var(--lv-red-soft);
+  color: var(--lv-red);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.rb-note svg { flex-shrink: 0; margin-top: 1px; }
+.rb-rows .lv-row:last-child { border-bottom: 0; }
+.rb-rows .lv-row-s { margin-top: 0; }
+.rb-wait { display: flex; justify-content: center; padding: 18px; }
+`;
 
 const SCHEDULE_OPTIONS: { value: string; label: string; unit: 'month' | 'year'; count: number }[] = [
   { value: 'month-1', label: 'Monthly', unit: 'month', count: 1 },
@@ -105,7 +143,7 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
         billingIntervalCount: option.count,
         billingStatus: subData.status === 'past_due' ? 'past_due' : 'current',
       });
-      toast({ title: 'Recurring billing set up!', description: `${client.name} will be charged ${formatBillingLine(numAmount, option.unit, option.count)}.` });
+      toast({ title: 'Recurring billing is on', description: `${client.name} will be charged ${formatBillingLine(numAmount, option.unit, option.count)}.` });
     } catch (err: any) {
       toast({ title: 'Setup failed', description: err.message, variant: 'destructive' });
     } finally {
@@ -114,41 +152,55 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <div>
-        <label className="block text-sm font-semibold mb-2 text-gray-200">Amount ($)</label>
-        <input
-          type="number" min="1" step="0.01" value={amount} required
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="99.00"
-          className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none"
-        />
+    <form onSubmit={handleSubmit} className="lv-card">
+      <div className="lv-card-head">
+        <div>
+          <span className="lv-eyebrow">Recurring billing</span>
+          <h3 className="lv-h3" style={{ marginTop: 2 }}>Set up a schedule</h3>
+        </div>
+        {client.billingStatus === 'canceled' && <span className="lv-pill">Cancelled</span>}
       </div>
-      <div>
-        <label className="block text-sm font-semibold mb-2 text-gray-200">Billing schedule</label>
-        <select
-          value={schedule} onChange={(e) => setSchedule(e.target.value)}
-          className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none bg-white"
-        >
-          {SCHEDULE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="block text-sm font-semibold mb-2 text-gray-200">Card</label>
-        <div className="border-2 border-gray-300 rounded-lg p-3 focus-within:border-blue-500 bg-white">
-          <CardElement options={cardElementOptions} />
+
+      <div className="lv-card-pad">
+        <label className="lv-field">
+          <span className="lv-label">Amount</span>
+          <input
+            type="number" min="1" step="0.01" value={amount} required
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="99.00"
+            className="lv-input num"
+          />
+        </label>
+
+        <label className="lv-field">
+          <span className="lv-label">Billing schedule</span>
+          <select
+            value={schedule} onChange={(e) => setSchedule(e.target.value)}
+            className="lv-select"
+          >
+            {SCHEDULE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </label>
+
+        <div className="lv-field">
+          <span className="lv-label">Card</span>
+          <div className="rb-card-box">
+            <CardElement options={cardElementOptions} />
+          </div>
         </div>
       </div>
-      <button
-        type="submit" disabled={!stripe || loading}
-        className="w-full bg-blue-600 text-white rounded-lg py-3 font-semibold hover:bg-blue-700 flex items-center justify-center gap-2 disabled:opacity-60"
-      >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-        {loading ? 'Setting up...' : 'Start Recurring Billing'}
-      </button>
-      <p className="text-xs text-center text-gray-400">Stripe charges this card automatically on the schedule above and handles retries/reminders on failure.</p>
+
+      <div className="lv-card-foot">
+        <button type="submit" disabled={!stripe || loading} className="lv-btn pri wide">
+          {loading ? <Loader2 size={15} className="animate-spin" /> : <Lock size={15} />}
+          {loading ? 'Setting up…' : 'Start recurring billing'}
+        </button>
+        <p className="lv-small" style={{ marginTop: 10, textAlign: 'center' }}>
+          Stripe charges this card on the schedule above, and handles retries and reminders if a payment fails.
+        </p>
+      </div>
     </form>
   );
 }
@@ -169,7 +221,7 @@ export function RecurringBillingPanel({ client, stripeAccountId, onUpdated }: Pr
       });
       if (error || data?.error) throw new Error(data?.error || error?.message || 'Failed to cancel');
       onUpdated({ billingEnabled: false, billingStatus: 'canceled' });
-      toast({ title: 'Recurring billing canceled' });
+      toast({ title: 'Recurring billing stopped' });
     } catch (err: any) {
       toast({ title: 'Could not cancel', description: err.message, variant: 'destructive' });
     } finally {
@@ -178,43 +230,75 @@ export function RecurringBillingPanel({ client, stripeAccountId, onUpdated }: Pr
   };
 
   if (client.billingEnabled) {
+    const pastDue = client.billingStatus === 'past_due';
     return (
-      <div className="bg-white/5 rounded-lg p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-gray-400">Billed every {cadenceLabel(client.billingInterval, client.billingIntervalCount)}</p>
-            <p className="text-lg font-semibold text-white">{formatBillingLine(Number(client.billingAmount || 0), client.billingInterval, client.billingIntervalCount)}</p>
+      <div className="lv-card">
+        <style>{styles}</style>
+
+        <div className="lv-card-head">
+          <div style={{ minWidth: 0 }}>
+            <span className="lv-eyebrow">Recurring billing</span>
+            <h3 className="lv-h3" style={{ marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{client.name}</h3>
           </div>
-          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${client.billingStatus === 'past_due' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-            {client.billingStatus === 'past_due' ? 'Past Due' : 'Current'}
-          </span>
+          <span className={`lv-pill ${pastDue ? 'red' : 'green'}`}>{pastDue ? 'Past due' : 'Current'}</span>
         </div>
-        {client.billingStatus === 'past_due' && (
-          <div className="flex items-start gap-2 text-sm text-red-300 bg-red-500/10 rounded-lg p-3">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <span>Stripe couldn't collect the last payment and is retrying automatically. Reach out to the customer, or cancel billing below.</span>
+
+        <div className="rb-rows">
+          <div className="lv-row">
+            <span className="lv-row-s">Amount</span>
+            <span className="lv-row-r lv-num">{formatBillingLine(Number(client.billingAmount || 0), client.billingInterval, client.billingIntervalCount)}</span>
+          </div>
+          <div className="lv-row">
+            <span className="lv-row-s">Interval</span>
+            <span className="lv-row-r">Every {cadenceLabel(client.billingInterval, client.billingIntervalCount)}</span>
+          </div>
+          <div className="lv-row">
+            {/* Stripe holds the schedule; nothing in the client record carries the
+                next charge date, so this says how it happens rather than guessing when. */}
+            <span className="lv-row-s">Next charge</span>
+            <span className="lv-row-r">{pastDue ? 'Retrying' : 'Automatic'}</span>
+          </div>
+        </div>
+
+        {pastDue && (
+          <div className="rb-note" style={{ marginTop: 14 }}>
+            <AlertTriangle size={16} />
+            <span>Stripe could not collect the last payment and is retrying automatically. Reach out to the client, or stop billing below.</span>
           </div>
         )}
-        <button
-          onClick={handleCancel} disabled={canceling}
-          className="w-full text-sm text-red-400 border-2 border-red-400/30 rounded-lg py-2 font-semibold hover:bg-red-400/10 disabled:opacity-60"
-        >
-          {canceling ? 'Canceling...' : 'Cancel Recurring Billing'}
-        </button>
+
+        <div className="lv-card-foot">
+          <p className="lv-small" style={{ marginBottom: 10 }}>
+            Stripe charges the card on file every {cadenceLabel(client.billingInterval, client.billingIntervalCount)} and handles retries and reminders.
+          </p>
+          <button onClick={handleCancel} disabled={canceling} type="button" className="lv-btn danger wide">
+            {canceling ? 'Stopping…' : 'Stop recurring billing'}
+          </button>
+        </div>
       </div>
     );
   }
 
   if (stripe === undefined) {
-    return <div className="flex justify-center p-4"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>;
+    return (
+      <div className="lv-card">
+        <style>{styles}</style>
+        <div className="rb-wait"><Loader2 size={20} className="animate-spin" style={{ color: 'var(--lv-faint)' }} /></div>
+      </div>
+    );
   }
 
   if (stripe === null) {
-    return <p className="text-sm text-gray-400 bg-white/5 rounded-lg p-4">Payment processing is currently unavailable.</p>;
+    return (
+      <div className="lv-card lv-card-pad">
+        <p className="lv-small">Card payments are unavailable right now. Try again in a few minutes.</p>
+      </div>
+    );
   }
 
   return (
     <Elements stripe={stripe}>
+      <style>{styles}</style>
       <BillingSetupForm client={client} onUpdated={onUpdated} />
     </Elements>
   );

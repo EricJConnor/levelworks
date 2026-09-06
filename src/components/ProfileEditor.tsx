@@ -1,12 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Loader2, User, Building2, Phone, MapPin, Save, Check } from 'lucide-react';
+import { Loader2, Building2, Upload } from 'lucide-react';
 
 export const ProfileEditor: React.FC = () => {
   const { profile, loading, updateProfile, uploadPhoto } = useProfile();
@@ -37,18 +32,18 @@ export const ProfileEditor: React.FC = () => {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     if (!file.type.startsWith('image/')) {
-      toast({ title: 'Invalid file', description: 'Please upload an image file', variant: 'destructive' });
+      toast({ title: 'That file is not an image', description: 'Upload a PNG or JPG of your logo.', variant: 'destructive' });
       return;
     }
-    
+
     setUploading(true);
     const url = await uploadPhoto(file);
     if (url) {
       setFormData(prev => ({ ...prev, profile_photo_url: url }));
       await updateProfile({ profile_photo_url: url });
-      toast({ title: 'Logo uploaded!', description: 'Your company logo has been updated' });
+      toast({ title: 'Logo updated', description: 'It shows on every estimate and invoice.' });
     }
     setUploading(false);
   };
@@ -58,67 +53,113 @@ export const ProfileEditor: React.FC = () => {
     setSaving(true);
     const success = await updateProfile(formData);
     if (success) {
-      toast({ title: 'Profile saved!', description: 'Your profile has been updated successfully' });
+      toast({ title: 'Profile saved', description: 'Your business details are up to date.' });
     } else {
-      toast({ title: 'Error', description: 'Failed to save profile', variant: 'destructive' });
+      toast({ title: 'Could not save', description: 'Check your connection and try again.', variant: 'destructive' });
     }
     setSaving(false);
   };
 
-  if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin" /></div>;
+  if (loading) return (
+    <div className="lv-card" style={{ maxWidth: 640, display: 'flex', justifyContent: 'center', padding: 40 }}>
+      <Loader2 size={22} className="animate-spin" style={{ color: 'var(--lv-blue)' }} />
+    </div>
+  );
 
   return (
-    <Card className="bg-[#1c1c1e] border-white/10 text-white">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white"><User className="w-5 h-5" />Edit Profile</CardTitle>
-        <CardDescription className="text-gray-400">Update your personal and business information</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden border-4 border-white/20 shadow-lg">
-                {formData.profile_photo_url ? (
-                  <img src={formData.profile_photo_url} alt="Company Logo" className="w-full h-full object-contain" />
-                ) : (
-                  <Building2 className="w-12 h-12 text-gray-500" />
-                )}
-              </div>
-              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-                className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 shadow-lg">
-                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-              </button>
-            </div>
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-            <p className="text-sm text-gray-400">Click the camera icon to upload your company logo</p>
-          </div>
+    <form className="lv-card" onSubmit={handleSubmit} style={{ maxWidth: 640 }}>
+      <div className="lv-card-head">
+        <div>
+          <h2 className="lv-h2">Business profile</h2>
+          <p className="lv-small" style={{ marginTop: 3 }}>This is what your clients see on every estimate and invoice.</p>
+        </div>
+      </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="full_name" className="flex items-center gap-2 text-gray-200"><User className="w-4 h-4" />Full Name</Label>
-              <Input id="full_name" value={formData.full_name} onChange={e => setFormData(p => ({ ...p, full_name: e.target.value }))} placeholder="John Smith" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="company_name" className="flex items-center gap-2 text-gray-200"><Building2 className="w-4 h-4" />Company Name</Label>
-              <Input id="company_name" value={formData.company_name} onChange={e => setFormData(p => ({ ...p, company_name: e.target.value }))} placeholder="Smith Contracting LLC" />
-            </div>
+      <div className="lv-card-pad">
+        <div className="lv-inline" style={{ gap: 14, marginBottom: 18 }}>
+          <div
+            style={{
+              width: 64, height: 64, flexShrink: 0, overflow: 'hidden',
+              borderRadius: 'var(--lv-r)', border: '1px solid var(--lv-line)',
+              background: 'var(--lv-surface-2)', display: 'grid', placeItems: 'center'
+            }}
+          >
+            {formData.profile_photo_url
+              ? <img src={formData.profile_photo_url} alt="Company logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              : <Building2 size={24} style={{ color: 'var(--lv-faint)' }} />}
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone_number" className="flex items-center gap-2 text-gray-200"><Phone className="w-4 h-4" />Phone Number</Label>
-            <Input id="phone_number" type="tel" value={formData.phone_number} onChange={e => setFormData(p => ({ ...p, phone_number: e.target.value }))} placeholder="(555) 123-4567" />
+          <div style={{ minWidth: 0 }}>
+            <button type="button" className="lv-btn sec" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+              {uploading
+                ? <><Loader2 size={15} className="animate-spin" /> Uploading</>
+                : <><Upload size={15} /> {formData.profile_photo_url ? 'Replace logo' : 'Upload logo'}</>}
+            </button>
+            <p className="lv-small" style={{ marginTop: 6 }}>A PNG or JPG of your company logo.</p>
           </div>
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="business_address" className="flex items-center gap-2 text-gray-200"><MapPin className="w-4 h-4" />Business Address</Label>
-            <Textarea id="business_address" value={formData.business_address} onChange={e => setFormData(p => ({ ...p, business_address: e.target.value }))} placeholder="123 Main Street&#10;City, State 12345" rows={3} />
+        <div className="lv-grid-2">
+          <div>
+            <label className="lv-field">
+              <span className="lv-label">Your name</span>
+              <input
+                className="lv-input"
+                id="full_name"
+                autoComplete="name"
+                value={formData.full_name}
+                onChange={e => setFormData(p => ({ ...p, full_name: e.target.value }))}
+                placeholder="John Smith"
+              />
+            </label>
           </div>
+          <div>
+            <label className="lv-field">
+              <span className="lv-label">Company name</span>
+              <input
+                className="lv-input"
+                id="company_name"
+                autoComplete="organization"
+                value={formData.company_name}
+                onChange={e => setFormData(p => ({ ...p, company_name: e.target.value }))}
+                placeholder="Smith Contracting LLC"
+              />
+            </label>
+          </div>
+        </div>
 
-          <Button type="submit" disabled={saving} className="w-full">
-            {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : <><Save className="w-4 h-4 mr-2" />Save Profile</>}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        <label className="lv-field" style={{ marginTop: 14 }}>
+          <span className="lv-label">Phone number</span>
+          <input
+            className="lv-input"
+            id="phone_number"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={formData.phone_number}
+            onChange={e => setFormData(p => ({ ...p, phone_number: e.target.value }))}
+            placeholder="(555) 123-4567"
+          />
+        </label>
+
+        <label className="lv-field">
+          <span className="lv-label">Business address</span>
+          <textarea
+            className="lv-textarea"
+            id="business_address"
+            rows={3}
+            value={formData.business_address}
+            onChange={e => setFormData(p => ({ ...p, business_address: e.target.value }))}
+            placeholder={'123 Main Street\nCity, State 12345'}
+          />
+        </label>
+      </div>
+
+      <div className="lv-card-foot">
+        <button type="submit" className="lv-btn pri" disabled={saving}>
+          {saving ? <><Loader2 size={15} className="animate-spin" /> Saving</> : 'Save profile'}
+        </button>
+      </div>
+    </form>
   );
 };

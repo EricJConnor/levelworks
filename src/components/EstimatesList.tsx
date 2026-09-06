@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useData, Estimate } from '@/contexts/DataContext';
 import { useInvoices } from '@/contexts/InvoiceContext';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { SendEstimateModal } from './SendEstimateModal';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, ImageIcon, ChevronDown, ChevronUp, Edit, Eye, Copy, ExternalLink } from 'lucide-react';
+import { FileText, ImageIcon, ChevronDown, ChevronUp, Pencil, Eye, Copy, Check, Plus, Search, Send, Receipt, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { PhotoUpload } from './PhotoUpload';
 import { PhotoGallery } from './PhotoGallery';
@@ -16,13 +13,61 @@ interface Photo { id: string; fileUrl: string; caption?: string; }
 
 interface EstimatesListProps { initialStatusFilter?: string; }
 
+const money = (n: number) =>
+  `$${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+const STATUS_TONE: Record<string, string> = { draft: '', sent: 'blue', approved: 'green', rejected: 'red' };
+const STATUS_LABEL: Record<string, string> = { draft: 'Draft', sent: 'Sent', approved: 'Approved', rejected: 'Rejected' };
+
+const FILTERS: { key: string; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'draft', label: 'Draft' },
+  { key: 'sent', label: 'Sent' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'rejected', label: 'Rejected' },
+];
+
+/* Scoped to the `el-` prefix so nothing here can reach another screen. */
+const styles = `
+.el-tools { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.el-segwrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin: -3px; padding: 3px; }
+.el-segwrap::-webkit-scrollbar { display: none; }
+.el-find { display: flex; gap: 10px; min-width: 0; }
+.el-find .lv-search { flex: 1; min-width: 0; }
+.el-sort { width: auto; flex: 0 0 auto; min-width: 128px; }
+@media (min-width: 900px) {
+  .el-tools { flex-direction: row; align-items: center; justify-content: space-between; }
+  .el-find { flex: 0 1 460px; }
+}
+.el-list { overflow: hidden; }
+.el-item + .el-item { border-top: 1px solid var(--lv-line); }
+.el-row { align-items: flex-start; border-bottom: 0; padding-bottom: 10px; }
+.el-main { min-width: 0; flex: 1; }
+.el-titleline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.el-sub { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.el-amt { flex-shrink: 0; text-align: right; }
+.el-amt .lv-small { margin-top: 2px; }
+.el-acts { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 18px 14px; }
+.el-del { margin-left: auto; }
+.el-photos { padding: 2px 18px 18px; }
+.el-photos > * + * { margin-top: 12px; }
+@media (max-width: 520px) {
+  .el-row { padding-left: 14px; padding-right: 14px; }
+  .el-acts { padding: 0 14px 14px; }
+  .el-photos { padding: 2px 14px 16px; }
+  .el-del { margin-left: 0; }
+}
+`;
+
 export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilter }) => {
   const { estimates, deleteEstimate } = useData();
   const { addInvoice } = useInvoices();
   const [statusFilter, setStatusFilter] = useState<string>(initialStatusFilter || 'all');
   const [sortBy, setSortBy] = useState<string>('date-desc');
+  const [query, setQuery] = useState('');
   const [resendEstimate, setResendEstimate] = useState<Estimate | null>(null);
   const [editEstimate, setEditEstimate] = useState<Estimate | null>(null);
+  const [newEstimate, setNewEstimate] = useState(false);
   const [expandedEstimate, setExpandedEstimate] = useState<string | null>(null);
   const [estimatePhotos, setEstimatePhotos] = useState<Record<string, Photo[]>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -64,24 +109,23 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
         issueDate: new Date().toISOString(),
         notes: `Converted from estimate EST-${estimate.id.slice(-6)}`
       });
-      toast({ title: 'Invoice created successfully!' });
+      toast({ title: 'Invoice created' });
     } catch (error: any) {
-      toast({ title: 'Error creating invoice', description: error.message, variant: 'destructive' });
+      toast({ title: 'Could not create the invoice', description: error.message, variant: 'destructive' });
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-700';
-      case 'sent': return 'bg-blue-100 text-blue-700';
-      case 'approved': return 'bg-green-100 text-green-700';
-      case 'rejected': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
-  };
+  const statusPill = (status: string) => (
+    <span className={`lv-pill ${STATUS_TONE[status] ?? ''}`}>{STATUS_LABEL[status] || status}</span>
+  );
 
+  const term = query.trim().toLowerCase();
   const filteredEstimates = estimates
     .filter(e => statusFilter === 'all' || e.status === statusFilter)
+    .filter(e => !term
+      || (e.clientName || '').toLowerCase().includes(term)
+      || (e.projectName || '').toLowerCase().includes(term)
+      || `est-${e.id.slice(-6)}`.toLowerCase().includes(term))
     .sort((a, b) => {
       if (sortBy === 'date-desc') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       if (sortBy === 'date-asc') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
@@ -93,11 +137,11 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
   const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this estimate?')) {
       deleteEstimate(id);
-      toast({ title: 'Estimate deleted successfully' });
+      toast({ title: 'Estimate deleted' });
     }
   };
 
-  // View estimate in new tab
+  // Open the estimate in the builder
   const handleViewEstimate = (estimate: Estimate) => {
     setEditEstimate(estimate);
   };
@@ -105,137 +149,165 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
   // Copy estimate link to clipboard
   const handleCopyLink = (estimate: Estimate) => {
     if (!estimate.viewToken) {
-      toast({ 
-        title: 'Cannot copy link', 
-        description: 'This estimate does not have a view link yet. Try sending it first.', 
-        variant: 'destructive' 
+      toast({
+        title: 'No link yet',
+        description: 'Send this estimate first and a client link is created for it.',
+        variant: 'destructive'
       });
       return;
     }
     const url = `${window.location.origin}/view-estimate/${estimate.viewToken}`;
     navigator.clipboard.writeText(url);
     setCopiedId(estimate.id);
-    toast({ title: 'Link copied!', description: 'Estimate link copied to clipboard' });
+    toast({ title: 'Link copied', description: 'The client link is on your clipboard.' });
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const isFiltered = statusFilter !== 'all' || term.length > 0;
+
   return (
     <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
-        <h2 className="text-xl md:text-2xl font-bold text-white">Estimates</h2>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-32 text-sm"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full sm:w-32 text-sm"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date-desc">Newest</SelectItem>
-              <SelectItem value="date-asc">Oldest</SelectItem>
-              <SelectItem value="amount-desc">Highest</SelectItem>
-              <SelectItem value="amount-asc">Lowest</SelectItem>
-            </SelectContent>
-          </Select>
+      <style>{styles}</style>
+
+      <div className="lv-page-head">
+        <div>
+          <h1 className="lv-h1">Estimates</h1>
+          <p className="lv-sub">Everything you have quoted, and where each one stands.</p>
         </div>
+        <button className="lv-btn pri" onClick={() => setNewEstimate(true)}>
+          <Plus size={16} /> New estimate
+        </button>
       </div>
 
+      {estimates.length > 0 && (
+      <div className="el-tools">
+        <div className="el-segwrap">
+          <div className="lv-seg" role="group" aria-label="Filter by status">
+            {FILTERS.map(f => (
+              <button
+                key={f.key}
+                className={statusFilter === f.key ? 'on' : ''}
+                onClick={() => setStatusFilter(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="el-find">
+          <div className="lv-search">
+            <Search size={16} />
+            <input
+              className="lv-input"
+              type="search"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search client, project or number"
+              aria-label="Search estimates"
+            />
+          </div>
+          <select
+            className="lv-select el-sort"
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            aria-label="Sort estimates"
+          >
+            <option value="date-desc">Newest</option>
+            <option value="date-asc">Oldest</option>
+            <option value="amount-desc">Highest</option>
+            <option value="amount-asc">Lowest</option>
+          </select>
+        </div>
+      </div>
+      )}
+
       {filteredEstimates.length === 0 ? (
-        <div style={{ background: '#1c1c1e', borderRadius: '12px', padding: '40px', textAlign: 'center', border: '0.5px solid rgba(255,255,255,0.1)' }}>
-          <FileText style={{ width: '40px', height: '40px', color: '#52525b', margin: '0 auto 12px' }} />
-          <p style={{ color: '#a1a1aa', fontSize: '15px' }}>No estimates found.</p>
+        <div className="lv-empty">
+          <FileText size={30} />
+          <h3>{isFiltered ? 'Nothing matches that' : 'No estimates yet'}</h3>
+          <p>
+            {isFiltered
+              ? 'Try another status, or clear the search box.'
+              : 'Write your first estimate and send it to the client from your phone.'}
+          </p>
+          {isFiltered ? (
+            <button className="lv-btn sec" onClick={() => { setStatusFilter('all'); setQuery(''); }}>Clear filters</button>
+          ) : (
+            <button className="lv-btn pri" onClick={() => setNewEstimate(true)}><Plus size={16} /> New estimate</button>
+          )}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="lv-card el-list">
           {filteredEstimates.map((estimate) => (
-            <div key={estimate.id} style={{ background: '#1c1c1e', borderRadius: '12px', padding: '18px 20px', border: '0.5px solid rgba(255,255,255,0.1)' }}>
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-base md:text-lg font-semibold text-white">EST-{estimate.id.slice(-6)}</h3>
-                  <Badge className={`${getStatusColor(estimate.status)} text-xs`}>{estimate.status.toUpperCase()}</Badge>
-                  {estimate.signedAt && <Badge className="bg-green-100 text-green-700 text-xs">Signed</Badge>}
-                  {estimate.viewToken && (
-                    <Badge variant="outline" className="text-xs text-blue-300 border-blue-400/40">
-                      <ExternalLink className="w-3 h-3 mr-1" />
-                      Has Link
-                    </Badge>
-                  )}
+            <div className="el-item" key={estimate.id}>
+              <div className="lv-row el-row">
+                <div className="el-main">
+                  <div className="el-titleline">
+                    <span className="lv-row-t lv-num">EST-{estimate.id.slice(-6)}</span>
+                    {statusPill(estimate.status)}
+                    {estimate.signedAt && <span className="lv-pill green">Signed</span>}
+                  </div>
+                  <span className="lv-row-s el-sub">
+                    {estimate.clientName || 'No client'} · {estimate.projectName || 'Untitled project'}
+                  </span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs md:text-sm text-gray-200">
-                  <div><span className="text-gray-400">Client:</span> {estimate.clientName}</div>
-                  <div><span className="text-gray-400">Amount:</span> ${estimate.total.toLocaleString()}</div>
-                  <div><span className="text-gray-400">Project:</span> {estimate.projectName}</div>
-                  <div><span className="text-gray-400">Created:</span> {new Date(estimate.createdAt).toLocaleDateString()}</div>
-                </div>
-
-                <div className="pt-2 border-t border-white/10">
-                  <button onClick={() => handleExpand(estimate.id)} className="flex items-center gap-2 text-sm text-gray-300 hover:text-blue-400">
-                    <ImageIcon className="w-4 h-4" />Photos ({estimatePhotos[estimate.id]?.length || 0})
-                    {expandedEstimate === estimate.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </button>
-                  {expandedEstimate === estimate.id && (
-                    <div className="mt-3 space-y-3">
-                      <PhotoUpload estimateId={estimate.id} onPhotoUploaded={(photo) => handlePhotoUploaded(estimate.id, photo)} />
-                      {estimatePhotos[estimate.id]?.length > 0 && (
-                        <PhotoGallery photos={estimatePhotos[estimate.id]} onPhotoDeleted={(photoId) => handlePhotoDeleted(estimate.id, photoId)} />
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-white/10">
-                  {/* View Estimate Button - Opens in new tab */}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs h-8 bg-transparent text-blue-300 border-blue-400/40 hover:bg-blue-400/10"
-                    onClick={() => handleViewEstimate(estimate)}
-                    disabled={!estimate.viewToken}
-                  >
-                    <Eye className="h-3 w-3 mr-1" />View
-                  </Button>
-
-                  {/* Copy Link Button */}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs h-8 bg-transparent text-gray-200 border-white/20 hover:bg-white/10"
-                    onClick={() => handleCopyLink(estimate)}
-                    disabled={!estimate.viewToken}
-                  >
-                    <Copy className="h-3 w-3 mr-1" />
-                    {copiedId === estimate.id ? 'Copied!' : 'Copy Link'}
-                  </Button>
-
-                  <Button size="sm" variant="outline" className="text-xs h-8 bg-transparent text-gray-200 border-white/20 hover:bg-white/10" onClick={() => setEditEstimate(estimate)}>
-                    <Edit className="h-3 w-3 mr-1" />Edit
-                  </Button>
-                  {estimate.status === 'approved' && (
-                    <Button size="sm" className="text-xs h-8" onClick={() => handleConvertToInvoice(estimate)}>
-                      <FileText className="h-3 w-3 mr-1" />Invoice
-                    </Button>
-                  )}
-                  {(estimate.status === 'sent' || estimate.status === 'draft') && (
-                    <Button size="sm" variant="outline" className="text-xs h-8 bg-transparent text-gray-200 border-white/20 hover:bg-white/10" onClick={() => setResendEstimate(estimate)}>
-                      {estimate.status === 'draft' ? 'Send' : 'Resend'}
-                    </Button>
-                  )}
-                  <Button size="sm" variant="destructive" className="text-xs h-8" onClick={() => handleDelete(estimate.id)}>Delete</Button>
+                <div className="el-amt">
+                  <div className="lv-row-r lv-num">{money(estimate.total)}</div>
+                  <div className="lv-small lv-num">{new Date(estimate.createdAt).toLocaleDateString()}</div>
                 </div>
               </div>
+
+              <div className="el-acts">
+                <button className="lv-btn sec sm" onClick={() => handleViewEstimate(estimate)} disabled={!estimate.viewToken}>
+                  <Eye size={14} /> View
+                </button>
+                <button className="lv-btn sec sm" onClick={() => setEditEstimate(estimate)}>
+                  <Pencil size={14} /> Edit
+                </button>
+                {(estimate.status === 'sent' || estimate.status === 'draft') && (
+                  <button className="lv-btn pri sm" onClick={() => setResendEstimate(estimate)}>
+                    <Send size={14} /> {estimate.status === 'draft' ? 'Send' : 'Resend'}
+                  </button>
+                )}
+                {estimate.status === 'approved' && (
+                  <button className="lv-btn sec sm" onClick={() => handleConvertToInvoice(estimate)}>
+                    <Receipt size={14} /> Make invoice
+                  </button>
+                )}
+                <button className="lv-btn quiet sm" onClick={() => handleCopyLink(estimate)} disabled={!estimate.viewToken}>
+                  {copiedId === estimate.id ? <Check size={14} /> : <Copy size={14} />}
+                  {copiedId === estimate.id ? 'Copied' : 'Copy link'}
+                </button>
+                <button
+                  className="lv-btn quiet sm"
+                  onClick={() => handleExpand(estimate.id)}
+                  aria-expanded={expandedEstimate === estimate.id}
+                >
+                  <ImageIcon size={14} /> Photos ({estimatePhotos[estimate.id]?.length || 0})
+                  {expandedEstimate === estimate.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                <button className="lv-btn danger sm el-del" onClick={() => handleDelete(estimate.id)}>
+                  <Trash2 size={14} /> Delete
+                </button>
+              </div>
+
+              {expandedEstimate === estimate.id && (
+                <div className="el-photos">
+                  <PhotoUpload estimateId={estimate.id} onPhotoUploaded={(photo) => handlePhotoUploaded(estimate.id, photo)} />
+                  {estimatePhotos[estimate.id]?.length > 0 && (
+                    <PhotoGallery photos={estimatePhotos[estimate.id]} onPhotoDeleted={(photoId) => handlePhotoDeleted(estimate.id, photoId)} />
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
+
       {resendEstimate && <SendEstimateModal estimate={resendEstimate} onClose={() => setResendEstimate(null)} onSuccess={() => setResendEstimate(null)} />}
       {editEstimate && <EstimateBuilder existingEstimate={editEstimate} onClose={() => setEditEstimate(null)} />}
+      {newEstimate && <EstimateBuilder onClose={() => setNewEstimate(false)} />}
     </div>
   );
 };
-

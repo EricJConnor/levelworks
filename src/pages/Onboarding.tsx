@@ -3,35 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, Camera, Check, CreditCard, FileText, Loader2, Mail, Phone } from 'lucide-react';
-
-const CARD: React.CSSProperties = {
-  background: '#1c1c1e',
-  border: '0.5px solid rgba(255,255,255,0.1)',
-  borderRadius: '12px',
-};
-
-const INPUT: React.CSSProperties = {
-  width: '100%',
-  background: 'rgba(255,255,255,0.04)',
-  border: '0.5px solid rgba(255,255,255,0.12)',
-  borderRadius: '8px',
-  color: '#fff',
-  fontSize: '16px', // matches the global mobile input rule - avoids iOS zoom
-  padding: '11px 13px',
-  outline: 'none',
-  fontFamily: 'inherit',
-};
-
-const LABEL: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '7px',
-  color: '#a1a1aa',
-  fontSize: '13px',
-  fontWeight: 500,
-  marginBottom: '7px',
-};
+import { Mark } from '@/components/Mark';
+import { Building2, Camera, Check, CreditCard, FileText, Loader2 } from 'lucide-react';
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -135,155 +108,151 @@ export default function Onboarding() {
   };
 
   if (checkingSession || loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0a' }}>
-      <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#3b82f6' }} />
+    <div className="lv-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Loader2 size={30} className="animate-spin" style={{ color: 'var(--lv-blue)' }} />
+    </div>
+  );
+
+  const logo = (size: number) => (
+    <div
+      style={{
+        width: size, height: size, flexShrink: 0, overflow: 'hidden',
+        borderRadius: 'var(--lv-r)',
+        background: 'var(--lv-sunken)',
+        border: '1px solid var(--lv-line)',
+        display: 'grid', placeItems: 'center',
+      }}
+    >
+      {form.profile_photo_url
+        ? <img src={form.profile_photo_url} alt="Company logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        : <Building2 size={Math.round(size * 0.38)} style={{ color: 'var(--lv-faint)' }} />}
     </div>
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#e8e8e8', fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif" }}>
-      <header style={{ background: '#1c1c1e', boxShadow: '0 1px 0 rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: '640px', margin: '0 auto', padding: '0 16px', height: '56px', display: 'flex', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '17px', fontWeight: 600, color: '#fff', letterSpacing: '0.04em', margin: 0 }}>
-            LEVEL<span style={{ color: '#3b82f6' }}>WORKS</span>
-          </h1>
+    <div className="lv-app">
+      <main style={{ maxWidth: 520, margin: '0 auto', padding: '40px 16px 64px' }}>
+        <div className="lv-inline" style={{ gap: 8, fontWeight: 700, fontSize: 17, letterSpacing: '-.02em', marginBottom: 30 }}>
+          <Mark size={24} />
+          Level<span style={{ color: 'var(--lv-blue)' }}>Works</span>
         </div>
-      </header>
 
-      <main style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 16px 56px' }}>
         {step === 'setup' ? (
           <>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '22px', fontWeight: 600, color: '#fff', margin: '0 0 6px' }}>Welcome to LevelWorks 👋</h2>
-              <p style={{ fontSize: '17px', color: '#e4e4e7', margin: '0 0 8px' }}>Let's set up your business</p>
-              <p style={{ fontSize: '14px', color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
-                Add your details so your estimates look professional and show your brand.
-              </p>
-            </div>
+            <span className="lv-eyebrow">Step 1 of 2</span>
+            <h1 className="lv-h1" style={{ marginTop: 8 }}>Set up your business</h1>
+            <p className="lv-sub" style={{ marginTop: 8, marginBottom: 22 }}>
+              These details go at the top of every estimate and invoice you send. You can change them later.
+            </p>
 
-            <form onSubmit={handleContinue} style={{ ...CARD, padding: '22px 20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '22px' }}>
-                <div style={{ width: '72px', height: '72px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                  {form.profile_photo_url
-                    ? <img src={form.profile_photo_url} alt="Company logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                    : <Building2 size={28} style={{ color: '#52525b' }} />}
+            <form onSubmit={handleContinue}>
+              <div className="lv-card lv-card-pad">
+                <div className="lv-inline" style={{ gap: 16, marginBottom: 22 }}>
+                  {logo(68)}
+                  <div style={{ minWidth: 0 }}>
+                    <button
+                      type="button"
+                      className="lv-btn sec sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                    >
+                      {uploading ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />}
+                      {uploading ? 'Uploading…' : 'Upload your logo'}
+                    </button>
+                    <p className="lv-small" style={{ marginTop: 7 }}>Optional. It appears on everything you send.</p>
+                  </div>
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
                 </div>
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    style={{ background: 'none', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.4)', padding: '8px 14px', borderRadius: '8px', fontSize: '14px', fontWeight: 600, cursor: uploading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', gap: '7px' }}
-                  >
-                    {uploading ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />}
-                    {uploading ? 'Uploading...' : 'Upload Your Logo'}
-                  </button>
-                  <p style={{ color: '#71717a', fontSize: '12px', margin: '7px 0 0' }}>Optional — appears on every estimate you send.</p>
+
+                <div className="lv-field">
+                  <label className="lv-label" htmlFor="company_name">Company name</label>
+                  <input
+                    id="company_name"
+                    className="lv-input"
+                    type="text"
+                    value={form.company_name}
+                    onChange={e => setForm(p => ({ ...p, company_name: e.target.value }))}
+                    placeholder="Smith Contracting LLC"
+                    required
+                  />
                 </div>
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
+
+                <div className="lv-field">
+                  <label className="lv-label" htmlFor="phone_number">Phone number</label>
+                  <input
+                    id="phone_number"
+                    className="lv-input"
+                    type="tel"
+                    value={form.phone_number}
+                    onChange={e => setForm(p => ({ ...p, phone_number: e.target.value }))}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+
+                <div className="lv-field">
+                  <label className="lv-label" htmlFor="business_email">Email</label>
+                  <input
+                    id="business_email"
+                    className="lv-input"
+                    type="email"
+                    value={form.business_email}
+                    onChange={e => setForm(p => ({ ...p, business_email: e.target.value }))}
+                    placeholder="you@email.com"
+                  />
+                </div>
               </div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <label htmlFor="company_name" style={LABEL}><Building2 size={14} /> Company Name</label>
-                <input
-                  id="company_name"
-                  type="text"
-                  value={form.company_name}
-                  onChange={e => setForm(p => ({ ...p, company_name: e.target.value }))}
-                  placeholder="Smith Contracting LLC"
-                  required
-                  style={INPUT}
-                />
-              </div>
-
-              <div style={{ marginBottom: '16px' }}>
-                <label htmlFor="phone_number" style={LABEL}><Phone size={14} /> Phone Number</label>
-                <input
-                  id="phone_number"
-                  type="tel"
-                  value={form.phone_number}
-                  onChange={e => setForm(p => ({ ...p, phone_number: e.target.value }))}
-                  placeholder="(555) 123-4567"
-                  style={INPUT}
-                />
-              </div>
-
-              <div style={{ marginBottom: '22px' }}>
-                <label htmlFor="business_email" style={LABEL}><Mail size={14} /> Email</label>
-                <input
-                  id="business_email"
-                  type="email"
-                  value={form.business_email}
-                  onChange={e => setForm(p => ({ ...p, business_email: e.target.value }))}
-                  placeholder="you@email.com"
-                  style={INPUT}
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={saving || uploading}
-                style={{ width: '100%', background: '#3b82f6', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '15px', fontWeight: 600, cursor: saving ? 'default' : 'pointer', opacity: saving || uploading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              >
-                {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Continue'}
+              <button type="submit" className="lv-btn pri wide lg" style={{ marginTop: 18 }} disabled={saving || uploading}>
+                {saving ? <><Loader2 size={17} className="animate-spin" /> Saving…</> : 'Continue'}
               </button>
 
-              <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', marginTop: '18px', paddingTop: '14px', textAlign: 'center' }}>
-                <button
-                  type="button"
-                  onClick={handleSetUpPayments}
-                  disabled={saving}
-                  style={{ background: 'none', border: 'none', color: '#71717a', fontSize: '13px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: 0 }}
-                >
-                  <CreditCard size={14} /> Set Up Payments
+              <div style={{ textAlign: 'center', marginTop: 16 }}>
+                <button type="button" className="lv-btn quiet sm" onClick={handleSetUpPayments} disabled={saving}>
+                  <CreditCard size={15} /> Set up card payments
                 </button>
-                <p style={{ color: '#52525b', fontSize: '12px', margin: '5px 0 0' }}>Optional — you can do this anytime from your dashboard.</p>
+                <p className="lv-small" style={{ marginTop: 4 }}>Optional. You can do this any time from your account.</p>
               </div>
             </form>
           </>
         ) : (
           <>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '22px', fontWeight: 600, color: '#fff', margin: '0 0 6px' }}>You're all set! 🎉</h2>
-              <p style={{ fontSize: '14px', color: '#a1a1aa', margin: 0 }}>Your business profile is ready.</p>
-            </div>
+            <span className="lv-eyebrow">Step 2 of 2</span>
+            <h1 className="lv-h1" style={{ marginTop: 8 }}>You’re set up</h1>
+            <p className="lv-sub" style={{ marginTop: 8, marginBottom: 22 }}>
+              Your business details are saved. Write your first estimate whenever you’re ready.
+            </p>
 
-            <div style={{ ...CARD, padding: '22px 20px', marginBottom: '18px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
-                <div style={{ width: '56px', height: '56px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                  {form.profile_photo_url
-                    ? <img src={form.profile_photo_url} alt="Company logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                    : <Building2 size={22} style={{ color: '#52525b' }} />}
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <p style={{ color: '#fff', fontSize: '16px', fontWeight: 600, margin: '0 0 2px' }}>{form.company_name}</p>
-                  <p style={{ color: '#a1a1aa', fontSize: '13px', margin: 0 }}>
-                    {[form.phone_number, form.business_email].filter(Boolean).join(' · ') || 'Business profile'}
-                  </p>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {['Your logo', 'Your business information', 'Your branded estimates'].map(item => (
-                  <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Check size={16} style={{ color: '#4ade80', flexShrink: 0 }} />
-                    <span style={{ color: '#e4e4e7', fontSize: '14px' }}>{item}</span>
+            <div className="lv-card">
+              <div className="lv-card-head">
+                <div className="lv-inline" style={{ gap: 14, minWidth: 0, flexWrap: 'nowrap' }}>
+                  {logo(52)}
+                  <div style={{ minWidth: 0 }}>
+                    <p className="lv-h3" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {form.company_name}
+                    </p>
+                    <p className="lv-small" style={{ marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {[form.phone_number, form.business_email].filter(Boolean).join(' · ') || 'Business profile'}
+                    </p>
                   </div>
-                ))}
+                </div>
+              </div>
+              <div className="lv-card-pad">
+                <ul className="lv-stack" style={{ gap: 9, listStyle: 'none', margin: 0, padding: 0 }}>
+                  {['Your logo', 'Your business details', 'Your estimates, with your name on them'].map(item => (
+                    <li key={item} className="lv-inline" style={{ gap: 9, flexWrap: 'nowrap' }}>
+                      <Check size={16} style={{ color: 'var(--lv-green)', flexShrink: 0 }} />
+                      <span className="lv-sub" style={{ color: 'var(--lv-ink-2)' }}>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
-            <button
-              onClick={() => goToApp(true)}
-              style={{ width: '100%', background: '#3b82f6', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px' }}
-            >
-              <FileText size={16} /> Create Your First Estimate
+            <button className="lv-btn pri wide lg" style={{ marginTop: 18 }} onClick={() => goToApp(true)}>
+              <FileText size={17} /> Write your first estimate
             </button>
-            <button
-              onClick={() => goToApp(false)}
-              style={{ width: '100%', background: 'none', color: '#a1a1aa', border: '0.5px solid rgba(255,255,255,0.12)', padding: '12px', borderRadius: '8px', fontSize: '15px', cursor: 'pointer' }}
-            >
-              Go To Dashboard
+            <button className="lv-btn quiet wide" style={{ marginTop: 8 }} onClick={() => goToApp(false)}>
+              Skip for now
             </button>
           </>
         )}

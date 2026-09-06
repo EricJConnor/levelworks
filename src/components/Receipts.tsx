@@ -1,40 +1,16 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Badge } from './ui/badge';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from './ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from './ui/alert-dialog';
-import { 
-  Camera, 
-  Plus, 
-  Search, 
-  X, 
-  Trash2, 
-  Edit2, 
+  Camera,
+  Plus,
+  Search,
+  X,
+  Trash2,
+  Edit2,
   ArrowLeft,
   Receipt,
   Image as ImageIcon,
-  Calendar,
   Tag,
   Star,
-  Clock,
   Loader2,
   AlertTriangle
 } from 'lucide-react';
@@ -71,22 +47,143 @@ type ReceiptCategory = 'Materials' | 'Tools' | 'Fuel' | 'Food' | 'Misc';
 
 const CATEGORIES: ReceiptCategory[] = ['Materials', 'Tools', 'Fuel', 'Food', 'Misc'];
 
-const CATEGORY_COLORS: Record<ReceiptCategory, string> = {
-  Materials: 'bg-blue-100 text-blue-800 border-blue-200',
-  Tools: 'bg-orange-100 text-orange-800 border-orange-200',
-  Fuel: 'bg-green-100 text-green-800 border-green-200',
-  Food: 'bg-purple-100 text-purple-800 border-purple-200',
-  Misc: 'bg-gray-100 text-gray-800 border-gray-200',
-};
+const DATE_GROUPS = ['Today', 'Yesterday', 'This Week', 'Older'] as const;
 
-const CATEGORY_CHIP_COLORS: Record<ReceiptCategory, { active: string; inactive: string }> = {
-  Materials: { active: 'bg-blue-600 text-white border-blue-600', inactive: 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50' },
-  Tools: { active: 'bg-orange-600 text-white border-orange-600', inactive: 'bg-white text-orange-700 border-orange-300 hover:bg-orange-50' },
-  Fuel: { active: 'bg-green-600 text-white border-green-600', inactive: 'bg-white text-green-700 border-green-300 hover:bg-green-50' },
-  Food: { active: 'bg-purple-600 text-white border-purple-600', inactive: 'bg-white text-purple-700 border-purple-300 hover:bg-purple-50' },
-  Misc: { active: 'bg-gray-600 text-white border-gray-600', inactive: 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' },
-};
+/* Scoped to the `rc-` prefix so nothing here can reach another screen. */
+const styles = `
+.rc-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border-radius: var(--lv-r-lg);
+  background: var(--lv-amber-soft);
+}
+.rc-warn svg { flex-shrink: 0; margin-top: 2px; color: var(--lv-amber); }
 
+.rc-tools { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.rc-segwrap { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; margin: -3px; padding: 3px; }
+.rc-segwrap::-webkit-scrollbar { display: none; }
+/* the seg must size to its own buttons, or its ground stops short of them when the row scrolls */
+.rc-segwrap .lv-seg { width: max-content; }
+.rc-find { min-width: 0; }
+.rc-n { margin-left: 6px; color: var(--lv-faint); font-variant-numeric: tabular-nums; }
+.lv-seg button.on .rc-n { color: var(--lv-mute); }
+@media (min-width: 900px) {
+  .rc-tools { flex-direction: row; align-items: center; justify-content: space-between; }
+  .rc-find { flex: 0 1 380px; }
+}
+
+.rc-list { overflow: hidden; }
+.rc-gh {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 18px;
+  background: var(--lv-surface-2);
+  border-bottom: 1px solid var(--lv-line);
+}
+.rc-row { gap: 12px; }
+.rc-thumb {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--lv-r-sm);
+  border: 1px solid var(--lv-line);
+  background: var(--lv-sunken);
+  color: var(--lv-faint);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.rc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rc-main { min-width: 0; flex: 1; }
+.rc-clip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc-right { flex-shrink: 0; display: flex; align-items: center; gap: 10px; }
+
+.rc-logo-sm { width: 20px; height: 20px; border-radius: 4px; flex-shrink: 0; display: block; }
+.rc-logo-md { width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0; display: block; }
+.rc-logo-lg { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; display: block; }
+
+.rc-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rc-pick button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 132px;
+  padding: 20px 12px;
+  border: 1px dashed var(--lv-line-2);
+  border-radius: var(--lv-r-lg);
+  background: var(--lv-surface);
+  cursor: pointer;
+  font: 600 14px var(--lv-font);
+  color: var(--lv-ink-2);
+  transition: border-color var(--lv-t) var(--lv-ease), color var(--lv-t) var(--lv-ease), background var(--lv-t) var(--lv-ease);
+}
+.rc-pick button svg { color: var(--lv-blue); }
+@media (hover: hover) and (pointer: fine) {
+  .rc-pick button:hover { border-color: var(--lv-blue); color: var(--lv-blue-2); background: var(--lv-blue-soft); }
+}
+
+.rc-preview {
+  background: var(--lv-sunken);
+  border: 1px solid var(--lv-line);
+  border-radius: var(--lv-r-lg);
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+}
+.rc-preview img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.rc-full {
+  position: relative;
+  background: var(--lv-sunken);
+  border: 1px solid var(--lv-line);
+  border-radius: var(--lv-r-lg);
+  overflow: hidden;
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  color: var(--lv-faint);
+}
+.rc-full img { width: 100%; max-height: 46vh; object-fit: contain; display: block; }
+.rc-full-logo {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  padding: 5px;
+  border-radius: var(--lv-r-sm);
+  border: 1px solid var(--lv-line);
+  background: var(--lv-surface);
+  box-shadow: var(--lv-shadow-sm);
+}
+
+.rc-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rc-detected {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--lv-line);
+  border-radius: var(--lv-r);
+  background: var(--lv-surface-2);
+}
+.rc-rows .lv-row:last-child { border-bottom: 0; }
+.rc-rows .lv-row { align-items: flex-start; }
+.rc-val { text-align: right; font-weight: 600; color: var(--lv-ink); overflow-wrap: anywhere; }
+.rc-back { margin-right: 2px; }
+
+@media (max-width: 520px) {
+  .rc-gh { padding-left: 14px; padding-right: 14px; }
+  .rc-row { padding-left: 14px; padding-right: 14px; }
+}
+`;
 // ============================================================================
 // STORE LOGO SVG COMPONENTS (Static - defined outside component to prevent re-renders)
 // ============================================================================
@@ -388,71 +485,63 @@ function useDebounce<T>(value: T, delay: number): T {
 // Store Logo Component - Memoized
 const StoreLogo = memo<{ store?: string; size?: 'sm' | 'md' | 'lg' }>(({ store, size = 'md' }) => {
   if (!store || !StoreLogoSVGs[store]) return null;
-  
+
   const sizeClasses = {
-    sm: 'w-5 h-5',
-    md: 'w-7 h-7',
-    lg: 'w-10 h-10',
+    sm: 'rc-logo-sm',
+    md: 'rc-logo-md',
+    lg: 'rc-logo-lg',
   };
 
   const LogoComponent = StoreLogoSVGs[store];
-  return <LogoComponent className={`${sizeClasses[size]} rounded flex-shrink-0`} />;
+  return <LogoComponent className={sizeClasses[size]} />;
 });
 StoreLogo.displayName = 'StoreLogo';
 
-// Category Chips Component - Memoized
+// Category picker - Memoized. One segmented control, the selected one carries .on.
 const CategoryChips = memo<{
   selected: ReceiptCategory;
   onChange: (category: ReceiptCategory) => void;
 }>(({ selected, onChange }) => {
   return (
-    <div className="flex flex-wrap gap-2">
-      {CATEGORIES.map(cat => {
-        const isActive = selected === cat;
-        const colors = CATEGORY_CHIP_COLORS[cat];
-        return (
+    <div className="rc-segwrap">
+      <div className="lv-seg" role="group" aria-label="Category">
+        {CATEGORIES.map(cat => (
           <button
             key={cat}
             type="button"
+            className={selected === cat ? 'on' : ''}
             onClick={() => onChange(cat)}
-            className={`px-4 py-2.5 rounded-full border-2 font-medium text-sm transition-all min-h-[44px] ${
-              isActive ? colors.active : colors.inactive
-            }`}
           >
             {cat}
           </button>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 });
 CategoryChips.displayName = 'CategoryChips';
 
-// Quick Store Button Component - Memoized with larger touch target
+// Quick Store Button Component - Memoized
 const QuickStoreButton = memo<{
   store: { name: string; category: ReceiptCategory };
   onClick: () => void;
 }>(({ store, onClick }) => {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex items-center gap-2 px-4 py-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors min-h-[48px] active:bg-gray-200"
-    >
+    <button type="button" className="lv-btn sec sm" onClick={onClick}>
       <StoreLogo store={store.name} size="sm" />
-      <span className="text-sm font-medium text-gray-700 whitespace-nowrap">{store.name}</span>
+      {store.name}
     </button>
   );
 });
 QuickStoreButton.displayName = 'QuickStoreButton';
 
-// Receipt Card Component - Memoized
+// One receipt, as a row in the list card - Memoized
 const ReceiptCard = memo<{
   receipt: ReceiptData;
   onClick: () => void;
 }>(({ receipt, onClick }) => {
   const [imageError, setImageError] = useState(false);
-  
+
   const date = useMemo(() => {
     try {
       return new Date(receipt.createdAt);
@@ -460,7 +549,7 @@ const ReceiptCard = memo<{
       return new Date();
     }
   }, [receipt.createdAt]);
-  
+
   const formattedDate = useMemo(() => {
     try {
       return `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
@@ -469,56 +558,37 @@ const ReceiptCard = memo<{
     }
   }, [date]);
 
-  const displayLabel = receipt.label?.slice(0, MAX_LABEL_LENGTH) || 'Untitled Receipt';
-  
+  const displayLabel = receipt.label?.slice(0, MAX_LABEL_LENGTH) || 'Untitled receipt';
+
   return (
-    <Card 
-      className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow group"
-      onClick={onClick}
-    >
-      {/* Thumbnail */}
-      <div className="aspect-[4/3] bg-gray-100 relative overflow-hidden">
+    <button type="button" className="lv-row rc-row" onClick={onClick}>
+      <span className="rc-thumb">
         {!imageError && receipt.imageData ? (
           <img
             src={receipt.imageData}
-            alt={displayLabel}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            alt=""
             onError={() => setImageError(true)}
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
-            <Receipt className="w-12 h-12 text-gray-400" />
-          </div>
+          <Receipt size={18} />
         )}
-        <Badge className={`absolute top-2 right-2 ${CATEGORY_COLORS[receipt.category]}`}>
-          {receipt.category}
-        </Badge>
-        {receipt.store && StoreLogoSVGs[receipt.store] && (
-          <div className="absolute top-2 left-2 bg-white rounded-md p-1 shadow-sm">
-            <StoreLogo store={receipt.store} size="sm" />
-          </div>
-        )}
-      </div>
-      
-      {/* Info */}
-      <div className="p-3">
-        <div className="flex items-center gap-2">
-          {receipt.store && <StoreLogo store={receipt.store} size="sm" />}
-          <h3 className="font-semibold text-gray-800 truncate flex-1">
-            {displayLabel}
-          </h3>
-        </div>
-        <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-          <Calendar className="w-3.5 h-3.5" />
-          {formattedDate}
-        </p>
-      </div>
-    </Card>
+      </span>
+
+      <span className="rc-main">
+        <span className="lv-row-t rc-clip" style={{ display: 'block' }}>{displayLabel}</span>
+        <span className="lv-row-s rc-clip lv-num" style={{ display: 'block' }}>
+          {receipt.store ? `${receipt.store} · ` : ''}{formattedDate}
+        </span>
+      </span>
+
+      <span className="rc-right">
+        <span className="lv-pill">{receipt.category}</span>
+      </span>
+    </button>
   );
 });
 ReceiptCard.displayName = 'ReceiptCard';
-
 // ============================================================================
 // LOCAL STORAGE HOOK
 // ============================================================================
@@ -753,6 +823,7 @@ function useReceiptsStorage() {
 export const Receipts: React.FC = () => {
   const { receipts, addReceipt, updateReceipt, deleteReceipt, favoriteLabels, getDefaultCategory, storageWarning } = useReceiptsStorage();
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<'All' | ReceiptCategory>('All');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [showDetailView, setShowDetailView] = useState(false);
@@ -761,16 +832,19 @@ export const Receipts: React.FC = () => {
   // Debounced search query for performance
   const debouncedSearchQuery = useDebounce(searchQuery, SEARCH_DEBOUNCE_MS);
 
-  // Filter receipts based on debounced search
+  // Filter receipts on the category segment and the debounced search
   const filteredReceipts = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) return receipts;
-    const query = debouncedSearchQuery.toLowerCase();
-    return receipts.filter(receipt => 
-      (receipt.label && receipt.label.toLowerCase().includes(query)) ||
-      (receipt.category && receipt.category.toLowerCase().includes(query)) ||
-      (receipt.store && receipt.store.toLowerCase().includes(query))
-    );
-  }, [receipts, debouncedSearchQuery]);
+    const query = debouncedSearchQuery.trim().toLowerCase();
+    return receipts.filter(receipt => {
+      if (categoryFilter !== 'All' && receipt.category !== categoryFilter) return false;
+      if (!query) return true;
+      return (
+        (receipt.label && receipt.label.toLowerCase().includes(query)) ||
+        (receipt.category && receipt.category.toLowerCase().includes(query)) ||
+        (receipt.store && receipt.store.toLowerCase().includes(query))
+      );
+    });
+  }, [receipts, debouncedSearchQuery, categoryFilter]);
 
   // Group receipts by date - memoized for performance
   const groupedReceipts = useMemo(() => {
@@ -793,6 +867,13 @@ export const Receipts: React.FC = () => {
     return groups;
   }, [filteredReceipts]);
 
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: receipts.length };
+    CATEGORIES.forEach(cat => { counts[cat] = 0; });
+    receipts.forEach(r => { if (counts[r.category] !== undefined) counts[r.category] += 1; });
+    return counts;
+  }, [receipts]);
+
   const handleReceiptClick = useCallback((receipt: ReceiptData) => {
     setSelectedReceipt(receipt);
     setShowDetailView(true);
@@ -801,8 +882,8 @@ export const Receipts: React.FC = () => {
   const handleAddComplete = useCallback(() => {
     setShowAddModal(false);
     toast({
-      title: 'Receipt Saved',
-      description: 'Your receipt has been saved locally.',
+      title: 'Receipt saved',
+      description: 'It is stored on this device.',
     });
   }, [toast]);
 
@@ -815,7 +896,7 @@ export const Receipts: React.FC = () => {
     if (!selectedReceipt) return;
     updateReceipt(selectedReceipt.id, updates);
     setSelectedReceipt(prev => prev ? { ...prev, ...updates } : null);
-    toast({ title: 'Receipt Updated' });
+    toast({ title: 'Receipt updated' });
   }, [selectedReceipt, updateReceipt, toast]);
 
   const handleDeleteReceipt = useCallback(() => {
@@ -823,120 +904,109 @@ export const Receipts: React.FC = () => {
     deleteReceipt(selectedReceipt.id);
     setShowDetailView(false);
     setSelectedReceipt(null);
-    toast({ title: 'Receipt Deleted' });
+    toast({ title: 'Receipt deleted' });
   }, [selectedReceipt, deleteReceipt, toast]);
 
+  const isFiltered = categoryFilter !== 'All' || debouncedSearchQuery.trim().length > 0;
+
+  const clearFilters = () => { setCategoryFilter('All'); setSearchQuery(''); };
+
   return (
-    <div className="space-y-6">
-      {/* Storage Warning */}
+    <div>
+      <style>{styles}</style>
+
       {storageWarning && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div className="rc-warn">
+          <AlertTriangle size={18} />
           <div>
-            <h4 className="font-medium text-amber-800">Storage Almost Full</h4>
-            <p className="text-sm text-amber-700 mt-1">
-              Your device storage is nearly full. Consider deleting old receipts to free up space.
+            <p className="lv-h3">Storage is nearly full</p>
+            <p className="lv-small" style={{ marginTop: 3 }}>
+              Receipts are kept on this device. Delete a few old ones to make room.
             </p>
           </div>
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="lv-page-head">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-            <Receipt className="w-7 h-7 text-blue-600" />
-            Receipts
-          </h2>
-          <p className="text-gray-600 mt-1">Track and organize your expense receipts</p>
+          <h1 className="lv-h1">Receipts</h1>
+          <p className="lv-sub">Every job expense, photographed and filed.</p>
         </div>
-        <Button 
-          onClick={() => setShowAddModal(true)} 
-          size="lg"
-          className="bg-blue-600 hover:bg-blue-700 text-white gap-2 min-h-[48px]"
-        >
-          <Plus className="w-5 h-5" />
-          Add Receipt
-        </Button>
+        <button className="lv-btn pri" onClick={() => setShowAddModal(true)}>
+          <Plus size={16} /> Add receipt
+        </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <Input
-          placeholder="Search by label, category, or store..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 h-12 text-base"
-          maxLength={100}
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
-            type="button"
-            aria-label="Clear search"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
-      </div>
+      {receipts.length > 0 && (
+        <div className="rc-tools">
+          <div className="rc-segwrap">
+            <div className="lv-seg" role="group" aria-label="Filter by category">
+              {(['All', ...CATEGORIES] as const).map(cat => (
+                <button
+                  key={cat}
+                  className={categoryFilter === cat ? 'on' : ''}
+                  onClick={() => setCategoryFilter(cat)}
+                >
+                  {cat}<span className="rc-n">{categoryCounts[cat] || 0}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {CATEGORIES.map(cat => {
-          const count = receipts.filter(r => r.category === cat).length;
-          return (
-            <Card key={cat} className="p-3 text-center">
-              <div className="text-2xl font-bold text-gray-800">{count}</div>
-              <div className="text-sm text-gray-600">{cat}</div>
-            </Card>
-          );
-        })}
-      </div>
+          <div className="rc-find">
+            <div className="lv-search">
+              <Search size={16} />
+              <input
+                className="lv-input"
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search label, category or store"
+                aria-label="Search receipts"
+                maxLength={100}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Receipt List - Grouped by Date */}
       {filteredReceipts.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Receipt className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">
-            {searchQuery ? 'No receipts found' : 'No receipts yet'}
-          </h3>
-          <p className="text-gray-500 mb-6">
-            {searchQuery 
-              ? 'Try adjusting your search terms' 
-              : 'Start by adding your first receipt'}
+        <div className="lv-empty">
+          <Receipt size={30} />
+          <h3>{isFiltered ? 'Nothing matches that' : 'No receipts yet'}</h3>
+          <p>
+            {isFiltered
+              ? 'Try a different word, or switch the category back to all.'
+              : 'Photograph a receipt on the way out of the store and it is filed before you get back to the truck.'}
           </p>
-          {!searchQuery && (
-            <Button onClick={() => setShowAddModal(true)} className="gap-2 min-h-[44px]">
-              <Plus className="w-4 h-4" />
-              Add Your First Receipt
-            </Button>
+          {isFiltered ? (
+            <button className="lv-btn sec" onClick={clearFilters}>Show all receipts</button>
+          ) : (
+            <button className="lv-btn pri" onClick={() => setShowAddModal(true)}>
+              <Plus size={16} /> Add your first receipt
+            </button>
           )}
-        </Card>
+        </div>
       ) : (
-        <div className="space-y-6">
-          {(['Today', 'Yesterday', 'This Week', 'Older'] as const).map(group => {
+        <div className="lv-card rc-list">
+          {DATE_GROUPS.map(group => {
             const groupReceipts = groupedReceipts[group];
             if (!groupReceipts || groupReceipts.length === 0) return null;
 
             return (
-              <div key={group}>
-                <div className="flex items-center gap-2 mb-3">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">{group}</h3>
-                  <span className="text-xs text-gray-400">({groupReceipts.length})</span>
+              <React.Fragment key={group}>
+                <div className="rc-gh">
+                  <span className="lv-eyebrow">{group}</span>
+                  <span className="lv-small lv-num">{groupReceipts.length}</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {groupReceipts.map(receipt => (
-                    <ReceiptCard
-                      key={receipt.id}
-                      receipt={receipt}
-                      onClick={() => handleReceiptClick(receipt)}
-                    />
-                  ))}
-                </div>
-              </div>
+                {groupReceipts.map(receipt => (
+                  <ReceiptCard
+                    key={receipt.id}
+                    receipt={receipt}
+                    onClick={() => handleReceiptClick(receipt)}
+                  />
+                ))}
+              </React.Fragment>
             );
           })}
         </div>
@@ -952,8 +1022,8 @@ export const Receipts: React.FC = () => {
             handleAddComplete();
           } else {
             toast({
-              title: 'Error Saving Receipt',
-              description: result.error || 'Failed to save receipt. Please try again.',
+              title: 'Could not save the receipt',
+              description: result.error || 'Something went wrong. Try again.',
               variant: 'destructive',
             });
           }
@@ -961,7 +1031,6 @@ export const Receipts: React.FC = () => {
         favoriteLabels={favoriteLabels}
         defaultCategory={getDefaultCategory()}
       />
-
 
       {/* Receipt Detail View */}
       {selectedReceipt && (
@@ -1025,7 +1094,7 @@ const AddReceiptModal: React.FC<{
       if (!file.type.startsWith('image/')) {
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = (event) => {
         const result = event.target?.result;
@@ -1047,13 +1116,13 @@ const AddReceiptModal: React.FC<{
   const handleLabelChange = useCallback((newLabel: string) => {
     const trimmedLabel = newLabel.slice(0, MAX_LABEL_LENGTH);
     setLabel(trimmedLabel);
-    
+
     // Detect category from label
     const detectedCategory = detectCategoryFromLabel(trimmedLabel);
     if (detectedCategory) {
       setCategory(detectedCategory);
     }
-    
+
     // Detect store from label
     const detectedStore = detectStoreFromLabel(trimmedLabel);
     if (detectedStore) {
@@ -1104,200 +1173,184 @@ const AddReceiptModal: React.FC<{
     }
   }, [imageData, isSaving, onSave, label, category, store, resetForm]);
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <div className="lv-scrim" onClick={handleClose}>
+      <div className="lv-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Add receipt">
+        <div className="lv-modal-head">
+          <div className="lv-inline" style={{ gap: 4, minWidth: 0, flexWrap: 'nowrap' }}>
             {step === 'details' && (
-              <button 
-                onClick={() => setStep('capture')} 
-                className="mr-2 p-1 hover:bg-gray-100 rounded" 
-                type="button" 
-                aria-label="Go back"
+              <button
+                className="lv-icon-btn rc-back"
+                onClick={() => setStep('capture')}
+                type="button"
+                aria-label="Back"
                 disabled={isSaving}
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft size={19} />
               </button>
             )}
-            {step === 'capture' ? 'Capture Receipt' : 'Receipt Details'}
-          </DialogTitle>
-        </DialogHeader>
-
-        {step === 'capture' ? (
-          <div className="space-y-4">
-            <p className="text-gray-600 text-center">
-              Take a photo or select an image of your receipt
-            </p>
-            
-            {/* Hidden file inputs */}
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleFileSelect}
-              className="hidden"
-              aria-hidden="true"
-            />
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-              aria-hidden="true"
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-32 flex-col gap-3 min-h-[128px]"
-                onClick={() => cameraInputRef.current?.click()}
-                type="button"
-              >
-                <Camera className="w-10 h-10 text-blue-600" />
-                <span>Take Photo</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-32 flex-col gap-3 min-h-[128px]"
-                onClick={() => fileInputRef.current?.click()}
-                type="button"
-              >
-                <ImageIcon className="w-10 h-10 text-green-600" />
-                <span>Choose Image</span>
-              </Button>
+            <div style={{ minWidth: 0 }}>
+              <span className="lv-eyebrow">Receipt</span>
+              <h2 className="lv-h2" style={{ marginTop: 2 }}>{step === 'capture' ? 'Add a receipt' : 'Receipt details'}</h2>
             </div>
           </div>
-        ) : (
-          <div className="space-y-5">
-            {/* Image Preview */}
-            {imageData && (
-              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                <img
-                  src={imageData}
-                  alt="Receipt preview"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            )}
+          <button className="lv-icon-btn" onClick={handleClose} type="button" aria-label="Close"><X size={20} /></button>
+        </div>
 
-            {/* Quick Store Buttons */}
-            <div className="space-y-2">
-              <Label className="text-xs text-gray-500 uppercase tracking-wide">Quick Select Store</Label>
-              <div className="flex flex-wrap gap-2">
-                {QUICK_STORES.map(s => (
-                  <QuickStoreButton
-                    key={s.name}
-                    store={s}
-                    onClick={() => handleQuickStore(s.name, s.category)}
-                  />
-                ))}
-              </div>
-            </div>
+        <div className="lv-modal-body">
+          {step === 'capture' ? (
+            <div className="lv-stack">
+              <p className="lv-sub">Take a photo of the receipt, or pick one already on your phone.</p>
 
-            {/* Favorite Labels */}
-            {favoriteLabels.length > 0 && (
-              <div className="space-y-2">
-                <Label className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                  <Star className="w-3 h-3" />
-                  Recent Labels
-                </Label>
-                <div className="flex flex-wrap gap-2">
-                  {favoriteLabels.slice(0, 6).map(fav => (
-                    <button
-                      key={fav}
-                      type="button"
-                      onClick={() => handleFavoriteLabel(fav)}
-                      className="px-3 py-2 text-sm bg-amber-50 text-amber-700 border border-amber-200 rounded-full hover:bg-amber-100 transition-colors min-h-[40px]"
-                    >
-                      {fav}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Label */}
-            <div className="space-y-2">
-              <Label htmlFor="label" className="flex items-center gap-2">
-                <Tag className="w-4 h-4" />
-                Label
-              </Label>
-              <Input
-                id="label"
-                placeholder="e.g., Home Depot, Oil Change, Lumber"
-                value={label}
-                onChange={(e) => handleLabelChange(e.target.value)}
-                className="h-12"
-                maxLength={MAX_LABEL_LENGTH}
-                disabled={isSaving}
+              {/* Hidden file inputs */}
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+                aria-hidden="true"
               />
-              
-              {/* Smart Suggestions based on category */}
-              {smartSuggestions.length > 0 && !label && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {smartSuggestions.map(suggestion => (
-                    <button
-                      key={suggestion}
-                      type="button"
-                      onClick={() => handleLabelChange(suggestion)}
-                      className="px-2.5 py-1.5 text-xs bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors min-h-[32px]"
-                      disabled={isSaving}
-                    >
-                      {suggestion}
-                    </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+                aria-hidden="true"
+              />
+
+              <div className="rc-pick">
+                <button type="button" onClick={() => cameraInputRef.current?.click()}>
+                  <Camera size={28} />
+                  Take a photo
+                </button>
+                <button type="button" onClick={() => fileInputRef.current?.click()}>
+                  <ImageIcon size={28} />
+                  Choose an image
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="lv-stack">
+              {/* Image Preview */}
+              {imageData && (
+                <div className="rc-preview">
+                  <img src={imageData} alt="Receipt preview" />
+                </div>
+              )}
+
+              {/* Quick Store Buttons */}
+              <div>
+                <span className="lv-label">Quick pick a store</span>
+                <div className="rc-chips">
+                  {QUICK_STORES.map(s => (
+                    <QuickStoreButton
+                      key={s.name}
+                      store={s}
+                      onClick={() => handleQuickStore(s.name, s.category)}
+                    />
                   ))}
                 </div>
+              </div>
+
+              {/* Favorite Labels */}
+              {favoriteLabels.length > 0 && (
+                <div>
+                  <span className="lv-label" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <Star size={13} /> Recent labels
+                  </span>
+                  <div className="rc-chips">
+                    {favoriteLabels.slice(0, 6).map(fav => (
+                      <button
+                        key={fav}
+                        type="button"
+                        className="lv-btn sec sm"
+                        onClick={() => handleFavoriteLabel(fav)}
+                      >
+                        {fav}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Label */}
+              <div className="lv-field">
+                <label className="lv-label" htmlFor="label" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <Tag size={13} /> Label
+                </label>
+                <input
+                  id="label"
+                  className="lv-input"
+                  placeholder="Home Depot, oil change, lumber"
+                  value={label}
+                  onChange={(e) => handleLabelChange(e.target.value)}
+                  maxLength={MAX_LABEL_LENGTH}
+                  disabled={isSaving}
+                />
+
+                {/* Smart Suggestions based on category */}
+                {smartSuggestions.length > 0 && !label && (
+                  <div className="rc-chips" style={{ marginTop: 10 }}>
+                    {smartSuggestions.map(suggestion => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        className="lv-btn quiet sm"
+                        onClick={() => handleLabelChange(suggestion)}
+                        disabled={isSaving}
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Category */}
+              <div>
+                <span className="lv-label">Category</span>
+                <CategoryChips selected={category} onChange={setCategory} />
+              </div>
+
+              {/* Store Logo Preview */}
+              {store && StoreLogoSVGs[store] && (
+                <div className="rc-detected">
+                  <StoreLogo store={store} size="lg" />
+                  <div>
+                    <p className="lv-h3">Store found</p>
+                    <p className="lv-small" style={{ marginTop: 2 }}>{store}</p>
+                  </div>
+                </div>
               )}
             </div>
+          )}
+        </div>
 
-            {/* Category Chips */}
-            <div className="space-y-2">
-              <Label className="block">Category</Label>
-              <CategoryChips selected={category} onChange={setCategory} />
-            </div>
-
-            {/* Store Logo Preview */}
-            {store && StoreLogoSVGs[store] && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <StoreLogo store={store} size="lg" />
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Store Detected</p>
-                  <p className="text-xs text-gray-500">{store}</p>
-                </div>
-              </div>
+        <div className="lv-modal-foot">
+          <div className="lv-actions">
+            <div className="spacer" />
+            <button className={`lv-btn sec${step === 'capture' ? ' span' : ''}`} onClick={handleClose} type="button" disabled={isSaving}>
+              Cancel
+            </button>
+            {step === 'details' && (
+              <button
+                className="lv-btn pri"
+                onClick={handleSave}
+                type="button"
+                disabled={isSaving || !imageData}
+              >
+                {isSaving ? <><Loader2 size={15} className="animate-spin" /> Saving…</> : 'Save receipt'}
+              </button>
             )}
           </div>
-        )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose} type="button" disabled={isSaving}>
-            Cancel
-          </Button>
-          {step === 'details' && (
-            <Button 
-              onClick={handleSave} 
-              className="bg-blue-600 hover:bg-blue-700 min-w-[120px]" 
-              type="button"
-              disabled={isSaving || !imageData}
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Receipt'
-              )}
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -1378,166 +1431,157 @@ const ReceiptDetailModal: React.FC<{
     }
   }, [receipt.updatedAt]);
 
+  if (!open) return null;
+
   return (
     <>
-      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                {receipt.store && <StoreLogo store={receipt.store} size="md" />}
-                Receipt Details
-              </span>
-              <div className="flex gap-2">
-                {!isEditing && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditing(true)}
-                      type="button"
-                      className="min-h-[36px]"
-                    >
-                      <Edit2 className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 min-h-[36px]"
-                      onClick={() => setShowDeleteConfirm(true)}
-                      type="button"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Delete
-                    </Button>
-                  </>
-                )}
+      <div className="lv-scrim" onClick={onClose}>
+        <div className="lv-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Receipt">
+          <div className="lv-modal-head">
+            <div className="lv-inline" style={{ gap: 10, minWidth: 0, flexWrap: 'nowrap' }}>
+              {receipt.store && <StoreLogo store={receipt.store} size="md" />}
+              <div style={{ minWidth: 0 }}>
+                <span className="lv-eyebrow">Receipt</span>
+                <h2 className="lv-h2 rc-clip" style={{ marginTop: 2 }}>{receipt.label || 'Untitled receipt'}</h2>
               </div>
-            </DialogTitle>
-          </DialogHeader>
-
-          {/* Full Image */}
-          <div className="bg-gray-100 rounded-lg overflow-hidden relative">
-            {!imageError && receipt.imageData ? (
-              <img
-                src={receipt.imageData}
-                alt={receipt.label || 'Receipt'}
-                className="w-full max-h-[50vh] object-contain"
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <div className="w-full h-48 flex items-center justify-center bg-gray-200">
-                <Receipt className="w-16 h-16 text-gray-400" />
-              </div>
-            )}
-            {receipt.store && StoreLogoSVGs[receipt.store] && (
-              <div className="absolute top-3 left-3 bg-white rounded-lg p-2 shadow-md">
-                <StoreLogo store={receipt.store} size="lg" />
-              </div>
-            )}
+            </div>
+            <button className="lv-icon-btn" onClick={onClose} type="button" aria-label="Close"><X size={20} /></button>
           </div>
 
-          {/* Details */}
-          <div className="space-y-4">
-            {isEditing ? (
-              <>
-                <div className="space-y-2">
-                  <Label>Label</Label>
-                  <Input
-                    value={editLabel}
-                    onChange={(e) => handleLabelChange(e.target.value)}
-                    placeholder="Enter label..."
-                    className="h-12"
-                    maxLength={MAX_LABEL_LENGTH}
+          <div className="lv-modal-body">
+            <div className="lv-stack">
+              {/* Full Image */}
+              <div className="rc-full">
+                {!imageError && receipt.imageData ? (
+                  <img
+                    src={receipt.imageData}
+                    alt={receipt.label || 'Receipt'}
+                    onError={() => setImageError(true)}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <CategoryChips selected={editCategory} onChange={setEditCategory} />
-                </div>
-                {editStore && StoreLogoSVGs[editStore] && (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <StoreLogo store={editStore} size="lg" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-700">Store</p>
-                      <p className="text-xs text-gray-500">{editStore}</p>
-                    </div>
-                  </div>
+                ) : (
+                  <Receipt size={34} />
                 )}
-                <div className="flex gap-2 justify-end">
-                  <Button variant="outline" onClick={handleCancelEdit} type="button" className="min-h-[44px]">
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSaveEdit} className="bg-blue-600 hover:bg-blue-700 min-h-[44px]" type="button">
-                    Save Changes
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Label</p>
-                  <p className="font-medium">{receipt.label || 'No label'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Category</p>
-                  <Badge className={CATEGORY_COLORS[receipt.category]}>
-                    {receipt.category}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Date Added</p>
-                  <p className="font-medium">{formattedDate}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Last Updated</p>
-                  <p className="font-medium">{formattedUpdatedDate}</p>
-                </div>
-                {receipt.store && (
-                  <div className="col-span-2">
-                    <p className="text-sm text-gray-500 mb-1">Store</p>
-                    <div className="flex items-center gap-2">
-                      <StoreLogo store={receipt.store} size="md" />
-                      <span className="font-medium">{receipt.store}</span>
-                    </div>
+                {receipt.store && StoreLogoSVGs[receipt.store] && (
+                  <div className="rc-full-logo">
+                    <StoreLogo store={receipt.store} size="md" />
                   </div>
                 )}
               </div>
-            )}
+
+              {isEditing ? (
+                <>
+                  <div className="lv-field">
+                    <label className="lv-label" htmlFor="edit-label">Label</label>
+                    <input
+                      id="edit-label"
+                      className="lv-input"
+                      value={editLabel}
+                      onChange={(e) => handleLabelChange(e.target.value)}
+                      placeholder="What was it for"
+                      maxLength={MAX_LABEL_LENGTH}
+                    />
+                  </div>
+
+                  <div>
+                    <span className="lv-label">Category</span>
+                    <CategoryChips selected={editCategory} onChange={setEditCategory} />
+                  </div>
+
+                  {editStore && StoreLogoSVGs[editStore] && (
+                    <div className="rc-detected">
+                      <StoreLogo store={editStore} size="lg" />
+                      <div>
+                        <p className="lv-h3">Store</p>
+                        <p className="lv-small" style={{ marginTop: 2 }}>{editStore}</p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="lv-card rc-rows">
+                  <div className="lv-row">
+                    <span className="lv-row-s">Label</span>
+                    <span className="rc-val">{receipt.label || 'No label'}</span>
+                  </div>
+                  <div className="lv-row">
+                    <span className="lv-row-s">Category</span>
+                    <span className="lv-pill">{receipt.category}</span>
+                  </div>
+                  {receipt.store && (
+                    <div className="lv-row">
+                      <span className="lv-row-s">Store</span>
+                      <span className="lv-inline" style={{ gap: 8, flexWrap: 'nowrap' }}>
+                        <StoreLogo store={receipt.store} size="sm" />
+                        <span className="rc-val">{receipt.store}</span>
+                      </span>
+                    </div>
+                  )}
+                  <div className="lv-row">
+                    <span className="lv-row-s">Added</span>
+                    <span className="lv-row-r lv-num">{formattedDate}</span>
+                  </div>
+                  <div className="lv-row">
+                    <span className="lv-row-s">Last updated</span>
+                    <span className="lv-row-r lv-num">{formattedUpdatedDate}</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={onClose} type="button" className="min-h-[44px]">
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="lv-modal-foot">
+            {isEditing ? (
+              <div className="lv-actions">
+                <div className="spacer" />
+                <button className="lv-btn sec" onClick={handleCancelEdit} type="button">Cancel</button>
+                <button className="lv-btn pri" onClick={handleSaveEdit} type="button">Save changes</button>
+              </div>
+            ) : (
+              <div className="lv-actions">
+                <button className="lv-btn danger" onClick={() => setShowDeleteConfirm(true)} type="button">
+                  <Trash2 size={15} /> Delete
+                </button>
+                <div className="spacer" />
+                <button className="lv-btn sec" onClick={onClose} type="button">Close</button>
+                <button className="lv-btn pri span" onClick={() => setIsEditing(true)} type="button">
+                  <Edit2 size={15} /> Edit
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Receipt?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. The receipt will be permanently deleted from your device.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="min-h-[44px]">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                setShowDeleteConfirm(false);
-                onDelete();
-              }}
-              className="bg-red-600 hover:bg-red-700 min-h-[44px]"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {showDeleteConfirm && (
+        <div className="lv-scrim" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="lv-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Delete receipt" style={{ maxWidth: 400 }}>
+            <div className="lv-modal-head">
+              <h2 className="lv-h2">Delete this receipt?</h2>
+              <button className="lv-icon-btn" onClick={() => setShowDeleteConfirm(false)} type="button" aria-label="Close"><X size={20} /></button>
+            </div>
+            <div className="lv-modal-body">
+              <p className="lv-sub">It is removed from this device for good. There is no undo.</p>
+            </div>
+            <div className="lv-modal-foot">
+              <div className="lv-actions">
+                <div className="spacer" />
+                <button className="lv-btn sec" onClick={() => setShowDeleteConfirm(false)} type="button">Keep it</button>
+                <button
+                  className="lv-btn danger"
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    onDelete();
+                  }}
+                >
+                  <Trash2 size={15} /> Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Button } from './ui/button';
 import { Smartphone, Share, MoreVertical, Plus, Download, ChevronRight } from 'lucide-react';
 
 export const AddToHomeScreen: React.FC = () => {
@@ -9,10 +8,10 @@ export const AddToHomeScreen: React.FC = () => {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} variant="ghost" size="sm" className="gap-2" style={{ background: 'none', border: '0.5px solid rgba(255,255,255,0.12)', color: '#a1a1aa', padding: '5px 12px', fontSize: '12px', height: 'auto' }}>
+      <button onClick={() => setOpen(true)} className="lv-a2hs">
         <Smartphone size={16} />
-        <span>Add to Phone</span>
-      </Button>
+        <span>Add to phone</span>
+      </button>
 
 
 
@@ -21,28 +20,24 @@ export const AddToHomeScreen: React.FC = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Smartphone className="text-blue-600" />
-              Add Level to Your Phone
+              Add LevelWorks to your phone
             </DialogTitle>
           </DialogHeader>
 
           <p className="text-gray-600 text-sm mb-4">
-            Install Level on your home screen for quick access - works just like a native app!
+            Install LevelWorks on your home screen so it opens like an app.
           </p>
 
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => setActiveTab('iphone')}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition ${
-                activeTab === 'iphone' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`lv-btn ${activeTab === 'iphone' ? 'pri' : 'sec'}`} style={{ flex: 1 }}
             >
               iPhone / iPad
             </button>
             <button
               onClick={() => setActiveTab('android')}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition ${
-                activeTab === 'android' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`lv-btn ${activeTab === 'android' ? 'pri' : 'sec'}`} style={{ flex: 1 }}
             >
               Android
             </button>

@@ -2,8 +2,7 @@ import React, { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
-import { X, Send, Camera, Upload, Loader2, Copy, Check, Trash2, Mail, MessageSquare, AlertCircle, CheckCircle } from 'lucide-react';
-import { Button } from './ui/button';
+import { X, Send, Camera, Upload, Loader2, Copy, Check, Trash2, Mail, MessageSquare, AlertCircle, CheckCircle, ChevronRight } from 'lucide-react';
 
 interface Props {
   onClose: () => void;
@@ -182,177 +181,250 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-3">
-      <div className="bg-white rounded-xl w-full max-w-lg max-h-[92vh] overflow-auto shadow-2xl">
-        <div className="text-white p-4 flex justify-between items-center rounded-t-xl" style={{ background: '#1c1c1e' }}>
-          <h2 className="text-lg font-bold flex items-center gap-2"><Send className="w-5 h-5" /> Create Update</h2>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg" disabled={sending}>
-            <X size={22} />
+    <div className="lv-scrim">
+      <div className="lv-modal">
+
+        <div className="lv-modal-head">
+          <div>
+            <span className="lv-eyebrow">Photo update</span>
+            <h2 className="lv-h2">
+              {step === 'compose' ? 'New update' : sendSuccess ? 'Update sent' : 'Send this update'}
+            </h2>
+          </div>
+          <button className="lv-icon-btn" onClick={onClose} disabled={sending} aria-label="Close">
+            <X size={20} />
           </button>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="lv-modal-body">
 
           {/* STEP: compose */}
           {step === 'compose' && (
-            <>
+            <div className="lv-stack">
               <div>
-                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Update Name *</label>
-                <input
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="e.g. Week 2 Progress, Final Walkthrough..."
-                  className="w-full border-2 rounded-xl px-4 py-3 text-base focus:border-blue-500 focus:outline-none"
-                />
+                <label className="lv-field">
+                  <span className="lv-label">Update name *</span>
+                  <input
+                    className="lv-input"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="Week 2 progress"
+                  />
+                </label>
+                <label className="lv-field">
+                  <span className="lv-label">Message to your client (optional)</span>
+                  <textarea
+                    className="lv-textarea"
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    placeholder="Demo is complete and rough-in is done. Here is where things stand."
+                    rows={3}
+                  />
+                </label>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Message to Client <span className="font-normal text-gray-400">(optional)</span></label>
-                <textarea
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  placeholder="e.g. Demo is complete and rough-in is done. Here's a look at where things stand."
-                  className="w-full border-2 rounded-xl px-4 py-3 text-base focus:border-blue-500 focus:outline-none resize-none"
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Photos</label>
-                <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFile} className="hidden" />
-                <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
-                <div className="flex gap-2 mb-3">
-                  <button onClick={() => cameraInputRef.current?.click()} disabled={uploading} className="flex items-center gap-1.5 px-3 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-400 transition disabled:opacity-50">
-                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />} Camera
+                <span className="lv-label">Photos</span>
+                <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFile} style={{ display: 'none' }} />
+                <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: 'none' }} />
+                <div className="lv-inline" style={{ marginBottom: 12 }}>
+                  <button type="button" className="lv-btn sec sm" onClick={() => cameraInputRef.current?.click()} disabled={uploading}>
+                    {uploading ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />} Camera
                   </button>
-                  <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="flex items-center gap-1.5 px-3 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-400 transition disabled:opacity-50">
-                    {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Gallery
+                  <button type="button" className="lv-btn sec sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                    {uploading ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />} Gallery
                   </button>
                 </div>
+
                 {photos.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-2">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
                     {photos.map(photo => (
-                      <div key={photo.id} className="space-y-1.5">
-                        <div className="relative aspect-square group">
-                          <img src={photo.fileUrl} alt={captions[photo.id] || 'Photo'} className="w-full h-full object-cover rounded-lg border border-gray-100" />
-                          <button onClick={() => handleDeletePhoto(photo.id)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition hover:bg-red-600">
-                            <Trash2 className="w-3 h-3" />
+                      <div key={photo.id}>
+                        <div style={{ position: 'relative' }}>
+                          <img
+                            src={photo.fileUrl}
+                            alt={captions[photo.id] || 'Job photo'}
+                            style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 'var(--lv-r)', border: '1px solid var(--lv-line)', display: 'block' }}
+                          />
+                          <button
+                            type="button"
+                            className="lv-icon-btn"
+                            onClick={() => handleDeletePhoto(photo.id)}
+                            aria-label="Remove photo"
+                            style={{ position: 'absolute', top: 5, right: 5, width: 28, height: 28, background: 'var(--lv-surface)', border: '1px solid var(--lv-line)', color: 'var(--lv-red)' }}
+                          >
+                            <Trash2 size={14} />
                           </button>
                         </div>
                         <input
+                          className="lv-input"
                           value={captions[photo.id] || ''}
                           onChange={e => setCaptions(prev => ({ ...prev, [photo.id]: e.target.value }))}
                           onBlur={e => handleCaptionSave(photo.id, e.target.value)}
-                          placeholder="Add a label..."
-                          className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-400 bg-gray-50"
+                          placeholder="Label"
+                          style={{ marginTop: 6, height: 36, padding: '0 10px' }}
                         />
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-400 text-center py-5 bg-gray-50 rounded-xl">No photos yet — tap Camera or Gallery above to add some.</p>
+                  <div className="lv-empty">
+                    <Camera size={28} />
+                    <h3>No photos yet</h3>
+                    <p>Tap Camera or Gallery above to add the shots you want your client to see.</p>
+                  </div>
                 )}
               </div>
-
-              <Button onClick={handleProceedToSend} disabled={!name.trim()} className="w-full py-6 bg-blue-600 hover:bg-blue-700 text-base">
-                <Send className="w-5 h-5 mr-2" /> Send Update
-              </Button>
-              <Button onClick={onClose} variant="outline" className="w-full">Cancel</Button>
-            </>
+            </div>
           )}
 
           {/* STEP: choose email or text */}
           {step === 'choose' && (
-            <>
-              <p className="text-center text-gray-600 font-medium">How would you like to send this?</p>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setStep('email')}
-                  className="flex flex-col items-center gap-3 p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all"
-                >
-                  <Mail size={32} className="text-green-600" />
-                  <span className="font-bold text-gray-800">Email</span>
-                  <span className="text-xs text-gray-500 text-center">We'll send it directly to your client</span>
+            <div className="lv-stack">
+              <p className="lv-sub">How do you want to get this to your client?</p>
+              <div className="lv-card">
+                <button type="button" className="lv-row" onClick={() => setStep('email')}>
+                  <span className="lv-inline" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
+                    <Mail size={18} style={{ color: 'var(--lv-blue)', flexShrink: 0 }} />
+                    <span>
+                      <span className="lv-row-t" style={{ display: 'block' }}>Email it</span>
+                      <span className="lv-row-s" style={{ display: 'block' }}>We send it straight to your client</span>
+                    </span>
+                  </span>
+                  <ChevronRight size={18} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
                 </button>
-                <button
-                  onClick={() => setStep('text')}
-                  className="flex flex-col items-center gap-3 p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all"
-                >
-                  <MessageSquare size={32} className="text-blue-600" />
-                  <span className="font-bold text-gray-800">Text Message</span>
-                  <span className="text-xs text-gray-500 text-center">Copy the link and paste into your texts</span>
+                <button type="button" className="lv-row" onClick={() => setStep('text')}>
+                  <span className="lv-inline" style={{ flexWrap: 'nowrap', minWidth: 0 }}>
+                    <MessageSquare size={18} style={{ color: 'var(--lv-blue)', flexShrink: 0 }} />
+                    <span>
+                      <span className="lv-row-t" style={{ display: 'block' }}>Text it</span>
+                      <span className="lv-row-s" style={{ display: 'block' }}>Copy the link and paste it into your messages</span>
+                    </span>
+                  </span>
+                  <ChevronRight size={18} style={{ color: 'var(--lv-faint)', flexShrink: 0 }} />
                 </button>
               </div>
-              <Button onClick={() => setStep('compose')} variant="outline" className="w-full">← Back</Button>
-            </>
+            </div>
           )}
 
           {/* STEP: email */}
           {step === 'email' && !sendSuccess && (
-            <>
-              <button onClick={() => setStep('choose')} className="text-sm text-gray-500 hover:text-gray-700">← Back</button>
+            <div className="lv-stack">
               {sendError && (
-                <div className="flex items-start gap-2 p-4 rounded-xl bg-red-50 text-red-700 border border-red-200">
-                  <AlertCircle size={20} className="shrink-0 mt-0.5" />
-                  <span className="text-sm">{sendError}</span>
+                <div
+                  className="lv-card lv-card-pad"
+                  style={{ background: 'var(--lv-red-soft)', borderColor: 'var(--lv-red)', display: 'flex', gap: 10, alignItems: 'flex-start' }}
+                >
+                  <AlertCircle size={18} style={{ color: 'var(--lv-red)', flexShrink: 0, marginTop: 2 }} />
+                  <p className="lv-small" style={{ color: 'var(--lv-red)' }}>
+                    The update did not go out: {sendError}. Check the email address and send it again.
+                  </p>
                 </div>
               )}
               <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700">Client's Email Address</label>
-                <input
-                  value={clientEmail}
-                  onChange={e => setClientEmail(e.target.value)}
-                  className="w-full border-2 rounded-xl px-4 py-4 text-base focus:border-green-500 focus:outline-none"
-                  type="email"
-                  placeholder="client@email.com"
-                  disabled={sending}
-                />
+                <label className="lv-field">
+                  <span className="lv-label">Client's email address</span>
+                  <input
+                    className="lv-input"
+                    value={clientEmail}
+                    onChange={e => setClientEmail(e.target.value)}
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="client@email.com"
+                    disabled={sending}
+                  />
+                </label>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <button onClick={() => setStep('choose')} disabled={sending} className="px-4 py-4 border-2 rounded-xl hover:bg-gray-50 font-semibold text-base text-gray-700 disabled:opacity-50">Cancel</button>
-                <button onClick={handleSendEmail} disabled={sending} className="px-4 py-4 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 font-semibold text-base flex items-center justify-center gap-2">
-                  {sending ? <><Loader2 size={20} className="animate-spin" /> Sending...</> : 'Send Update'}
-                </button>
-              </div>
-            </>
+              <p className="lv-small">They get a link to {name.trim() || 'this update'} with every photo on it.</p>
+            </div>
           )}
 
           {/* Email success */}
           {step === 'email' && sendSuccess && (
-            <div className="text-center py-4">
-              <CheckCircle size={48} className="text-green-600 mx-auto mb-3" />
-              <p className="font-bold text-xl text-gray-900">Update Sent!</p>
-              <p className="text-gray-500 mt-1">Your client will receive it shortly.</p>
-              <Button onClick={onCreated} className="mt-4 w-full py-4 bg-green-600 hover:bg-green-700 text-base">Done</Button>
+            <div className="lv-empty">
+              <CheckCircle size={40} style={{ color: 'var(--lv-green)' }} />
+              <h3>Update sent</h3>
+              <p>{clientEmail.trim() || 'Your client'} will have it in a moment.</p>
             </div>
           )}
 
           {/* STEP: text / copy link */}
           {step === 'text' && (
-            <>
-              <button onClick={() => setStep('choose')} className="text-sm text-gray-500 hover:text-gray-700">← Back</button>
-              <div className="bg-blue-50 rounded-xl p-5 text-center space-y-4">
-                <MessageSquare size={40} className="text-blue-600 mx-auto" />
-                <div>
-                  <p className="font-bold text-gray-900 text-lg">Send via Text</p>
-                  <p className="text-gray-600 text-sm mt-1">Tap the button below to copy the update link, then open your text app and paste it to your client.</p>
-                </div>
-                <button
-                  onClick={handleCopyLink}
-                  disabled={sending}
-                  className="w-full py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 font-bold text-base flex items-center justify-center gap-2"
-                >
-                  {sending ? <Loader2 size={20} className="animate-spin" /> : linkCopied ? <><Check size={20} /> Link Copied!</> : <><Copy size={20} /> Copy Update Link</>}
-                </button>
-                {linkCopied && <p className="text-green-600 font-semibold text-sm">Now open your texts and paste the link!</p>}
+            <div className="lv-stack">
+              <div className="lv-card lv-card-pad">
+                <h3 className="lv-h3">Send it in a text</h3>
+                <p className="lv-sub" style={{ marginTop: 6 }}>
+                  Copy the link, then open your messages and paste it to your client.
+                </p>
               </div>
-              <Button onClick={linkCopied ? onCreated : () => setStep('choose')} variant="outline" className="w-full">
-                {linkCopied ? 'Done' : 'Cancel'}
-              </Button>
-            </>
+              {linkCopied && (
+                <p className="lv-small lv-inline" style={{ color: 'var(--lv-green)' }}>
+                  <Check size={16} /> Link copied. Paste it into your messages.
+                </p>
+              )}
+            </div>
           )}
 
         </div>
+
+        <div className="lv-modal-foot">
+          {step === 'compose' && (
+            <div className="lv-actions">
+              <button className="lv-btn quiet" onClick={onClose}>Cancel</button>
+              <span className="spacer" />
+              <button className="lv-btn pri" onClick={handleProceedToSend} disabled={!name.trim()}>
+                <Send size={16} /> Send update
+              </button>
+            </div>
+          )}
+
+          {step === 'choose' && (
+            <div className="lv-actions">
+              <button className="lv-btn quiet span" onClick={() => setStep('compose')}>Back</button>
+            </div>
+          )}
+
+          {step === 'email' && !sendSuccess && (
+            <div className="lv-actions">
+              <button className="lv-btn quiet" onClick={() => setStep('choose')} disabled={sending}>Back</button>
+              <span className="spacer" />
+              <button className="lv-btn go" onClick={handleSendEmail} disabled={sending}>
+                {sending
+                  ? <><Loader2 size={16} className="animate-spin" /> Sending…</>
+                  : <><Mail size={16} /> Send update</>}
+              </button>
+            </div>
+          )}
+
+          {step === 'email' && sendSuccess && (
+            <div className="lv-actions">
+              <span className="spacer" />
+              <button className="lv-btn pri span" onClick={onCreated}>Done</button>
+            </div>
+          )}
+
+          {step === 'text' && (
+            <div className="lv-actions">
+              <button
+                className="lv-btn quiet"
+                onClick={linkCopied ? onCreated : () => setStep('choose')}
+                disabled={sending}
+              >
+                {linkCopied ? 'Done' : 'Back'}
+              </button>
+              <span className="spacer" />
+              <button className="lv-btn pri" onClick={handleCopyLink} disabled={sending}>
+                {sending
+                  ? <><Loader2 size={16} className="animate-spin" /> Preparing…</>
+                  : linkCopied
+                    ? <><Check size={16} /> Link copied</>
+                    : <><Copy size={16} /> Copy link</>}
+              </button>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );

@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
-import { Button } from './ui/button';
 import { supabase } from '@/lib/supabase';
 import { trackEvent } from '@/lib/pixel';
 import { useToast } from '@/hooks/use-toast';
-import { X, ArrowLeft, Loader2, Mail, Lock, User, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { X, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 
 interface AuthModalProps {
   open: boolean;
@@ -92,18 +91,18 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
         const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         if (!data.session) throw new Error('No session returned');
-        
+
         // Session persisted by Supabase - keep me signed in works automatically
         localStorage.setItem('levelworks-remember-me', rememberMe ? 'true' : 'false');
-        
+
         // Wait for session to be fully established
         await new Promise(resolve => setTimeout(resolve, 300));
-        
+
         // Verify session is available
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) throw new Error('Session not established');
       }
-      
+
       toast({ title: isSignUp ? 'Account created!' : 'Welcome back!' });
       handleClose();
       onSuccess({ isNewUser: isSignUp });
@@ -116,9 +115,9 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) { 
-      toast({ title: 'Please enter your email', variant: 'destructive' }); 
-      return; 
+    if (!email) {
+      toast({ title: 'Please enter your email', variant: 'destructive' });
+      return;
     }
     setLoading(true);
     try {
@@ -130,194 +129,184 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
       setIsForgotPassword(false);
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } finally { 
-      setLoading(false); 
+    } finally {
+      setLoading(false);
     }
   };
 
   const getTitle = () => {
-    if (isForgotPassword) return 'Reset Password';
-    return isSignUp ? 'Create Account' : 'Sign In';
+    if (isForgotPassword) return 'Reset your password';
+    return isSignUp ? 'Create your account' : 'Sign in';
+  };
+
+  const getSub = () => {
+    if (isForgotPassword) return 'Enter the email you signed up with and we will send you a reset link.';
+    return isSignUp
+      ? 'Estimates, invoices and job updates in one place. $5 a month after your 30-day trial.'
+      : 'Welcome back. Pick up where you left off.';
   };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="mx-2 max-w-md p-0 overflow-hidden">
-        <div className="text-white p-4 flex justify-between items-center" style={{background: '#1c1c1e'}}>
-          <div className="flex items-center gap-2">
+      <DialogContent className="lv-modal p-0 gap-0 border-0 [&>button]:hidden">
+
+        <div className="lv-modal-head">
+          <div className="lv-inline" style={{ gap: 6, flexWrap: 'nowrap', minWidth: 0 }}>
             {isForgotPassword && (
-              <button 
-                onClick={() => setIsForgotPassword(false)} 
-                className="p-1 hover:bg-blue-700 rounded transition-colors"
+              <button
                 type="button"
+                onClick={() => setIsForgotPassword(false)}
+                className="lv-icon-btn"
+                style={{ marginLeft: -8 }}
                 aria-label="Go back"
               >
                 <ArrowLeft size={20} />
               </button>
             )}
-            <DialogTitle className="text-lg font-bold">{getTitle()}</DialogTitle>
+            <div style={{ minWidth: 0 }}>
+              <span className="lv-eyebrow">LevelWorks</span>
+              <DialogTitle className="lv-h2">{getTitle()}</DialogTitle>
+            </div>
           </div>
-          <button 
-            onClick={handleClose} 
-            className="p-1 hover:bg-blue-700 rounded transition-colors"
-            type="button"
-            aria-label="Close modal"
-          >
+          <button type="button" onClick={handleClose} className="lv-icon-btn" aria-label="Close">
             <X size={20} />
           </button>
         </div>
 
-        {isForgotPassword ? (
-          <form onSubmit={handleForgotPassword} className="p-5 space-y-4">
-            <p className="text-sm text-gray-600">Enter your email and we'll send you a reset link.</p>
-            <div>
-              <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                <Mail size={16} />
-                Email
-              </label>
-              <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                required 
-                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none transition-colors" 
-                placeholder="you@email.com"
-                autoComplete="email"
-              />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full py-4 text-base bg-blue-600 hover:bg-blue-700" 
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                'Send Reset Link'
-              )}
-            </Button>
-          </form>
-        ) : (
-          <form onSubmit={handleSubmit} className="p-5 space-y-4">
-            {isSignUp && (
+        <form
+          onSubmit={isForgotPassword ? handleForgotPassword : handleSubmit}
+          style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
+        >
+          <div className="lv-modal-body">
+            <div className="lv-stack">
+              <p className="lv-sub">{getSub()}</p>
+
               <div>
-                <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                  <User size={16} />
-                  Full Name
-                </label>
-                <input 
-                  value={fullName} 
-                  onChange={(e) => setFullName(e.target.value)} 
-                  required 
-                  className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none transition-colors" 
-                  placeholder="John Smith"
-                  autoComplete="name"
-                />
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                <Mail size={16} />
-                Email
-              </label>
-              <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                required 
-                className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none transition-colors" 
-                placeholder="you@email.com"
-                autoComplete="email"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                <Lock size={16} />
-                Password
-              </label>
-              <div className="relative">
-                <input 
-                  type={showPassword ? "text" : "password"}
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  required 
-                  minLength={6} 
-                  className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none transition-colors pr-12" 
-                  placeholder="••••••••"
-                  autoComplete={isSignUp ? "new-password" : "current-password"}
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-0 top-0 h-full px-4 text-gray-400 hover:text-gray-600 flex items-center">
-                  {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
-                </button>
-              </div>
-            </div>
-            {isSignUp && (
-              <div>
-                <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Lock size={16} />
-                  Confirm Password
-                </label>
-                <input 
-                  type="password" 
-                  value={confirmPassword} 
-                  onChange={(e) => setConfirmPassword(e.target.value)} 
-                  required 
-                  minLength={6} 
-                  className="w-full border-2 rounded-lg px-4 py-3 text-base focus:border-blue-500 focus:outline-none transition-colors" 
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                />
-              </div>
-            )}
-            {!isSignUp && (
-              <div className="space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer select-none bg-gray-50 p-3 rounded-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all">
-                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${rememberMe ? 'bg-blue-600 border-blue-600' : 'border-gray-400 bg-white'}`}>
-                    {rememberMe && <CheckCircle2 size={16} className="text-white" />}
-                  </div>
-                  <input 
-                    type="checkbox" 
-                    checked={rememberMe} 
-                    onChange={(e) => setRememberMe(e.target.checked)} 
-                    className="sr-only" 
+                {isSignUp && !isForgotPassword && (
+                  <label className="lv-field">
+                    <span className="lv-label">Full name</span>
+                    <input
+                      className="lv-input"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      placeholder="John Smith"
+                      autoComplete="name"
+                      disabled={loading}
+                    />
+                  </label>
+                )}
+
+                <label className="lv-field">
+                  <span className="lv-label">Email</span>
+                  <input
+                    className="lv-input"
+                    type="email"
+                    inputMode="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="you@email.com"
+                    autoComplete="email"
+                    disabled={loading}
                   />
-                  <span className="text-sm font-medium text-gray-700">Keep me signed in</span>
                 </label>
-                <button 
-                  type="button" 
-                  onClick={() => setIsForgotPassword(true)} 
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
-                >
-                  Forgot Password?
+
+                {!isForgotPassword && (
+                  <label className="lv-field">
+                    <span className="lv-label">Password</span>
+                    <span style={{ position: 'relative', display: 'block' }}>
+                      <input
+                        className="lv-input"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={6}
+                        placeholder="At least 6 characters"
+                        autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                        style={{ paddingRight: 46 }}
+                        disabled={loading}
+                      />
+                      <button
+                        type="button"
+                        className="lv-icon-btn"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', width: 34, height: 34 }}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </span>
+                  </label>
+                )}
+
+                {isSignUp && !isForgotPassword && (
+                  <label className="lv-field">
+                    <span className="lv-label">Confirm password</span>
+                    <input
+                      className="lv-input"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      placeholder="Type it once more"
+                      autoComplete="new-password"
+                      disabled={loading}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {!isSignUp && !isForgotPassword && (
+                <div className="lv-inline" style={{ justifyContent: 'space-between' }}>
+                  <label className="lv-inline" style={{ gap: 8, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      style={{ width: 17, height: 17, accentColor: 'var(--lv-blue)', cursor: 'pointer' }}
+                    />
+                    <span className="lv-small" style={{ color: 'var(--lv-ink-2)' }}>Keep me signed in</span>
+                  </label>
+                  <button
+                    type="button"
+                    className="lv-btn quiet sm"
+                    onClick={() => setIsForgotPassword(true)}
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="lv-modal-foot">
+            {isForgotPassword ? (
+              <div className="lv-actions">
+                <button type="button" className="lv-btn quiet" onClick={() => setIsForgotPassword(false)} disabled={loading}>
+                  Back
+                </button>
+                <span className="spacer" />
+                <button type="submit" className="lv-btn pri" disabled={loading}>
+                  {loading ? <><Loader2 size={16} className="animate-spin" /> Sending…</> : 'Send reset link'}
+                </button>
+              </div>
+            ) : (
+              <div className="lv-actions">
+                <button type="button" className="lv-btn quiet" onClick={handleModeSwitch}>
+                  {isSignUp ? 'Sign in instead' : 'Create an account'}
+                </button>
+                <span className="spacer" />
+                <button type="submit" className="lv-btn pri" disabled={loading}>
+                  {loading ? <><Loader2 size={16} className="animate-spin" /> Please wait…</> : (isSignUp ? 'Create account' : 'Sign in')}
                 </button>
               </div>
             )}
-            <Button 
-              type="submit" 
-              className="w-full py-4 text-base bg-blue-600 hover:bg-blue-700" 
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Please wait...
-                </>
-              ) : (
-                isSignUp ? 'Create Account' : 'Sign In'
-              )}
-            </Button>
-            <button 
-              type="button" 
-              className="w-full py-3 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors" 
-              onClick={handleModeSwitch}
-            >
-              {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
-            </button>
-          </form>
-        )}
+          </div>
+        </form>
+
       </DialogContent>
     </Dialog>
   );

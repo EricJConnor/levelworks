@@ -3,9 +3,23 @@ import { supabase } from '@/lib/supabase';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { Loader2, Lock } from 'lucide-react';
+import { Check, Loader2, Lock } from 'lucide-react';
+import { Mark } from './Mark';
 
 const stripePromise = loadStripe('pk_live_51Rv0bbCrlMKmuUj4ll9r1pdjnK3SKP7LmqlTMi4CYBlBHuLu5NtO0UOBSj8aFGiw1qKNkFQgjm3roSWupxHFbUxL00BEFePpG1');
+
+// Stripe draws its card fields inside an iframe, so it cannot read our CSS
+// variables - these literals are the same values as --lv-ink / --lv-faint.
+const elementOptions = {
+  style: {
+    base: {
+      fontSize: '16px',
+      color: '#0b1220',
+      fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
+      '::placeholder': { color: '#8a93a3' },
+    },
+  },
+};
 
 function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEmail: string; onSuccess: () => void }) {
   const stripe = useStripe();
@@ -46,51 +60,63 @@ function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEma
     }
   };
 
-  const elementOptions = {
-    style: {
-      base: { fontSize: '16px', color: '#1e293b', '::placeholder': { color: '#94a3b8' } }
-    }
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit}>
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <p
+          className="lv-small"
+          style={{
+            background: 'var(--lv-red-soft)',
+            color: 'var(--lv-red)',
+            borderRadius: 'var(--lv-r)',
+            padding: '10px 12px',
+            marginBottom: 14,
+          }}
+        >
           {error}
-        </div>
+        </p>
       )}
-      <div>
-        <label className="block text-sm font-semibold mb-2 text-gray-700">Card Number</label>
-        <div className="border-2 border-gray-300 rounded-lg p-4 focus-within:border-blue-500">
+
+      <label className="lv-field">
+        <span className="lv-label">Card number</span>
+        <div className="lv-input focus-within:border-[var(--lv-blue)]">
           <CardNumberElement options={elementOptions} />
         </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-semibold mb-2 text-gray-700">Expiration</label>
-          <div className="border-2 border-gray-300 rounded-lg p-4 focus-within:border-blue-500">
+      </label>
+
+      <div className="lv-grid-2" style={{ marginTop: 14 }}>
+        <label className="lv-field">
+          <span className="lv-label">Expires</span>
+          <div className="lv-input focus-within:border-[var(--lv-blue)]">
             <CardExpiryElement options={elementOptions} />
           </div>
-        </div>
-        <div>
-          <label className="block text-sm font-semibold mb-2 text-gray-700">CVV</label>
-          <div className="border-2 border-gray-300 rounded-lg p-4 focus-within:border-blue-500">
+        </label>
+        <label className="lv-field" style={{ marginTop: 0 }}>
+          <span className="lv-label">Security code</span>
+          <div className="lv-input focus-within:border-[var(--lv-blue)]">
             <CardCvcElement options={elementOptions} />
           </div>
-        </div>
+        </label>
       </div>
-      <button
-        type="submit"
-        disabled={!stripe || loading}
-        className="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
-      >
-        {loading ? <><Loader2 size={20} className="animate-spin" /> Processing...</> : <><Lock size={20} /> Subscribe — $5/month</>}
+
+      <button type="submit" className="lv-btn pri wide lg" disabled={!stripe || loading} style={{ marginTop: 20 }}>
+        {loading
+          ? <><Loader2 size={18} className="animate-spin" /> Processing…</>
+          : <><Lock size={17} /> Subscribe — $5 a month</>}
       </button>
-      <div className="bg-gray-50 rounded-lg p-4 space-y-1 text-xs text-gray-600">
-        <p className="font-semibold text-green-700">✓ Cancel anytime from your account settings</p>
-        <p className="font-semibold text-green-700">✓ $5/month — no hidden fees</p>
-        <p className="font-semibold text-green-700">✓ Keep all your estimates, clients, and invoices</p>
-      </div>
+
+      <ul className="lv-stack" style={{ gap: 7, listStyle: 'none', margin: '16px 0 0', padding: 0 }}>
+        {[
+          'Cancel any time from your account settings.',
+          '$5 a month, nothing else added on.',
+          'Your estimates, clients and invoices stay where they are.',
+        ].map(line => (
+          <li key={line} className="lv-small" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <Check size={15} style={{ color: 'var(--lv-green)', flexShrink: 0, marginTop: 2 }} />
+            <span>{line}</span>
+          </li>
+        ))}
+      </ul>
     </form>
   );
 }
@@ -115,7 +141,7 @@ export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) 
     const timeout = setTimeout(() => {
       setStatus('active');
     }, 5000);
-    
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { clearTimeout(timeout); setStatus('active'); return; }
@@ -143,25 +169,29 @@ export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) 
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="lv-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 size={30} className="animate-spin" style={{ color: 'var(--lv-blue)' }} />
       </div>
     );
   }
 
   if (status === 'expired' || status === 'cancelled') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-          <div className="bg-blue-600 p-6 text-center">
-            <h1 className="text-2xl font-bold text-white">LEVEL<span className="text-blue-200">WORKS</span></h1>
+      <div className="lv-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+        <div className="lv-card" style={{ maxWidth: 460, width: '100%' }}>
+          <div className="lv-card-head">
+            <span className="lv-inline" style={{ gap: 8, fontWeight: 700, letterSpacing: '-.02em' }}>
+              <Mark size={22} />
+              Level<span style={{ color: 'var(--lv-blue)' }}>Works</span>
+            </span>
+            <span className="lv-pill amber">{status === 'cancelled' ? 'Cancelled' : 'Trial ended'}</span>
           </div>
-          <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
-              {status === 'cancelled' ? 'Reactivate Your Account' : 'Your Trial Has Ended'}
+          <div className="lv-card-pad">
+            <h2 className="lv-h2">
+              {status === 'cancelled' ? 'Start your subscription again' : 'Your free trial has ended'}
             </h2>
-            <p className="text-gray-600 text-center mb-6">
-              Subscribe for just <strong>$5/month</strong> to keep access to all your estimates, clients, and invoices.
+            <p className="lv-sub" style={{ marginTop: 8, marginBottom: 20 }}>
+              LevelWorks is $5 a month. Your estimates, clients and invoices are all still here.
             </p>
             <Elements stripe={stripePromise}>
               <PaymentForm
@@ -179,8 +209,28 @@ export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) 
   return (
     <>
       {status === 'trial' && daysLeft !== null && daysLeft <= 5 && (
-        <div className={`${daysLeft <= 2 ? 'bg-red-600' : 'bg-orange-500'} text-white text-center py-2 px-4 text-sm font-semibold`}>
-          ⚠️ Your free trial ends in {daysLeft} day{daysLeft !== 1 ? 's' : ''}. <button onClick={() => setStatus('expired')} className="underline ml-1">Subscribe now — $5/month</button>
+        <div
+          style={{
+            background: 'var(--lv-amber-soft)',
+            borderBottom: '1px solid var(--lv-line)',
+            color: 'var(--lv-ink)',
+            font: '500 13.5px var(--lv-font)',
+            padding: '9px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: 8,
+            textAlign: 'center',
+          }}
+        >
+          <span className="lv-pill amber">Trial ending</span>
+          <span>
+            Your free trial ends in {daysLeft} day{daysLeft !== 1 ? 's' : ''}.
+          </span>
+          <button className="lv-btn pri sm" onClick={() => setStatus('expired')}>
+            Subscribe — $5 a month
+          </button>
         </div>
       )}
       {children}

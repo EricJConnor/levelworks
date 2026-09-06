@@ -1,7 +1,6 @@
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { AlertTriangle, CreditCard, RefreshCw } from 'lucide-react';
+import { CreditCard, RefreshCw } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { Mark } from './Mark';
 
 interface SubscriptionBlockerProps {
   status: string;
@@ -21,46 +20,52 @@ export function SubscriptionBlocker({ status, onRetry }: SubscriptionBlockerProp
   const getStatusMessage = () => {
     switch (status) {
       case 'canceled':
-        return { title: 'Subscription Canceled', desc: 'Your subscription has been canceled. Reactivate to continue using Level.' };
+        return { title: 'Your subscription is cancelled', label: 'Cancelled', desc: 'Start it again whenever you like. Your estimates, invoices and clients are all still here.' };
       case 'past_due':
-        return { title: 'Payment Past Due', desc: 'Your payment is past due. Please update your payment method to continue.' };
+        return { title: 'Your payment is past due', label: 'Past due', desc: 'Update your card and everything switches back on.' };
       case 'unpaid':
-        return { title: 'Payment Required', desc: 'Your subscription payment failed. Please update your payment method.' };
+        return { title: 'Your last payment did not go through', label: 'Payment needed', desc: 'Update your card and everything switches back on.' };
       case 'incomplete':
-        return { title: 'Setup Incomplete', desc: 'Your subscription setup is incomplete. Please complete payment.' };
+        return { title: 'Your setup is not finished', label: 'Setup incomplete', desc: 'Finish the payment step to open your account.' };
       case 'incomplete_expired':
-        return { title: 'Trial Expired', desc: 'Your free trial has expired. Subscribe to continue using Level.' };
+        return { title: 'Your free trial has ended', label: 'Trial ending', desc: 'Subscribe to keep using LevelWorks. Your estimates, invoices and clients are all still here.' };
       default:
-        return { title: 'Subscription Required', desc: 'An active subscription is required to access Level.' };
+        return { title: 'A subscription is needed', label: 'Subscription', desc: 'Subscribe to open your account again. Your estimates, invoices and clients are all still here.' };
     }
   };
 
-  const { title, desc } = getStatusMessage();
+  const { title, label, desc } = getStatusMessage();
+  const needsCard = status === 'past_due' || status === 'unpaid';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-            <AlertTriangle className="w-6 h-6 text-orange-600" />
-          </div>
-          <CardTitle className="text-xl">{title}</CardTitle>
-          <CardDescription>{desc}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Button onClick={handleManageSubscription} className="w-full bg-blue-600 hover:bg-blue-700">
-            <CreditCard className="w-4 h-4 mr-2" />
-            {status === 'past_due' || status === 'unpaid' ? 'Update Payment Method' : 'Manage Subscription'}
-          </Button>
-          <Button onClick={onRetry} variant="outline" className="w-full">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Check Again
-          </Button>
-          <Button onClick={handleSignOut} variant="ghost" className="w-full text-gray-500">
-            Sign Out
-          </Button>
-        </CardContent>
-      </Card>
+    <div
+      className="lv-app"
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+    >
+      <div className="lv-card lv-card-pad" style={{ maxWidth: 440, width: '100%' }}>
+        <div className="lv-inline" style={{ justifyContent: 'space-between' }}>
+          <span className="lv-inline" style={{ gap: 8, fontWeight: 700, letterSpacing: '-.02em' }}>
+            <Mark size={22} />
+            Level<span style={{ color: 'var(--lv-blue)' }}>Works</span>
+          </span>
+          <span className="lv-pill amber">{label}</span>
+        </div>
+
+        <h2 className="lv-h2" style={{ marginTop: 18 }}>{title}</h2>
+        <p className="lv-sub" style={{ marginTop: 8 }}>{desc}</p>
+        <p className="lv-sub" style={{ marginTop: 8 }}>LevelWorks is $5 a month.</p>
+
+        <div className="lv-stack" style={{ gap: 8, marginTop: 20 }}>
+          <button className="lv-btn pri wide" onClick={handleManageSubscription}>
+            <CreditCard size={16} />
+            {needsCard ? 'Update your card' : 'Manage your subscription'}
+          </button>
+          <button className="lv-btn sec wide" onClick={onRetry}>
+            <RefreshCw size={15} /> Check again
+          </button>
+          <button className="lv-btn quiet wide" onClick={handleSignOut}>Sign out</button>
+        </div>
+      </div>
     </div>
   );
 }

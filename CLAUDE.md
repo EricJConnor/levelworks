@@ -155,10 +155,14 @@ cancels, and nothing changes. **Never translate and send in one step.**
 translate, but follow the viewer's own browser setting, not the contractor's. Whether a
 client link should carry the sender's language is a product decision Eric has not made.
 
-**One caveat to keep in mind:** the Spanish was written by Claude, not a native
-speaker in the trades. It is good, and every word sits in one file per area so any
-single term is a one-line fix. When a real Spanish-speaking contractor uses it, ask
-which words they would have said differently.
+**On regional wording, in proportion.** Interface words — Guardar, Enviar, Cliente,
+Presupuesto, Factura — are the same in every Spanish-speaking country, so there is
+almost no risk in the dictionaries. Regional variation lives in TRADE vocabulary
+(*tablaroca* vs *panel de yeso*), and that sits almost entirely in what the contractor
+types into his own line items, which he words however he likes. Keep the app's own
+copy free of any one country's slang: "Manitas" (Spain) and "troca" (Mexican-American)
+were both used on the landing page once and replaced with neutral wording. If a real
+Spanish-speaking contractor later flags a word, it is a one-line fix in one file.
 
 ## Copy rules
 

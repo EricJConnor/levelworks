@@ -7,6 +7,7 @@ import { sendInvoiceEmail } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { autoGrowTextarea } from '@/lib/utils';
 import { useT } from '@/i18n';
+import { useTranslator } from './Translate';
 
 interface InvoiceBuilderProps {
   estimateId?: string;
@@ -53,6 +54,28 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   }, []);
 
   const addLineItem = () => setLineItems([...lineItems, { description: '', quantity: 1, rate: 0 }]);
+
+  /**
+   * The same translation flow as the estimate, over the same kinds of text:
+   * the line items, plus the note the client reads at the bottom of the
+   * invoice. Line items have no id here — they are positional — so the index
+   * is the id, and the note carries its own.
+   */
+  const translator = useTranslator({
+    pieces: [
+      ...lineItems
+        .map((i: any, idx: number) => ({ id: `item-${idx}`, text: String(i.description || '') }))
+        .filter((p: any) => p.text.trim()),
+      ...(notes.trim() ? [{ id: 'notes', text: notes, label: t('m.notes') }] : []),
+    ],
+    projectName,
+    onApply: (map) => {
+      setLineItems((prev: any[]) => prev.map((i, idx) => (
+        map.has(`item-${idx}`) ? { ...i, description: map.get(`item-${idx}`)! } : i
+      )));
+      if (map.has('notes')) setNotes(map.get('notes')!);
+    },
+  });
   const removeLineItem = (index: number) => setLineItems(lineItems.filter((_: any, i: number) => i !== index));
   const updateLineItem = (index: number, field: string, value: any) => {
     const updated = [...lineItems];
@@ -434,7 +457,10 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
             <section className="lv-card eb-sec">
               <div className="eb-sec-head">
                 <h3 className="lv-h3">{t('est.theWork')}</h3>
-                <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> {t('est.addItem')}</button>
+                <div className="lv-inline" style={{ gap: 8 }}>
+                  {translator.button}
+                  <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> {t('est.addItem')}</button>
+                </div>
               </div>
               <div className="eb-sec-body eb-items">
                 {lineItems.map((item: any, index: number) => renderItem(item, index))}
@@ -465,6 +491,8 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
 
           <aside className="eb-rail">{summary}</aside>
         </div>
+
+        {translator.panel}
 
         {/* --- the action bar: everything that finishes this invoice, together --- */}
         <footer className="eb-foot">

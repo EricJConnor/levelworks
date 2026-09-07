@@ -163,6 +163,19 @@ cancels, and nothing changes. **Never translate and send in one step.**
 - Direction is guessed from what he has already written (`looksSpanish` in
   `src/lib/translate.ts`); on an empty estimate it falls back to the app's language.
 
+**One flow, three screens (Sep 7 2026).** The button, the side-by-side review and the
+apply step live in `src/components/Translate.tsx` as `useTranslator({ pieces, projectName,
+onApply })`; the estimate builder, the invoice builder (line items **and** the client note)
+and a job update (`CreateUpdateModal`: title, message, every photo caption) each pass their
+own pieces and place `translator.button` and `translator.panel`. Keeping it in one place is
+what stops the estimate and the invoice from drifting into two different features. Two
+details: invoice line items have no id, so the index is the id (`item-0`); and the panel is
+rendered through a **portal into `<body>`**, because it opens on top of screens that are
+themselves modals with `overflow: hidden`, and its backdrop click calls `stopPropagation` so
+it cannot close the screen underneath. Photo captions save on blur, so applying a translated
+caption saves it too. Private notes (`Notes.tsx`) deliberately have no button — nobody but
+the contractor reads them.
+
 **Still open:** the four `Public*View.tsx` pages are what the *client* sees. They
 translate, but follow the viewer's own browser setting, not the contractor's. Whether a
 client link should carry the sender's language is a product decision Eric has not made.

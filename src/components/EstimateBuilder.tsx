@@ -8,7 +8,7 @@ import { X, Plus, Trash2, Users, Edit, ImageIcon, Send, FileText, Eye, Check, Ch
 import { PhotoUpload } from './PhotoUpload';
 import { autoGrowTextarea } from '@/lib/utils';
 import { useT, useLang } from '@/i18n';
-import { translateItems, looksSpanish, type Direction } from '@/lib/translate';
+import { useTranslator } from './Translate';
 
 interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; sectionTitle?: string; }
 interface Props { onClose: () => void; onConvertToInvoice?: (data: any) => void; existingEstimate?: any; }
@@ -74,9 +74,6 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
   // Translation of what the contractor typed. Never applied without him
   // seeing it first — a document that goes to a client is one he has read.
-  const [showTranslate, setShowTranslate] = useState(false);
-  const [translating, setTranslating] = useState(false);
-  const [translated, setTranslated] = useState<{ id: string; text: string }[]>([]);
 
   useEffect(() => { loadSavedTitles(); }, []);
   useEffect(() => { if (existingEstimate?.id) loadEstimatePhotos(existingEstimate.id); }, [existingEstimate?.id]);
@@ -298,42 +295,14 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const handleSendModalClose = () => { setShowSendModal(false); setSavedEstimateData(null); };
   const handleSendSuccess = () => { setShowSendModal(false); setSavedEstimateData(null); onClose(); };
 
-  // Direction is guessed from what he has already written, so the button
-  // almost always reads the way he needs it. On an empty estimate there is
-  // nothing to read yet, so fall back to the language he set the app to: a
-  // contractor working in Spanish is writing Spanish and wants English out.
-  const written = lineItems.map(i => safeString(i.description)).filter(d => d.trim());
-  const direction: Direction = written.length
-    ? (written.some(looksSpanish) ? 'es-en' : 'en-es')
-    : (lang === 'es' ? 'es-en' : 'en-es');
-
-  const handleTranslate = async () => {
-    const items = lineItems
+  // Everything on this estimate a client will read, translated in one pass.
+  const translator = useTranslator({
+    pieces: lineItems
       .filter(i => safeString(i.description).trim())
-      .map(i => ({ id: i.id, text: safeString(i.description) }));
-    if (items.length === 0) {
-      toast({ title: t('tr.nothingToTranslate'), description: t('tr.nothingToTranslateBody'), variant: 'destructive' });
-      return;
-    }
-    setTranslating(true);
-    setShowTranslate(true);
-    const res = await translateItems(direction, items, safeString(projectName) || undefined);
-    setTranslating(false);
-    if (!res.ok) {
-      setShowTranslate(false);
-      toast({ title: t('tr.failed'), description: res.message, variant: 'destructive' });
-      return;
-    }
-    setTranslated(res.items);
-  };
-
-  const applyTranslation = () => {
-    const map = new Map(translated.map(i => [i.id, i.text]));
-    setLineItems(prev => prev.map(i => (map.has(i.id) ? { ...i, description: map.get(i.id)! } : i)));
-    setShowTranslate(false);
-    setTranslated([]);
-    toast({ title: t('tr.applied'), description: t('tr.appliedBody') });
-  };
+      .map(i => ({ id: i.id, text: safeString(i.description) })),
+    projectName: safeString(projectName),
+    onApply: (map) => setLineItems(prev => prev.map(i => (map.has(i.id) ? { ...i, description: map.get(i.id)! } : i))),
+  });
 
   const canConvert = !!onConvertToInvoice;
   const itemCount = lineItems.filter(i => safeString(i.description).trim()).length;
@@ -668,10 +637,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                 <h3 className="lv-h3">{t('est.theWork')}</h3>
                 {!isReadOnly && (
                   <div className="lv-inline" style={{ gap: 8 }}>
-                    <button className="lv-btn sec sm eb-translate" onClick={handleTranslate} disabled={translating}>
-                      {translating ? <Loader2 size={15} className="animate-spin" /> : <Languages size={15} />}
-                      {translating ? t('tr.translating') : (direction === 'es-en' ? t('tr.toEnglish') : t('tr.toSpanish'))}
-                    </button>
+                    {translator.button}
                     <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> {t('est.addItem')}</button>
                   </div>
                 )}
@@ -747,57 +713,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         </footer>
       </div>
 
-      {showTranslate && (
-        <div className="lv-scrim" onClick={() => !translating && setShowTranslate(false)}>
-          <div className="lv-modal wide" onClick={e => e.stopPropagation()}>
-            <div className="lv-modal-head">
-              <div>
-                <span className="lv-eyebrow">{direction === 'es-en' ? 'Español → English' : 'English → Español'}</span>
-                <h2 className="lv-h2" style={{ marginTop: 2 }}>{t('tr.title')}</h2>
-              </div>
-              <button className="lv-icon-btn" onClick={() => setShowTranslate(false)} disabled={translating} aria-label={t('a.close')}><X size={20} /></button>
-            </div>
-            <div className="lv-modal-body">
-              {translating ? (
-                <div className="eb-tr-loading">
-                  <Loader2 size={26} className="animate-spin" />
-                  <p className="lv-sub">{t('tr.translating')}</p>
-                </div>
-              ) : (
-                <>
-                  <p className="lv-sub" style={{ marginBottom: 16 }}>{t('tr.intro')}</p>
-                  <div className="eb-tr-list">
-                    {translated.map(tr => {
-                      const original = lineItems.find(i => i.id === tr.id);
-                      return (
-                        <div className="eb-tr-row" key={tr.id}>
-                          <div>
-                            <span className="lv-eyebrow">{t('tr.original')}</span>
-                            <p className="eb-tr-text was">{original ? original.description : ''}</p>
-                          </div>
-                          <div>
-                            <span className="lv-eyebrow">{t('tr.translated')}</span>
-                            <p className="eb-tr-text now">{tr.text}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="lv-modal-foot">
-              <div className="lv-actions">
-                <button className="lv-btn quiet" onClick={() => setShowTranslate(false)} disabled={translating}>{t('a.cancel')}</button>
-                <div className="spacer" />
-                <button className="lv-btn pri span" onClick={applyTranslation} disabled={translating || translated.length === 0}>
-                  <Check size={16} /> {t('tr.apply')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {translator.panel}
 
       {showSendModal && savedEstimateData && (
         <SendEstimateModal estimateData={savedEstimateData} onClose={handleSendModalClose} onSuccess={handleSendSuccess} />

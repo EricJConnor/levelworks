@@ -9,8 +9,13 @@ import { PhotoUpload } from './PhotoUpload';
 import { autoGrowTextarea } from '@/lib/utils';
 import { useT, useLang } from '@/i18n';
 import { useTranslator } from './Translate';
+import { looksSpanish } from '@/lib/translate';
 
-interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; sectionTitle?: string; }
+interface LineItem {
+  id: string; description: string; quantity: number; rate: number; total: number; sectionTitle?: string;
+  /** What he typed before translating — see DataContext's LineItem. */
+  sourceText?: string; sourceLang?: 'en' | 'es'; sourceStale?: boolean;
+}
 interface Props { onClose: () => void; onConvertToInvoice?: (data: any) => void; existingEstimate?: any; }
 
 const safeNumber = (val: any): number => {
@@ -184,6 +189,15 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
   const addLineItem = () => setLineItems(prev => [...prev, { id: Date.now().toString(), description: '', quantity: 1, rate: 0, total: 0 }]);
 
+  /**
+   * Several fields at once. `updateItem` maps over the current render's array,
+   * so two calls in one handler would lose the first — editing the original
+   * changes both the text and its stale flag, and needs them in one write.
+   */
+  const patchItem = (id: string, patch: Partial<LineItem>) => {
+    setLineItems(prev => prev.map(item => (item.id === id ? { ...item, ...patch } : item)));
+  };
+
   const updateItem = (id: string, field: string, value: any) => {
     setLineItems(lineItems.map(item => {
       if (item.id === id) {
@@ -295,13 +309,57 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const handleSendModalClose = () => { setShowSendModal(false); setSavedEstimateData(null); };
   const handleSendSuccess = () => { setShowSendModal(false); setSavedEstimateData(null); onClose(); };
 
+  /**
+   * Which copy of the work he is looking at.
+   *
+   * A contractor who wrote this estimate in Spanish and translated it for a
+   * client must not come back to a document he cannot read. So once a line
+   * carries an original, the builder opens on **his** words, and the client's
+   * copy is one tap away. Editing his original never changes what the client
+   * already has — only translating again does.
+   */
+  const hasSource = lineItems.some(i => !!i.sourceText);
+  const sourceLang = (lineItems.find(i => i.sourceLang)?.sourceLang) || (lang === 'es' ? 'es' : 'en');
+  const [view, setView] = useState<'source' | 'client'>('client');
+  useEffect(() => {
+    if (hasSource) setView('source');
+  }, [hasSource]);
+  const showingSource = hasSource && view === 'source';
+  const staleCount = lineItems.filter(i => i.sourceStale).length;
+
+  /** The text on a line right now, in the copy he is looking at. */
+  const lineText = (i: LineItem) => (showingSource ? (i.sourceText ?? i.description) : i.description);
+
   // Everything on this estimate a client will read, translated in one pass.
+  // Once a line has an original, only the ones he has since edited (and any
+  // new line) need translating — re-running the rest would quietly reword work
+  // the client has already read, and cost money to do it.
+  const needsTranslating = (i: LineItem) => !!i.sourceStale || !i.sourceText;
+
   const translator = useTranslator({
-    pieces: lineItems
-      .filter(i => safeString(i.description).trim())
-      .map(i => ({ id: i.id, text: safeString(i.description) })),
+    pieces: (showingSource ? lineItems.filter(needsTranslating) : lineItems)
+      .filter(i => safeString(lineText(i)).trim())
+      .map(i => ({ id: i.id, text: safeString(lineText(i)) })),
+    emptyTitle: showingSource ? t('tr.allCurrent') : undefined,
+    emptyBody: showingSource ? t('tr.allCurrentBody') : undefined,
     projectName: safeString(projectName),
-    onApply: (map) => setLineItems(prev => prev.map(i => (map.has(i.id) ? { ...i, description: map.get(i.id)! } : i))),
+    onApply: (map) => {
+      setLineItems(prev => prev.map(i => {
+        if (!map.has(i.id)) return i;
+        // Translating from his original just refreshes the client's copy.
+        if (showingSource) return { ...i, description: map.get(i.id)!, sourceStale: undefined };
+        // Translating the client's copy for the first time: keep what he wrote,
+        // in the language he wrote it, before the translation replaces it.
+        return {
+          ...i,
+          description: map.get(i.id)!,
+          sourceText: i.sourceText ?? i.description,
+          sourceLang: i.sourceLang ?? (looksSpanish(i.description) ? 'es' : 'en'),
+          sourceStale: undefined,
+        };
+      }));
+      if (!showingSource) setView('source');
+    },
   });
 
   const canConvert = !!onConvertToInvoice;
@@ -375,11 +433,22 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
       <textarea
         ref={autoGrowTextarea}
         className="lv-textarea eb-desc"
-        value={item.description}
-        onChange={(e) => { updateItem(item.id, 'description', e.target.value); autoGrowTextarea(e.target); }}
+        value={lineText(item)}
+        onChange={(e) => {
+          if (showingSource) {
+            // His words changed, so the client's copy is now behind.
+            patchItem(item.id, { sourceText: e.target.value, sourceStale: true });
+          } else {
+            updateItem(item.id, 'description', e.target.value);
+          }
+          autoGrowTextarea(e.target);
+        }}
         placeholder={t('est.describePlaceholder')}
-        disabled={isReadOnly}
+        disabled={isReadOnly || (hasSource && !showingSource)}
       />
+      {showingSource && item.sourceStale && (
+        <span className="lv-pill amber eb-stale">{t('tr.needsTranslating')}</span>
+      )}
 
       <div className="eb-qr">
         <label className="lv-field">
@@ -637,12 +706,31 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                 <h3 className="lv-h3">{t('est.theWork')}</h3>
                 {!isReadOnly && (
                   <div className="lv-inline" style={{ gap: 8 }}>
-                    {translator.button}
+                    {hasSource && (
+                      <div className="lv-seg eb-view-seg" role="group" aria-label={t('tr.whichCopy')}>
+                        <button type="button" className={view === 'source' ? 'on' : ''} onClick={() => setView('source')}>
+                          {t('tr.yourWords')}
+                        </button>
+                        <button type="button" className={view === 'client' ? 'on' : ''} onClick={() => setView('client')}>
+                          {t('tr.clientCopy')}
+                        </button>
+                      </div>
+                    )}
+                    {(!hasSource || showingSource) && translator.button}
                     <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> {t('est.addItem')}</button>
                   </div>
                 )}
               </div>
               <div className="eb-sec-body eb-items">
+                {hasSource && (
+                  <p className={`eb-view-note${staleCount && showingSource ? ' warn' : ''}`}>
+                    {showingSource
+                      ? (staleCount
+                        ? t('tr.editedSince')
+                        : t('tr.editingYours'))
+                      : t('tr.clientCopyReadOnly')}
+                  </p>
+                )}
                 {lineItems.map((item, idx) => renderItem(item, idx))}
                 {!isReadOnly && (
                   <button className="eb-add" onClick={addLineItem}><Plus size={16} /> {t('est.addAnotherItem')}</button>

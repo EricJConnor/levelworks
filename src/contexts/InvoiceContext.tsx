@@ -63,7 +63,11 @@ const parseLineItems = (items: any): LineItem[] => {
     description: safeString(item?.description),
     quantity: safeNumber(item?.quantity),
     rate: safeNumber(item?.rate),
-    total: safeNumber(item?.total)
+    total: safeNumber(item?.total),
+    // What he typed before translating, so he can fix his own words later.
+    sourceText: item?.sourceText ? safeString(item.sourceText) : undefined,
+    sourceLang: item?.sourceLang === 'es' || item?.sourceLang === 'en' ? item.sourceLang : undefined,
+    sourceStale: item?.sourceStale === true ? true : undefined,
   }));
 };
 
@@ -83,7 +87,10 @@ const formatLineItemsForDb = (items: any): object[] => {
       description: safeString(item.description),
       quantity: safeNumber(item.quantity),
       rate: safeNumber(item.rate),
-      total: safeNumber(item.total)
+      total: safeNumber(item.total),
+      ...(item.sourceText ? { sourceText: safeString(item.sourceText) } : {}),
+      ...(item.sourceLang ? { sourceLang: item.sourceLang } : {}),
+      ...(item.sourceStale ? { sourceStale: true } : {}),
     };
   });
   

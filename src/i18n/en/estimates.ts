@@ -97,6 +97,16 @@ export const estimates: Record<string, string> = {
   'inv.sentWithWarnings': 'Invoice sent with warnings',
 
   // --- translate button ---
+  'tr.whichCopy': 'Which copy',
+  'tr.yourWords': 'Your words',
+  'tr.clientCopy': "Client's copy",
+  'tr.editingYours': 'You are editing what you originally wrote. The client keeps the translated copy until you translate again.',
+  'tr.editedSince': 'You have edited your original since translating. Translate again so the client copy matches.',
+  'tr.readingClientCopy': 'This is what the client sees. Your own words are under “Your words”.',
+  'tr.needsTranslating': 'Not translated yet',
+  'tr.allCurrent': 'Everything is up to date',
+  'tr.allCurrentBody': 'The client copy already matches what you wrote. Edit a line first if you want to change it.',
+  'tr.clientCopyReadOnly': 'This is what the client sees. To change it, edit under “Your words” and translate again.',
   'tr.toEnglish': 'Translate to English',
   'tr.toSpanish': 'Traducir al español',
   'tr.translating': 'Translating…',

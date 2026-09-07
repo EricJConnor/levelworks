@@ -23,8 +23,17 @@ export type Lang = 'en' | 'es';
 const DICTS: Record<Lang, Record<string, string>> = { en, es };
 const STORAGE_KEY = 'lw-lang';
 
-/** The user's stored choice, else their browser's language, else English. */
+/** `/es` is the Spanish homepage, so the URL decides — a shared link has to
+ *  open in Spanish whatever the phone that opens it remembers. */
+export function langFromPath(path: string): Lang | null {
+  return /^\/es\/?$/.test(path) ? 'es' : null;
+}
+
+/** The URL, else the stored choice, else the browser's language, else English. */
 export function detectLang(): Lang {
+  if (typeof window === 'undefined') return 'en';
+  const fromPath = langFromPath(window.location.pathname);
+  if (fromPath) return fromPath;
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === 'en' || saved === 'es') return saved;
@@ -44,11 +53,21 @@ interface Ctx {
 
 const LangContext = createContext<Ctx | null>(null);
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [lang, setLangState] = useState<Lang>(() => detectLang());
+export const LanguageProvider: React.FC<{ children: React.ReactNode; initial?: Lang }> = ({ children, initial }) => {
+  const [lang, setLangState] = useState<Lang>(() => initial ?? detectLang());
 
   useEffect(() => {
     document.documentElement.lang = lang;
+    const path = window.location.pathname;
+    // Arriving on /es is itself a choice: remember it, so the rest of the app
+    // and the next visit are Spanish too.
+    if (langFromPath(path) === lang) {
+      try { localStorage.setItem(STORAGE_KEY, lang); } catch { /* nothing to do */ }
+    }
+    // A Spanish reader who lands on the English homepage belongs on the Spanish
+    // one — same page, but with the URL, the head and <html lang> all telling
+    // the truth, and a link worth sharing. Only ever from the homepage.
+    if (path === '/' && lang === 'es') window.location.replace('/es');
   }, [lang]);
 
   const setLang = useCallback((l: Lang) => {
@@ -151,6 +170,23 @@ export const LanguageToggle: React.FC<{ className?: string }> = ({ className }) 
     };
   }, [open]);
 
+  /**
+   * On the marketing homepage the two languages are two real URLs, so
+   * switching navigates — that is what makes a Spanish page shareable and
+   * indexable. Everywhere inside the app it stays a state change, because
+   * throwing a contractor out of a half-written estimate would be worse than
+   * useless.
+   */
+  const switchTo = (code: Lang) => {
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    const onMarketingHome = path === '/' || langFromPath(path) !== null;
+    setLang(code);
+    if (onMarketingHome) {
+      const target = code === 'es' ? '/es' : '/';
+      if (path.replace(/\/+$/, '') !== target.replace(/\/+$/, '')) window.location.assign(target);
+    }
+  };
+
   const current = LANGS.find((l) => l.code === lang) || LANGS[0];
   const others = LANGS.filter((l) => l.code !== lang);
 
@@ -178,7 +214,7 @@ export const LanguageToggle: React.FC<{ className?: string }> = ({ className }) 
               key={o.code}
               type="button"
               role="menuitem"
-              onClick={() => { setLang(o.code); setOpen(false); }}
+              onClick={() => { switchTo(o.code); setOpen(false); }}
             >
               <span className="lv-flag"><o.Flag /></span>
               <span className="lv-lang-abbr">{o.abbr}</span>

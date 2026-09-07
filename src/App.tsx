@@ -52,6 +52,10 @@ const App = () => (
                 <PixelPageViewTracker />
                 <Routes>
                   <Route path="/" element={<LandingPage />} />
+                  {/* The Spanish homepage. Prerendered to real Spanish HTML at
+                      build time (scripts/prerender-es.mjs); this route is what
+                      takes over once the bundle loads. */}
+                  <Route path="/es" element={<LandingPage />} />
                   <Route path="/app" element={<Index />} />
                   <Route path="/welcome" element={<Onboarding />} />
                   <Route path="/dashboard" element={<Dashboard />} />

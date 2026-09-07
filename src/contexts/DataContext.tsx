@@ -9,7 +9,18 @@ export interface Client {
   billingEnabled?: boolean; billingAmount?: number; billingInterval?: string; billingIntervalCount?: number;
   billingStatus?: 'none' | 'current' | 'past_due' | 'canceled'; lastPaymentFailedAt?: string;
 }
-export interface LineItem { id: string; description: string; quantity: number; rate: number; total: number; }
+/**
+ * `description` is always the client's copy — what prints on the document.
+ * `sourceText` is what the contractor actually typed before he translated it,
+ * kept so he can come back and fix his own words in his own language rather
+ * than editing a translation he cannot read. `sourceStale` marks a line he has
+ * edited since, whose client copy is therefore out of date.
+ */
+export interface LineItem {
+  id: string; description: string; quantity: number; rate: number; total: number;
+  sectionTitle?: string;
+  sourceText?: string; sourceLang?: 'en' | 'es'; sourceStale?: boolean;
+}
 export interface Estimate { 
   id: string; clientName: string; clientEmail: string; clientPhone?: string; projectName: string; 
   lineItems: LineItem[]; taxRate: number; deposit: number; total: number; 
@@ -90,7 +101,10 @@ const cleanLineItem = (item: any, index: number): object | null => {
     quantity: Number(quantity),
     rate: Number(rate),
     total: Number(total),
-    sectionTitle: item.sectionTitle ? String(item.sectionTitle) : undefined
+    sectionTitle: item.sectionTitle ? String(item.sectionTitle) : undefined,
+    sourceText: item.sourceText ? String(item.sourceText) : undefined,
+    sourceLang: item.sourceLang === 'es' || item.sourceLang === 'en' ? item.sourceLang : undefined,
+    sourceStale: item.sourceStale === true ? true : undefined,
   };
 };
 

@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { autoGrowTextarea } from '@/lib/utils';
 import { useT } from '@/i18n';
 import { useTranslator } from './Translate';
+import { looksSpanish } from '@/lib/translate';
 
 interface InvoiceBuilderProps {
   estimateId?: string;
@@ -56,6 +57,18 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   const addLineItem = () => setLineItems([...lineItems, { description: '', quantity: 1, rate: 0 }]);
 
   /**
+   * His words or the client's copy — the same switch as the estimate builder.
+   * Once a line has been translated it keeps what he originally typed, and the
+   * invoice opens on that, so he is never editing a language he cannot read.
+   */
+  const hasSource = lineItems.some((i: any) => !!i.sourceText);
+  const [view, setView] = useState<'source' | 'client'>('client');
+  useEffect(() => { if (hasSource) setView('source'); }, [hasSource]);
+  const showingSource = hasSource && view === 'source';
+  const staleCount = lineItems.filter((i: any) => i.sourceStale).length;
+  const lineText = (i: any) => (showingSource ? (i.sourceText ?? i.description) : i.description);
+
+  /**
    * The same translation flow as the estimate, over the same kinds of text:
    * the line items, plus the note the client reads at the bottom of the
    * invoice. Line items have no id here — they are positional — so the index
@@ -63,17 +76,34 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
    */
   const translator = useTranslator({
     pieces: [
+      // Only lines he has edited since translating, plus any new one: rerunning
+      // the rest would reword work the client has already read.
       ...lineItems
-        .map((i: any, idx: number) => ({ id: `item-${idx}`, text: String(i.description || '') }))
-        .filter((p: any) => p.text.trim()),
+        .map((i: any, idx: number) => ({ item: i, id: `item-${idx}`, text: String(lineText(i) || '') }))
+        .filter((p: any) => p.text.trim() && (!showingSource || p.item.sourceStale || !p.item.sourceText))
+        .map(({ id, text }: any) => ({ id, text })),
       ...(notes.trim() ? [{ id: 'notes', text: notes, label: t('m.notes') }] : []),
     ],
+    emptyTitle: showingSource ? t('tr.allCurrent') : undefined,
+    emptyBody: showingSource ? t('tr.allCurrentBody') : undefined,
     projectName,
     onApply: (map) => {
-      setLineItems((prev: any[]) => prev.map((i, idx) => (
-        map.has(`item-${idx}`) ? { ...i, description: map.get(`item-${idx}`)! } : i
-      )));
+      setLineItems((prev: any[]) => prev.map((i, idx) => {
+        const next = map.get(`item-${idx}`);
+        if (next === undefined) return i;
+        // From his original: just refresh the client's copy.
+        if (showingSource) return { ...i, description: next, sourceStale: undefined };
+        // First translation: keep what he wrote before it is replaced.
+        return {
+          ...i,
+          description: next,
+          sourceText: i.sourceText ?? i.description,
+          sourceLang: i.sourceLang ?? (looksSpanish(String(i.description || '')) ? 'es' : 'en'),
+          sourceStale: undefined,
+        };
+      }));
       if (map.has('notes')) setNotes(map.get('notes')!);
+      if (!showingSource) setView('source');
     },
   });
   const removeLineItem = (index: number) => setLineItems(lineItems.filter((_: any, i: number) => i !== index));
@@ -354,10 +384,24 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         <textarea
           ref={autoGrowTextarea}
           className="lv-textarea eb-desc"
-          value={item.description}
-          onChange={(e) => { updateLineItem(index, 'description', e.target.value); autoGrowTextarea(e.target); }}
+          value={lineText(item)}
+          onChange={(e) => {
+            if (showingSource) {
+              // Both fields in one write: updateLineItem copies the current array.
+              setLineItems((prev: any[]) => prev.map((it, i) => (
+                i === index ? { ...it, sourceText: e.target.value, sourceStale: true } : it
+              )));
+            } else {
+              updateLineItem(index, 'description', e.target.value);
+            }
+            autoGrowTextarea(e.target);
+          }}
           placeholder={t('est.describePlaceholder')}
+          disabled={hasSource && !showingSource}
         />
+        {showingSource && item.sourceStale && (
+          <span className="lv-pill amber eb-stale">{t('tr.needsTranslating')}</span>
+        )}
 
         <div className="eb-qr">
           <label className="lv-field">
@@ -458,11 +502,28 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
               <div className="eb-sec-head">
                 <h3 className="lv-h3">{t('est.theWork')}</h3>
                 <div className="lv-inline" style={{ gap: 8 }}>
-                  {translator.button}
+                  {hasSource && (
+                    <div className="lv-seg eb-view-seg" role="group" aria-label={t('tr.whichCopy')}>
+                      <button type="button" className={view === 'source' ? 'on' : ''} onClick={() => setView('source')}>
+                        {t('tr.yourWords')}
+                      </button>
+                      <button type="button" className={view === 'client' ? 'on' : ''} onClick={() => setView('client')}>
+                        {t('tr.clientCopy')}
+                      </button>
+                    </div>
+                  )}
+                  {(!hasSource || showingSource) && translator.button}
                   <button className="lv-btn sec sm" onClick={addLineItem}><Plus size={15} /> {t('est.addItem')}</button>
                 </div>
               </div>
               <div className="eb-sec-body eb-items">
+                {hasSource && (
+                  <p className={`eb-view-note${staleCount && showingSource ? ' warn' : ''}`}>
+                    {showingSource
+                      ? (staleCount ? t('tr.editedSince') : t('tr.editingYours'))
+                      : t('tr.clientCopyReadOnly')}
+                  </p>
+                )}
                 {lineItems.map((item: any, index: number) => renderItem(item, index))}
                 <button className="eb-add" onClick={addLineItem}><Plus size={16} /> {t('est.addAnotherItem')}</button>
               </div>

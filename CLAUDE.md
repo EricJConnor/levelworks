@@ -176,6 +176,21 @@ it cannot close the screen underneath. Photo captions save on blur, so applying 
 caption saves it too. Private notes (`Notes.tsx`) deliberately have no button — nobody but
 the contractor reads them.
 
+**His words are the source; the client's copy is derived (Sep 7 2026).** Translating used to
+overwrite what the contractor typed, so a Spanish-speaking contractor whose client phoned about
+a line came back to an estimate he could not read. Each line item now keeps `sourceText` /
+`sourceLang` / `sourceStale` alongside `description` (the client's copy, and the only thing that
+prints or sends). Once a line has an original the builder **opens on his words**, a `.lv-seg`
+switches to the client's copy — read-only there, with no translate button, because it is
+derived — and editing his original flags the line `sourceStale` ("Sin traducir"). Translating
+from his side sends **only** the stale and untranslated lines: rerunning the rest would silently
+reword work the client has already read and charge for it; when nothing has changed the button
+says "Everything is up to date" instead. The fields are plain strings inside the existing
+`line_items` JSONB — no migration — but both contexts whitelist fields when they read and write,
+so `cleanLineItem` (DataContext) and the two mappers in InvoiceContext each had to carry them or
+the original would vanish on save. `patchItem` exists because `updateItem` maps over the current
+render's array, so writing the text and the flag in two calls lost the first.
+
 **Still open:** the four `Public*View.tsx` pages are what the *client* sees. They
 translate, but follow the viewer's own browser setting, not the contractor's. Whether a
 client link should carry the sender's language is a product decision Eric has not made.

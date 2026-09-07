@@ -101,6 +101,16 @@ export const estimates: Record<string, string> = {
   'inv.sentWithWarnings': 'Factura enviada con advertencias',
 
   // --- translate button (wired in below the action bar) ---
+  'tr.whichCopy': 'Qué versión',
+  'tr.yourWords': 'Tus palabras',
+  'tr.clientCopy': 'Copia del cliente',
+  'tr.editingYours': 'Estás editando lo que escribiste tú. El cliente conserva la versión traducida hasta que traduzcas de nuevo.',
+  'tr.editedSince': 'Editaste tu original después de traducir. Traduce otra vez para que la copia del cliente coincida.',
+  'tr.readingClientCopy': 'Esto es lo que ve el cliente. Tus propias palabras están en “Tus palabras”.',
+  'tr.needsTranslating': 'Sin traducir',
+  'tr.allCurrent': 'Todo está al día',
+  'tr.allCurrentBody': 'La copia del cliente ya coincide con lo que escribiste. Edita una línea si quieres cambiarla.',
+  'tr.clientCopyReadOnly': 'Esto es lo que ve el cliente. Para cambiarlo, edita en “Tus palabras” y traduce otra vez.',
   'tr.toEnglish': 'Traducir al inglés',
   'tr.toSpanish': 'Translate to Spanish',
   'tr.translating': 'Traduciendo…',

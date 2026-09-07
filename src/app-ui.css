@@ -1051,3 +1051,28 @@ button.lv-row:hover, a.lv-row:hover { background: var(--lv-surface-2); }
   .eb-sec-head .lv-inline { justify-content: stretch; }
   .eb-sec-head .lv-inline .lv-btn { flex: 1; }
 }
+
+/* ------------------------------------------------------------ his words vs the client's copy
+   A translated line keeps what the contractor originally typed, so he can come
+   back and fix his own words in his own language. The switch names the two
+   copies; the note says which one he is looking at and whether the client's is
+   behind. Nothing here changes the document — only translating does. */
+.eb-view-seg { padding: 2px; }
+.eb-view-seg button { padding: 5px 11px; font-size: 12.5px; }
+.eb-view-note {
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border-radius: var(--lv-r);
+  background: var(--lv-sunken);
+  color: var(--lv-mute);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.eb-view-note.warn { background: var(--lv-amber-soft); color: var(--lv-amber); font-weight: 500; }
+.eb-stale { margin-top: 8px; }
+
+@media (max-width: 560px) {
+  /* The section head already carries a title, the switch and two buttons. */
+  .eb-view-seg { order: 3; width: 100%; }
+  .eb-view-seg button { flex: 1; }
+}

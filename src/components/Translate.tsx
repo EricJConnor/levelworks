@@ -27,9 +27,12 @@ interface Options {
   projectName?: string;
   /** Called with id → translated text for the pieces that came back. */
   onApply: (translations: Map<string, string>) => void;
+  /** Shown when there is nothing to send — e.g. everything is already current. */
+  emptyTitle?: string;
+  emptyBody?: string;
 }
 
-export function useTranslator({ pieces, projectName, onApply }: Options) {
+export function useTranslator({ pieces, projectName, onApply, emptyTitle, emptyBody }: Options) {
   const t = useT();
   const { lang } = useLang();
   const { toast } = useToast();
@@ -51,7 +54,11 @@ export function useTranslator({ pieces, projectName, onApply }: Options) {
   const start = async () => {
     const items = pieces.filter((p) => (p.text || '').trim()).map((p) => ({ id: p.id, text: p.text }));
     if (items.length === 0) {
-      toast({ title: t('tr.nothingToTranslate'), description: t('tr.nothingToTranslateBody'), variant: 'destructive' });
+      toast({
+        title: emptyTitle || t('tr.nothingToTranslate'),
+        description: emptyBody || t('tr.nothingToTranslateBody'),
+        variant: emptyTitle ? 'default' : 'destructive',
+      });
       return;
     }
     setBusy(true);

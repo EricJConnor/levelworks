@@ -5,6 +5,9 @@ import './index.css';
 import './app-ui.css';
 import { DataProvider } from './contexts/DataContext';
 import { InvoiceProvider } from './contexts/InvoiceContext';
+// Imported for its side effect: `beforeinstallprompt` fires before React mounts,
+// so the listener has to be registered at module scope, not in a component.
+import './lib/installPrompt';
 
 // Service worker is registered in index.html - don't duplicate here
 

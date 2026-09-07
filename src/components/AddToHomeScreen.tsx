@@ -1,21 +1,51 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Smartphone, Share, MoreVertical, Plus, Download, ChevronRight } from 'lucide-react';
 import { useT } from '@/i18n';
+import {
+  canInstall, isIOS, isIOSButNotSafari, isStandalone, onInstallChange, promptInstall,
+} from '@/lib/installPrompt';
 
+/**
+ * One tap where the browser allows it.
+ *
+ * Android and desktop Chrome hand us a real install prompt, so the button
+ * installs the app there and no dialog ever opens. **iPhone has no such API** —
+ * Apple exposes no way to add to the home screen from script — so on iOS the
+ * button opens the two steps instead. Once the app is installed the button
+ * disappears entirely; offering to install something already installed is the
+ * kind of small wrongness that makes an app feel unfinished.
+ */
 export const AddToHomeScreen: React.FC = () => {
   const t = useT();
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'iphone' | 'android'>('iphone');
+  const [ready, setReady] = useState(canInstall());
+  const [installed, setInstalled] = useState(isStandalone());
+
+  useEffect(() => onInstallChange(() => {
+    setReady(canInstall());
+    setInstalled(isStandalone());
+  }), []);
+
+  if (installed) return null;
+
+  const ios = isIOS();
+
+  const handleClick = async () => {
+    if (ready) {
+      const outcome = await promptInstall();
+      // 'accepted' fires `appinstalled`, which hides the button for us.
+      if (outcome !== 'unavailable') return;
+    }
+    setOpen(true);
+  };
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="lv-a2hs">
-        <Smartphone size={16} />
+      <button onClick={handleClick} className="lv-a2hs">
+        {ready ? <Download size={16} /> : <Smartphone size={16} />}
         <span>{t('nav.addToPhone')}</span>
       </button>
-
-
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -30,22 +60,15 @@ export const AddToHomeScreen: React.FC = () => {
             {t('mod.addToPhoneSub')}
           </p>
 
-          <div className="flex gap-2 mb-4">
-            <button
-              onClick={() => setActiveTab('iphone')}
-              className={`lv-btn ${activeTab === 'iphone' ? 'pri' : 'sec'}`} style={{ flex: 1 }}
-            >
-              {t('mod.iphoneIpad')}
-            </button>
-            <button
-              onClick={() => setActiveTab('android')}
-              className={`lv-btn ${activeTab === 'android' ? 'pri' : 'sec'}`} style={{ flex: 1 }}
-            >
-              {t('mod.android')}
-            </button>
-          </div>
+          {isIOSButNotSafari() && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-amber-800">
+                <strong>{t('mod.noteLabel')}</strong> {t('mod.openInSafari')}
+              </p>
+            </div>
+          )}
 
-          {activeTab === 'iphone' ? <IPhoneInstructions /> : <AndroidInstructions />}
+          {ios ? <IPhoneInstructions /> : <AndroidInstructions />}
 
           <div className="mt-4 pt-4 border-t">
             <p className="text-xs text-gray-500 text-center">

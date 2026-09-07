@@ -13,7 +13,7 @@
  */
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
+import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema';
 
 const MODEL = 'claude-opus-5';
 
@@ -30,12 +30,31 @@ const Body = z.object({
   })).min(1).max(60),
 });
 
-const Out = z.object({
-  items: z.array(z.object({
-    id: z.string(),
-    text: z.string(),
-  })),
-});
+/**
+ * The shape the model must answer in, as a plain JSON schema.
+ *
+ * Deliberately NOT zod: the SDK's `zodOutputFormat` helper needs zod v4, this
+ * app is on zod v3 (react-hook-form and every form in the product depend on
+ * it), and the mismatch threw at request time — the route answered 502 for
+ * every translation while the key was perfectly good. A hand-written schema
+ * has no version to disagree about.
+ */
+const OUT_SCHEMA = {
+  type: 'object',
+  properties: {
+    items: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { id: { type: 'string' }, text: { type: 'string' } },
+        required: ['id', 'text'],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['items'],
+  additionalProperties: false,
+};
 
 const GUIDE = {
   'es-en': {
@@ -106,7 +125,7 @@ export default async function handler(req, res) {
       // it quick for someone standing in a driveway. Raise it if quality slips.
       output_config: {
         effort: 'medium',
-        format: zodOutputFormat(Out, 'translated_items'),
+        format: jsonSchemaOutputFormat(OUT_SCHEMA),
       },
       messages: [{
         role: 'user',
@@ -137,7 +156,10 @@ export default async function handler(req, res) {
       res.status(429).json({ error: 'rate_limited', message: 'Too many translations at once. Wait a moment and try again.' });
       return;
     }
-    console.error('[translate]', err?.message || err);
-    res.status(502).json({ error: 'failed', message: 'Could not translate right now. Try again.' });
+    const detail = err?.message || String(err);
+    console.error('[translate]', detail);
+    // The real reason, on the screen. A generic sentence here cost a live
+    // debugging round once already, and no key or client data is in it.
+    res.status(502).json({ error: 'failed', message: `Could not translate right now: ${detail}` });
   }
 }

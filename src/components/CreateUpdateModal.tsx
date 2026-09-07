@@ -4,6 +4,7 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
 import { X, Send, Camera, Upload, Loader2, Copy, Check, Trash2, Mail, MessageSquare, AlertCircle, CheckCircle, ChevronRight } from 'lucide-react';
 import { useT } from '@/i18n';
+import { useTranslator } from './Translate';
 
 interface Props {
   onClose: () => void;
@@ -31,6 +32,33 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
   const [step, setStep] = useState<SendStep>('compose');
+
+  /**
+   * A job update is written for the client too, so it gets the same flow: the
+   * title, the message and every photo caption in one pass.
+   */
+  const translator = useTranslator({
+    pieces: [
+      ...(name.trim() ? [{ id: 'name', text: name, label: t('mod.updateName') }] : []),
+      ...(description.trim() ? [{ id: 'description', text: description, label: t('mod.messageToClientOptional') }] : []),
+      ...photos
+        .filter(p => (captions[p.id] || '').trim())
+        .map(p => ({ id: `caption-${p.id}`, text: captions[p.id], label: t('mod.photoLabel') })),
+    ],
+    projectName: name,
+    onApply: (map) => {
+      if (map.has('name')) setName(map.get('name')!);
+      if (map.has('description')) setDescription(map.get('description')!);
+      photos.forEach(p => {
+        const next = map.get(`caption-${p.id}`);
+        // Captions are saved on blur, so a translated one has to be saved too.
+        if (next !== undefined) {
+          setCaptions(prev => ({ ...prev, [p.id]: next }));
+          handleCaptionSave(p.id, next);
+        }
+      });
+    },
+  });
   const [linkCopied, setLinkCopied] = useState(false);
   const [sendSuccess, setSendSuccess] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -223,6 +251,9 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
                     rows={3}
                   />
                 </label>
+                <div className="lv-inline" style={{ justifyContent: 'flex-end' }}>
+                  {translator.button}
+                </div>
               </div>
 
               <div>
@@ -427,6 +458,7 @@ export const CreateUpdateModal: React.FC<Props> = ({ onClose, onCreated }) => {
           )}
         </div>
 
+      {translator.panel}
       </div>
     </div>
   );

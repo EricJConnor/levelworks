@@ -311,4 +311,12 @@ export const modals: Record<string, string> = {
   'mod.freeTrial': 'Free trial',
   'mod.freeTrialSub': 'No card needed to start. Cancel any time.',
   'mod.thirtyDays': '30 days',
+
+  // — sending a text from the contractor's own phone —
+  'mod.textFromYourPhone': 'Send it from your phone',
+  'mod.textFromYourPhoneSub': 'Opens your Messages app with the text already written. It goes from your own number, so your client can just reply to you.',
+  'mod.openMessages': 'Open Messages',
+  'mod.smsBody': 'Hi {name}, here is your estimate for {project}: {url}',
+  'mod.smsPreviewHint': 'This is what will be written. You can change it before you hit send.',
+  'mod.smsNoNumberHint': 'No number saved for this client — Messages will open with the To field empty so you can pick them from your contacts.',
 };

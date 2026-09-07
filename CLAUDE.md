@@ -176,6 +176,35 @@ copy free of any one country's slang: "Manitas" (Spain) and "troca" (Mexican-Ame
 were both used on the landing page once and replaced with neutral wording. If a real
 Spanish-speaking contractor later flags a word, it is a one-line fix in one file.
 
+## Texting a client (no Twilio)
+
+The estimate goes out from **the contractor's own phone**, not from a LevelWorks
+number. On the Send screen's "Text it" path, `src/lib/smsLink.ts` opens his Messages
+app with the client already addressed and the message written; he taps Send.
+
+This is a deliberate decision, taken after pricing Twilio out:
+
+- Twilio's A2P 10DLC registration is **per end customer** — each contractor needs his
+  own brand and campaign, at roughly **$4 + $15 one-time and $2+/month each**, plus a
+  number and per-message fees. On a $5/month plan that does not work.
+- A single shared LevelWorks number would be cheap but is one-way in practice: replies
+  need routing, and a STOP from one client blocks that number for every other
+  contractor's messages to them.
+- Sending from his own number costs nothing, needs no registration, and means the
+  **client can reply normally** — it lands in the thread she already has with him.
+
+Mechanics worth keeping: iOS wants `sms:<number>&body=`, Android wants `?body=`, so
+`separator()` sniffs the platform (including iPadOS, which reports itself as a Mac with
+touch). `canOpenMessagesApp()` gates the whole thing — on a laptop an `sms:` link
+usually does nothing, so desktop keeps copy-the-link. The handoff uses a real anchor
+click rather than `location.href`, which iOS Safari blocks for some schemes. A phone
+number that is not a phone number normalizes to empty, which opens Messages with the
+To field blank rather than with garbage in it.
+
+**If automated sending is ever wanted** (a payment reminder at 9am while he is on a
+roof), that is the one case for a shared LevelWorks number: one brand, one campaign,
+one-way, with his own number printed in the message body for the client to call.
+
 ## Copy rules
 
 Sentence case. Plain contractor language. No exclamation marks. Errors say what went wrong and how to

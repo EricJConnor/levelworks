@@ -3,8 +3,9 @@ import { supabase } from '@/lib/supabase';
 import { useData } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
-import { X, Mail, MessageSquare, Loader2, AlertCircle, CheckCircle, Copy, Check, ChevronRight } from 'lucide-react';
+import { X, Mail, MessageSquare, Loader2, AlertCircle, CheckCircle, Copy, Check, ChevronRight, Send } from 'lucide-react';
 import { useT } from '@/i18n';
+import { canOpenMessagesApp, openMessagesApp } from '@/lib/smsLink';
 
 interface Props {
   estimateData?: any;
@@ -28,6 +29,8 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
   const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [clientPhone, setClientPhone] = useState('');
+  const onPhone = canOpenMessagesApp();
 
   const isMountedRef = useRef(true);
 
@@ -59,6 +62,7 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
   useEffect(() => {
     if (data) {
       setClientEmail(data.clientEmail || data.client_email || '');
+      setClientPhone(data.clientPhone || data.client_phone || '');
       const token = data.viewToken || data.view_token;
       if (token && typeof token === 'string' && token.trim()) {
         setViewToken(token);
@@ -76,19 +80,39 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
   const estimateId = data.id;
   const estimateUrl = viewToken ? `${window.location.origin}/view-estimate/${viewToken}` : '';
 
+  const markSent = async () => {
+    if (!estimateId) return;
+    try {
+      await supabase
+        .from('estimates')
+        .update({ status: 'sent', sent_at: new Date().toISOString() })
+        .eq('id', estimateId);
+      refreshEstimates().catch(() => {});
+    } catch (err) {
+      console.error('Could not mark estimate sent:', err);
+    }
+  };
+
+  /** The words that land in his Messages app. He can edit them before sending. */
+  const smsBody = () => t('mod.smsBody', {
+    name: (clientName || '').split(' ')[0] || clientName,
+    project: projectName,
+    url: estimateUrl,
+  });
+
+  const handleOpenMessages = async () => {
+    if (!estimateUrl) return;
+    openMessagesApp(clientPhone, smsBody());
+    await markSent();
+  };
+
   const handleCopyLink = async () => {
     if (!estimateUrl) return;
     try {
       await navigator.clipboard.writeText(estimateUrl);
       setLinkCopied(true);
       toast({ title: t('a.copied'), description: t('mod.pasteIntoMessagesApp') });
-      if (estimateId) {
-        await supabase
-          .from('estimates')
-          .update({ status: 'sent', sent_at: new Date().toISOString() })
-          .eq('id', estimateId);
-        refreshEstimates().catch(() => {});
-      }
+      await markSent();
       setTimeout(() => { if (isMountedRef.current) setLinkCopied(false); }, 3000);
     } catch (err) {
       toast({ title: t('e.somethingWrong'), description: t('mod.couldNotCopyLink'), variant: 'destructive' });
@@ -265,11 +289,36 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
             {sendMethod === 'text' && sendStatus !== 'success' && (
               <>
                 <div className="lv-card lv-card-pad">
-                  <h3 className="lv-h3">{t('mod.sendItInAText')}</h3>
+                  <h3 className="lv-h3">{onPhone ? t('mod.textFromYourPhone') : t('mod.sendItInAText')}</h3>
                   <p className="lv-sub" style={{ marginTop: 6 }}>
-                    {t('mod.copyThenPasteToClient')}
+                    {onPhone ? t('mod.textFromYourPhoneSub') : t('mod.copyThenPasteToClient')}
                   </p>
-                  {estimateUrl && (
+
+                  {onPhone && (
+                    <>
+                      <label className="lv-field" style={{ marginTop: 14 }}>
+                        <span className="lv-label">{t('m.phone')}</span>
+                        <input
+                          className="lv-input"
+                          type="tel"
+                          inputMode="tel"
+                          value={clientPhone}
+                          onChange={(e) => setClientPhone(e.target.value)}
+                          placeholder={t('est.phonePlaceholder')}
+                        />
+                      </label>
+                      <p className="lv-small" style={{ marginTop: 8 }}>
+                        {clientPhone.trim() ? t('mod.smsPreviewHint') : t('mod.smsNoNumberHint')}
+                      </p>
+                      <div className="lv-card" style={{ marginTop: 10, padding: 12, background: 'var(--lv-surface-2)' }}>
+                        <p className="lv-small" style={{ color: 'var(--lv-ink-2)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                          {smsBody()}
+                        </p>
+                      </div>
+                    </>
+                  )}
+
+                  {!onPhone && estimateUrl && (
                     <p className="lv-small" style={{ marginTop: 10, wordBreak: 'break-all', color: 'var(--lv-faint)' }}>
                       {estimateUrl}
                     </p>
@@ -311,12 +360,21 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
               <button className="lv-btn quiet" onClick={onClose}>{t('a.done')}</button>
               <span className="spacer" />
               <button
-                className="lv-btn pri"
+                className="lv-btn sec"
                 onClick={handleCopyLink}
                 disabled={!viewToken || isGeneratingToken}
               >
                 {linkCopied ? <><Check size={16} /> {t('mod.linkCopied')}</> : <><Copy size={16} /> {t('a.copyLink')}</>}
               </button>
+              {onPhone && (
+                <button
+                  className="lv-btn pri span"
+                  onClick={handleOpenMessages}
+                  disabled={!viewToken || isGeneratingToken}
+                >
+                  <Send size={16} /> {t('mod.openMessages')}
+                </button>
+              )}
             </div>
           ) : (
             <div className="lv-actions">

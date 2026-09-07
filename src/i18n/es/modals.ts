@@ -315,4 +315,12 @@ export const modals: Record<string, string> = {
   'mod.freeTrial': 'Prueba gratis',
   'mod.freeTrialSub': 'No necesitas tarjeta para empezar. Cancela cuando quieras.',
   'mod.thirtyDays': '30 días',
+
+  // — sending a text from the contractor's own phone —
+  'mod.textFromYourPhone': 'Mándalo desde tu teléfono',
+  'mod.textFromYourPhoneSub': 'Abre tu aplicación de mensajes con el texto ya escrito. Sale desde tu propio número, así que tu cliente te puede contestar directamente.',
+  'mod.openMessages': 'Abrir mensajes',
+  'mod.smsBody': 'Hola {name}, aquí está el presupuesto para {project}: {url}',
+  'mod.smsPreviewHint': 'Esto es lo que se va a escribir. Puedes cambiarlo antes de enviarlo.',
+  'mod.smsNoNumberHint': 'Este cliente no tiene número guardado — los mensajes se abren con el destinatario vacío para que lo elijas de tus contactos.',
 };

@@ -205,6 +205,28 @@ To field blank rather than with garbage in it.
 roof), that is the one case for a shared LevelWorks number: one brand, one campaign,
 one-way, with his own number printed in the message body for the client to call.
 
+## Staying signed in, and adding the app to a phone (Sep 7 2026)
+
+**Sign-in already persisted and still does.** `src/lib/supabase.ts` sets `persistSession: true`,
+`storageKey: 'level-app-auth'`, `storage: localStorage`, `autoRefreshToken: true`, and nothing in
+the app signs anyone out except the user's own Sign out and account deletion. The service worker
+clears Cache Storage only, never localStorage. The one real defect was the **"Keep me signed in"
+checkbox: it wrote `levelworks-remember-me` and nothing ever read it** — a control that did
+nothing. It is gone, replaced by a line stating what actually happens. The remaining risk is
+platform-level: iOS Safari caps script-writable storage for a site you only *visit* at about
+seven days, which is exactly why installing to the home screen matters — an installed app is not
+subject to it.
+
+**One tap where the browser allows it, and nowhere else.** `src/lib/installPrompt.ts` captures
+`beforeinstallprompt` **at module scope** (imported for its side effect from `main.tsx`) because
+the event fires before React mounts; a listener inside a component misses it. On Android and
+desktop Chrome "Add to phone" now installs in one tap with no dialog. **iOS has no equivalent API
+and this is not a gap we can close** — Apple exposes no way to add to the home screen from script,
+so the iPhone path is instructions or nothing. The dialog now shows only the platform it is on
+(the two tabs are gone), warns when the visitor is in Chrome/Firefox/Edge on iOS where Add to Home
+Screen does not exist at all, and the whole button hides once `isStandalone()` is true. Do not
+"add" an iOS one-tap install later; if one ever appears it will be a new Safari API, not a trick.
+
 ## Copy rules
 
 Sentence case. Plain contractor language. No exclamation marks. Errors say what went wrong and how to

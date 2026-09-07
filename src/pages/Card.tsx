@@ -31,7 +31,34 @@ export default function Card() {
     return () => { alive = false; };
   }, []);
 
-  useEffect(() => { document.title = 'Eric Connor — LevelWorks'; }, []);
+  /**
+   * Its own home-screen identity.
+   *
+   * index.html is shared by every route in this SPA, so the card would
+   * otherwise be added as a second copy of the app — same icon, same name,
+   * indistinguishable on the home screen. Safari reads the live DOM when
+   * someone taps Add to Home Screen, so setting these here is enough; they are
+   * torn down on the way out so the app itself keeps its own icon.
+   */
+  useEffect(() => {
+    document.title = 'Eric Connor — LevelWorks';
+
+    // Point the page's EXISTING icon tag at the card's icon rather than adding a
+    // second one: with two apple-touch-icons in the head the browser picks, and
+    // it picked the app's. Verified in a browser both ways.
+    const icon = document.querySelector('link[rel="apple-touch-icon"]');
+    const previousIcon = icon?.getAttribute('href') ?? null;
+    icon?.setAttribute('href', '/icon-card.png');
+
+    const titleTag = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+    const previous = titleTag?.getAttribute('content') ?? null;
+    titleTag?.setAttribute('content', 'LW Card');
+
+    return () => {
+      if (previousIcon !== null) icon?.setAttribute('href', previousIcon);
+      if (previous !== null) titleTag?.setAttribute('content', previous);
+    };
+  }, []);
 
   return (
     <main className="bc">

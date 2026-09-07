@@ -22,6 +22,7 @@ import PublicUpdateView from "./pages/PublicUpdateView";
 import Dashboard from "./pages/Dashboard";
 import Onboarding from "./pages/Onboarding";
 import Terms from "./pages/Terms";
+import Card from "./pages/Card";
 import Privacy from "./pages/Privacy";
 import ResetPassword from "./pages/ResetPassword";
 import StripeConnectCallback from "./pages/StripeConnectCallback";
@@ -64,6 +65,7 @@ const App = () => (
                   <Route path="/view-invoice/:token" element={<PublicInvoiceView />} />
                   <Route path="/view-job/:token" element={<PublicJobView />} />
                   <Route path="/view-update/:token" element={<PublicUpdateView />} />
+                  <Route path="/card" element={<Card />} />
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/reset-password" element={<ResetPassword />} />

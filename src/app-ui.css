@@ -1076,3 +1076,28 @@ button.lv-row:hover, a.lv-row:hover { background: var(--lv-surface-2); }
   .eb-view-seg { order: 3; width: 100%; }
   .eb-view-seg button { flex: 1; }
 }
+
+/* ------------------------------------------------------------ the business card (/card)
+   What Eric pulls up when someone asks for a card: the mark, his name, the QR
+   big enough to scan across a table, then one tap to save. Same tokens as the
+   app — it is a page of the product, not a card graphic dropped on top of it. */
+.bc { min-height: 100svh; display: grid; place-items: center; padding: 32px 20px 56px; background: var(--lv-bg); }
+.bc-in { width: 100%; max-width: 380px; display: grid; gap: 22px; justify-items: center; text-align: center; }
+.bc-mark { display: inline-flex; align-items: center; gap: 9px; color: var(--lv-ink); text-decoration: none; font-weight: 650; font-size: 19px; letter-spacing: -.02em; }
+.bc-mark svg { width: 26px; height: 26px; color: var(--lv-blue); }
+.bc-who h1 { font-size: clamp(30px, 7vw, 38px); font-weight: 700; letter-spacing: -.03em; line-height: 1.05; }
+.bc-who p { color: var(--lv-mute); font-size: 14px; margin-top: 6px; }
+.bc-qr { width: min(232px, 62vw); aspect-ratio: 1; padding: 14px; background: var(--lv-surface);
+  border: 1px solid var(--lv-line); border-radius: 18px; box-shadow: var(--lv-shadow-sm); display: grid; place-items: center; }
+.bc-qr > *, .bc-qr img, .bc-qr-svg { width: 100%; height: 100%; display: block; }
+.bc-hint { margin-top: -14px; color: var(--lv-mute); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+.bc-lines { display: grid; gap: 9px; width: 100%; }
+.bc-lines a { font-size: 17px; color: var(--lv-ink); text-decoration: none; letter-spacing: -.01em; }
+.bc-lines a:last-child { color: var(--lv-mute); }
+.bc-links { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; }
+.bc-links a { color: var(--lv-mute); font-size: 14px; text-decoration: none; border-bottom: 1px solid var(--lv-line); padding-bottom: 2px; }
+.bc-note { color: var(--lv-mute); font-size: 12.5px; line-height: 1.5; max-width: 34ch; }
+@media (hover: hover) and (pointer: fine) {
+  .bc-lines a:hover { color: var(--lv-blue); }
+  .bc-links a:hover { color: var(--lv-ink); border-color: var(--lv-ink); }
+}

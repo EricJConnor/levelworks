@@ -20,7 +20,6 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
@@ -94,8 +93,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
         if (error) throw error;
         if (!data.session) throw new Error('No session returned');
 
-        // Session persisted by Supabase - keep me signed in works automatically
-        localStorage.setItem('levelworks-remember-me', rememberMe ? 'true' : 'false');
+        // Supabase keeps the session in localStorage and refreshes it on its
+        // own, so this is the last time he has to sign in on this phone.
 
         // Wait for session to be fully established
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -263,15 +262,9 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
 
               {!isSignUp && !isForgotPassword && (
                 <div className="lv-inline" style={{ justifyContent: 'space-between' }}>
-                  <label className="lv-inline" style={{ gap: 8, cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      style={{ width: 17, height: 17, accentColor: 'var(--lv-blue)', cursor: 'pointer' }}
-                    />
-                    <span className="lv-small" style={{ color: 'var(--lv-ink-2)' }}>{t('mod.keepMeSignedIn')}</span>
-                  </label>
+                  <span className="lv-small" style={{ color: 'var(--lv-mute)' }}>
+                    {t('mod.staySignedIn')}
+                  </span>
                   <button
                     type="button"
                     className="lv-btn quiet sm"

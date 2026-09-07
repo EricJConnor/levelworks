@@ -10,6 +10,13 @@
  *   dollar figures) stays as it is — those are illustrative, and a Spanish
  *   speaker in the US reads Visa and Sherwin-Williams exactly as written.
  *   The words AROUND them are translated so the picture still reads.
+ *
+ * The hero, the features lead and the closing line carry the phrases Spanish-
+ * speaking contractors actually search — "app para hacer estimados", "programa
+ * de estimados para contratistas", "software para contratistas en español" —
+ * once each, in a sentence that still reads like a person wrote it. Everywhere
+ * else the product's own word is **presupuesto**: "estimado" is what they type
+ * into Google, not what an estimate should be called on the document.
  */
 export const landing: Record<string, string> = {
   // ---- shell / header ----
@@ -35,8 +42,8 @@ export const landing: Record<string, string> = {
   // ---- hero ----
   'lp.priceChipAmount': '$5/mes',
   'lp.priceChipText': 'Presupuestos, firmas, facturas y pagos. Todo.',
-  'lp.heroTitle': 'Presupuestos y facturas, hechos por un contratista.',
-  'lp.heroLead': 'Escribe un presupuesto profesional desde tu teléfono, recíbelo firmado desde el del cliente, y cobra con tarjeta directo a tu banco. Todo por $5 al mes.',
+  'lp.heroTitle': 'Presupuestos y facturas para contratistas, desde el teléfono.',
+  'lp.heroLead': 'La app para hacer estimados y facturas, en español. Escribe un presupuesto profesional desde tu teléfono, recíbelo firmado desde el del cliente, y cobra con tarjeta directo a tu banco. Todo por $5 al mes.',
   'lp.heroSeeApp': 'Ver la aplicación',
   'lp.heroFine1': 'No necesitas tarjeta para empezar',
   'lp.heroFine2': 'Todas las funciones incluidas',
@@ -75,7 +82,7 @@ export const landing: Record<string, string> = {
   // ---- features section ----
   'lp.featEyebrow': 'Todo en una sola aplicación',
   'lp.featTitle': 'Del primer presupuesto al pago final, sin soltar el teléfono.',
-  'lp.featLead': 'Las mismas herramientas que las plataformas grandes venden por partes. Aquí van juntas, a un solo precio.',
+  'lp.featLead': 'Un programa de estimados para contratistas con todo junto: las mismas herramientas que las plataformas grandes venden por partes, a un solo precio.',
   'lp.featTablistAria': 'Funciones',
   'lp.tabEstimates': 'Presupuestos',
   'lp.tabEstimatesBlurb': 'Partidas, secciones, anticipos y tu logotipo. Haz uno en el teléfono afuera de la casa y envíalo antes de irte.',
@@ -93,7 +100,7 @@ export const landing: Record<string, string> = {
   // ---- payments section ----
   'lp.payEyebrow': 'Cobra desde la aplicación',
   'lp.payTitle': 'Mandas la factura. El cliente paga. El dinero está en tu banco.',
-  'lp.payLead': 'Sin andar persiguiendo cheques ni esperando intermediarios. Tu cliente paga el enlace de la factura con tarjeta y el dinero llega directo a la cuenta de tu negocio.',
+  'lp.payLead': 'Una aplicación de facturas para contratistas, sin andar persiguiendo cheques ni esperando intermediarios: tu cliente paga el enlace de la factura con tarjeta y el dinero llega directo a la cuenta de tu negocio.',
   'lp.payCheck1': 'Visa, Mastercard, American Express, Discover',
   'lp.payCheck2': 'Apple Pay y Google Pay desde el teléfono del cliente',
   'lp.payCheck3': 'Anticipos en los presupuestos, saldos en las facturas',
@@ -200,7 +207,7 @@ export const landing: Record<string, string> = {
 
   // ---- final cta ----
   'lp.finalTitle': 'Manda tu primer presupuesto esta noche.',
-  'lp.finalLead': 'Treinta días gratis, todas las funciones activas, sin tarjeta. Si no vale los cinco dólares, te vas y ya.',
+  'lp.finalLead': 'Software para contratistas en español, con treinta días gratis y todas las funciones activas, sin tarjeta. Si no vale los cinco dólares, te vas y ya.',
 
   // ---- footer ----
   'lp.footerAbout': 'Presupuestos, firmas, facturas, pagos y cobro recurrente para contratistas. Hecha por un contratista en Filadelfia, Pensilvania.',

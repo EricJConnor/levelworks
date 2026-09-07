@@ -23,6 +23,14 @@
       "destination": "/api/link-preview?type=invoice&token=:token"
     },
     {
+      "source": "/es",
+      "destination": "/es/index.html"
+    },
+    {
+      "source": "/es/",
+      "destination": "/es/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

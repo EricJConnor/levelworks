@@ -227,6 +227,34 @@ so the iPhone path is instructions or nothing. The dialog now shows only the pla
 Screen does not exist at all, and the whole button hides once `isStandalone()` is true. Do not
 "add" an iOS one-tap install later; if one ever appears it will be a new Safari API, not a trick.
 
+## Spanish SEO: /es is a real page (Sep 7 2026)
+
+The site is a Vite SPA — Vercel rewrites every URL to one `index.html` — so a Spanish *route*
+would only ever have been a client-side state flip, with English HTML still going out to
+crawlers and link previews. So `/es` is **prerendered at build time**: `src/entry-es.tsx`
+renders the landing page through `react-dom/server` with `LanguageProvider initial="es"`, and
+`scripts/prerender-es.mjs` takes the built `dist/index.html` (so the hashed asset links are
+always current), swaps the head for Spanish, sets `lang="es"` and injects the markup into
+`#root`. `npm run build` = client build → SSR build → prerender. The script throws if the
+canonical, the hreflang trio, `og:locale` or the markup itself is missing, so it cannot ship a
+silently English page. `vercel.json` maps `/es` to that file before the catch-all.
+
+- **The URL decides the language, not localStorage.** `langFromPath()` in `src/i18n/index.tsx`
+  means a shared `/es` link opens in Spanish on a phone that remembers English — otherwise the
+  link is broken for exactly the people it is for. Conversely a Spanish reader who lands on `/`
+  is sent to `/es`, so the URL, the head and `<html lang>` always agree.
+- **The toggle navigates on the marketing homepage and only there.** Inside the app it stays a
+  state change: throwing a contractor out of a half-written estimate would be worse than useless.
+- **Search phrases, once each, in sentences a person would write**: "app para hacer estimados"
+  (hero), "programa de estimados para contratistas" (features), "aplicación de facturas para
+  contratistas" (payments), "software para contratistas en español" (closing). Everywhere else
+  the product's word is still **presupuesto** — "estimado" is what they type into Google, not
+  what an estimate is called on the document. Keep that split.
+- `robots.txt` and `sitemap.xml` live in **`public/`**; stale duplicates at the repo root were
+  deleted because Vite never copied them and editing them would have done nothing.
+- Only the English `index.html` is hand-maintained. Adding a page-specific `<meta>` to it
+  affects every SPA route, which is why `/es` gets its head from the prerender script instead.
+
 ## Copy rules
 
 Sentence case. Plain contractor language. No exclamation marks. Errors say what went wrong and how to

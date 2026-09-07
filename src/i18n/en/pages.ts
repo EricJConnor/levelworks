@@ -5,6 +5,13 @@
  * is reused rather than repeated here.
  */
 export const pages: Record<string, string> = {
+  'bc.role': 'Estimates, invoices and payments for contractors',
+  'bc.point': 'Point a camera here',
+  'bc.save': 'Save to contacts',
+  'bc.seeApp': 'See the app',
+  'bc.startTrial': 'Start free trial',
+  'bc.pitch': 'Estimates, signatures, invoices and card payments. $5 a month, 30 days free.',
+
   // ---- Dashboard / account settings ----
   'pg.dash.gateBody': 'Your account settings are behind a sign-in.',
   'pg.dash.backToApp': 'Back to the app',

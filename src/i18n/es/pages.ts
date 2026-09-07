@@ -6,6 +6,13 @@
  * aprobar", not "proceder a la suscripción del documento".
  */
 export const pages: Record<string, string> = {
+  'bc.role': 'Presupuestos, facturas y pagos para contratistas',
+  'bc.point': 'Apunta la cámara aquí',
+  'bc.save': 'Guardar en contactos',
+  'bc.seeApp': 'Ver la aplicación',
+  'bc.startTrial': 'Empezar prueba gratis',
+  'bc.pitch': 'Presupuestos, firmas, facturas y pagos con tarjeta. $5 al mes, 30 días gratis.',
+
   // ---- Dashboard / account settings ----
   'pg.dash.gateBody': 'La configuración de tu cuenta requiere iniciar sesión.',
   'pg.dash.backToApp': 'Volver a la aplicación',

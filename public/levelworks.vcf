@@ -1,0 +1,11 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Connor;Eric;;;
+FN:Eric Connor
+ORG:LevelWorks
+TITLE:Founder
+EMAIL;TYPE=WORK,INTERNET:support@levelworks.org
+URL:https://levelworks.org
+ADR;TYPE=WORK:;;;Wyncote;PA;;USA
+NOTE:Estimates, signatures, invoices and card payments for contractors. $5 a month, 30 days free. levelworks.org
+END:VCARD

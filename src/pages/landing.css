@@ -67,7 +67,7 @@
 .lw-hdr.scrolled { border-bottom-color: var(--line); }
 .lw-hdr .lw-wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 24px; }
 .lw-nav { display: flex; align-items: center; gap: 4px; }
-.lw-nav > button, .lw-nav > a { background: none; border: 0; cursor: pointer; padding: 8px 12px; border-radius: 8px; font-size: 14.5px; font-weight: 500; color: var(--ink-2); text-decoration: none; }
+.lw-nav > button, .lw-nav > a { white-space: nowrap; background: none; border: 0; cursor: pointer; padding: 8px 12px; border-radius: 8px; font-size: 14.5px; font-weight: 500; color: var(--ink-2); text-decoration: none; }
 .lw-nav > button:hover, .lw-nav > a:hover { background: var(--soft); color: var(--ink); }
 .lw-hdr-cta { display: flex; align-items: center; gap: 8px; }
 .lw-hdr-cta .lw-btn { height: 40px; padding: 0 16px; font-size: 14px; }
@@ -75,7 +75,7 @@
 .lw-sheet { display: none; border-top: 1px solid var(--line); background: #fff; padding: 12px 18px 20px; }
 .lw-sheet button, .lw-sheet a { display: block; width: 100%; text-align: left; background: none; border: 0; cursor: pointer; padding: 12px 6px; font-size: 16px; font-weight: 500; color: var(--ink); border-bottom: 1px solid var(--line); text-decoration: none; }
 .lw-sheet .lw-btn { margin-top: 14px; border-bottom: 0; text-align: center; }
-@media (max-width: 880px) {
+@media (max-width: 1000px) {
   .lw-nav, .lw-hdr-cta .signin { display: none; }
   .lw-burger { display: inline-flex; }
   .lw-sheet.open { display: block; }
@@ -412,7 +412,29 @@
    fifth longer than English, and the full label pushed the menu button off a
    390px screen. */
 .lw-hdr-cta .hdr-cta-short { display: none; }
-@media (max-width: 880px) {
+@media (max-width: 1000px) {
   .lw-hdr-cta .hdr-cta-long { display: none; }
   .lw-hdr-cta .hdr-cta-short { display: inline-flex; }
+}
+
+/* On a phone the trial button drops to its own row.
+   The shorter label bought room once, but adding the language switcher spent
+   it again: logo + flag + button + menu came to more than a 390px screen, and
+   the thing pushed off the edge was the menu button — so there was no menu at
+   all on a phone. The header row is now logo, flag, menu; the button sits
+   centred on a second row beneath the line, where it is bigger and easier to
+   hit than it ever was in the corner. */
+@media (max-width: 560px) {
+  .lw-hdr .lw-wrap { flex-wrap: wrap; height: auto; min-height: 62px; gap: 10px 12px; padding-top: 10px; padding-bottom: 12px; }
+  /* `display: contents` so the switcher, the button and the menu become items
+     of the header row itself — nested in .lw-hdr-cta they could only ever wrap
+     inside their own little box, not onto a second line of the header. */
+  .lw-hdr-cta { display: contents; }
+  .lw-hdr .lw-logo { order: 1; margin-right: auto; }
+  .lw-hdr-cta .lw-lang-fix { order: 2; margin-right: 0; }
+  .lw-burger { order: 3; }
+  /* Full width, so the full label fits — the short one existed only because the
+     button was squeezed into the corner. */
+  .lw-hdr-cta .hdr-cta-short { display: none; }
+  .lw-hdr-cta .hdr-cta-long { display: inline-flex; order: 4; flex: 1 0 100%; width: 100%; height: 44px; font-size: 15px; justify-content: center; }
 }

@@ -6,6 +6,7 @@
  * aprobar", not "proceder a la suscripción del documento".
  */
 export const pages: Record<string, string> = {
+  'bc.saveTip': 'Abre tus contactos. En algunos teléfonos Android se descarga primero: toca el archivo para agregarlo.',
   'bc.role': 'Presupuestos, facturas y pagos para contratistas',
   'bc.point': 'Apunta la cámara aquí',
   'bc.save': 'Guardar en contactos',

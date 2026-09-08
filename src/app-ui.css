@@ -1101,3 +1101,4 @@ button.lv-row:hover, a.lv-row:hover { background: var(--lv-surface-2); }
   .bc-lines a:hover { color: var(--lv-blue); }
   .bc-links a:hover { color: var(--lv-ink); border-color: var(--lv-ink); }
 }
+.bc-tip { margin-top: -12px; color: var(--lv-mute); font-size: 12px; line-height: 1.45; max-width: 32ch; opacity: .85; }

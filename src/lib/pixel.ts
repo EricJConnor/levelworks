@@ -52,8 +52,11 @@ export function trackPageView() {
   window.fbq!('track', 'PageView');
 }
 
-export function trackEvent(name: string, params?: Record<string, unknown>) {
+export function trackEvent(name: string, params?: Record<string, unknown>, eventId?: string) {
   if (!isProductionEnvironment()) return;
   ensureInitialized();
-  window.fbq!('track', name, params);
+  // eventID lets Meta dedupe this browser event against the same event sent
+  // server-side through the Conversions API (the $49 Purchase does both).
+  if (eventId) window.fbq!('track', name, params, { eventID: eventId });
+  else window.fbq!('track', name, params);
 }

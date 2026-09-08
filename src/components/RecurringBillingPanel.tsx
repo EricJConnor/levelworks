@@ -4,6 +4,7 @@ import { Stripe } from '@stripe/stripe-js';
 import { getStripePromiseForAccount } from '@/lib/stripe';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { useT } from '@/i18n';
 import { Client } from '@/contexts/DataContext';
 import { Loader2, Lock, AlertTriangle } from 'lucide-react';
 
@@ -64,20 +65,20 @@ const SCHEDULE_OPTIONS: { value: string; label: string; unit: 'month' | 'year'; 
   { value: 'year-1', label: 'Yearly', unit: 'year', count: 1 },
 ];
 
-const cadenceLabel = (unit?: string, count?: number) => {
+const cadenceLabel = (t: (k: string, v?: Record<string, string | number>) => string, unit?: string, count?: number) => {
   const u = unit || 'month';
   const c = count || 1;
-  if (u === 'year') return 'year';
-  return c === 1 ? 'month' : `${c} months`;
+  if (u === 'year') return t('rb.year');
+  return c === 1 ? t('rb.month') : t('rb.months', { n: c });
 };
 
-const formatBillingLine = (amount: number, unit?: string, count?: number) => {
+const formatBillingLine = (t: (k: string, v?: Record<string, string | number>) => string, amount: number, unit?: string, count?: number) => {
   const amt = `$${amount.toFixed(2)}`;
   const u = unit || 'month';
   const c = count || 1;
-  if (u === 'year') return `${amt}/yr`;
-  if (c === 1) return `${amt}/mo`;
-  return `${amt} every ${c} months`;
+  if (u === 'year') return `${amt}${t('rb.perYr')}`;
+  if (c === 1) return `${amt}${t('rb.perMo')}`;
+  return t('rb.everyNMonths', { amt, n: c });
 };
 
 function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>) {
@@ -87,6 +88,7 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
   const [schedule, setSchedule] = useState('month-1');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const t = useT();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,9 +145,9 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
         billingIntervalCount: option.count,
         billingStatus: subData.status === 'past_due' ? 'past_due' : 'current',
       });
-      toast({ title: 'Recurring billing is on', description: `${client.name} will be charged ${formatBillingLine(numAmount, option.unit, option.count)}.` });
+      toast({ title: t('rb.onTitle'), description: t('rb.onDesc', { name: client.name, line: formatBillingLine(t, numAmount, option.unit, option.count) }) });
     } catch (err: any) {
-      toast({ title: 'Setup failed', description: err.message, variant: 'destructive' });
+      toast({ title: t('rb.setupFailed'), description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -155,15 +157,15 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
     <form onSubmit={handleSubmit} className="lv-card">
       <div className="lv-card-head">
         <div>
-          <span className="lv-eyebrow">Recurring billing</span>
-          <h3 className="lv-h3" style={{ marginTop: 2 }}>Set up a schedule</h3>
+          <span className="lv-eyebrow">{t('rb.title')}</span>
+          <h3 className="lv-h3" style={{ marginTop: 2 }}>{t('rb.setUp')}</h3>
         </div>
-        {client.billingStatus === 'canceled' && <span className="lv-pill">Cancelled</span>}
+        {client.billingStatus === 'canceled' && <span className="lv-pill">{t('rb.cancelled')}</span>}
       </div>
 
       <div className="lv-card-pad">
         <label className="lv-field">
-          <span className="lv-label">Amount</span>
+          <span className="lv-label">{t('rb.amount')}</span>
           <input
             type="number" min="1" step="0.01" value={amount} required
             onChange={(e) => setAmount(e.target.value)}
@@ -173,19 +175,19 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
         </label>
 
         <label className="lv-field">
-          <span className="lv-label">Billing schedule</span>
+          <span className="lv-label">{t('rb.schedule')}</span>
           <select
             value={schedule} onChange={(e) => setSchedule(e.target.value)}
             className="lv-select"
           >
             {SCHEDULE_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
+              <option key={o.value} value={o.value}>{t('rb.opt.' + o.value)}</option>
             ))}
           </select>
         </label>
 
         <div className="lv-field">
-          <span className="lv-label">Card</span>
+          <span className="lv-label">{t('rb.card')}</span>
           <div className="rb-card-box">
             <CardElement options={cardElementOptions} />
           </div>
@@ -195,10 +197,10 @@ function BillingSetupForm({ client, onUpdated }: Omit<Props, 'stripeAccountId'>)
       <div className="lv-card-foot">
         <button type="submit" disabled={!stripe || loading} className="lv-btn pri wide">
           {loading ? <Loader2 size={15} className="animate-spin" /> : <Lock size={15} />}
-          {loading ? 'Setting up…' : 'Start recurring billing'}
+          {loading ? t('rb.settingUp') : t('rb.start')}
         </button>
         <p className="lv-small" style={{ marginTop: 10, textAlign: 'center' }}>
-          Stripe charges this card on the schedule above, and handles retries and reminders if a payment fails.
+          {t('rb.startNote')}
         </p>
       </div>
     </form>
@@ -209,11 +211,12 @@ export function RecurringBillingPanel({ client, stripeAccountId, onUpdated }: Pr
   const [stripe, setStripe] = useState<Stripe | null | undefined>(undefined);
   const [canceling, setCanceling] = useState(false);
   const { toast } = useToast();
+  const t = useT();
 
   useEffect(() => { getStripePromiseForAccount(stripeAccountId).then(setStripe); }, [stripeAccountId]);
 
   const handleCancel = async () => {
-    if (!confirm(`Stop recurring billing for ${client.name}? They will not be charged again.`)) return;
+    if (!confirm(t('rb.confirmStop', { name: client.name }))) return;
     setCanceling(true);
     try {
       const { data, error } = await supabase.functions.invoke('manage-recurring-billing', {
@@ -221,9 +224,9 @@ export function RecurringBillingPanel({ client, stripeAccountId, onUpdated }: Pr
       });
       if (error || data?.error) throw new Error(data?.error || error?.message || 'Failed to cancel');
       onUpdated({ billingEnabled: false, billingStatus: 'canceled' });
-      toast({ title: 'Recurring billing stopped' });
+      toast({ title: t('rb.stopped') });
     } catch (err: any) {
-      toast({ title: 'Could not cancel', description: err.message, variant: 'destructive' });
+      toast({ title: t('rb.couldNotCancel'), description: err.message, variant: 'destructive' });
     } finally {
       setCanceling(false);
     }
@@ -237,42 +240,42 @@ export function RecurringBillingPanel({ client, stripeAccountId, onUpdated }: Pr
 
         <div className="lv-card-head">
           <div style={{ minWidth: 0 }}>
-            <span className="lv-eyebrow">Recurring billing</span>
+            <span className="lv-eyebrow">{t('rb.title')}</span>
             <h3 className="lv-h3" style={{ marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{client.name}</h3>
           </div>
-          <span className={`lv-pill ${pastDue ? 'red' : 'green'}`}>{pastDue ? 'Past due' : 'Current'}</span>
+          <span className={`lv-pill ${pastDue ? 'red' : 'green'}`}>{pastDue ? t('rb.pastDue') : t('rb.current')}</span>
         </div>
 
         <div className="rb-rows">
           <div className="lv-row">
-            <span className="lv-row-s">Amount</span>
-            <span className="lv-row-r lv-num">{formatBillingLine(Number(client.billingAmount || 0), client.billingInterval, client.billingIntervalCount)}</span>
+            <span className="lv-row-s">{t('rb.amount')}</span>
+            <span className="lv-row-r lv-num">{formatBillingLine(t, Number(client.billingAmount || 0), client.billingInterval, client.billingIntervalCount)}</span>
           </div>
           <div className="lv-row">
-            <span className="lv-row-s">Interval</span>
-            <span className="lv-row-r">Every {cadenceLabel(client.billingInterval, client.billingIntervalCount)}</span>
+            <span className="lv-row-s">{t('rb.interval')}</span>
+            <span className="lv-row-r">{t('rb.every', { c: cadenceLabel(t, client.billingInterval, client.billingIntervalCount) })}</span>
           </div>
           <div className="lv-row">
             {/* Stripe holds the schedule; nothing in the client record carries the
                 next charge date, so this says how it happens rather than guessing when. */}
-            <span className="lv-row-s">Next charge</span>
-            <span className="lv-row-r">{pastDue ? 'Retrying' : 'Automatic'}</span>
+            <span className="lv-row-s">{t('rb.nextCharge')}</span>
+            <span className="lv-row-r">{pastDue ? t('rb.retrying') : t('rb.automatic')}</span>
           </div>
         </div>
 
         {pastDue && (
           <div className="rb-note" style={{ marginTop: 14 }}>
             <AlertTriangle size={16} />
-            <span>Stripe could not collect the last payment and is retrying automatically. Reach out to the client, or stop billing below.</span>
+            <span>{t('rb.pastDueNote')}</span>
           </div>
         )}
 
         <div className="lv-card-foot">
           <p className="lv-small" style={{ marginBottom: 10 }}>
-            Stripe charges the card on file every {cadenceLabel(client.billingInterval, client.billingIntervalCount)} and handles retries and reminders.
+            {t('rb.activeNote', { c: cadenceLabel(t, client.billingInterval, client.billingIntervalCount) })}
           </p>
           <button onClick={handleCancel} disabled={canceling} type="button" className="lv-btn danger wide">
-            {canceling ? 'Stopping…' : 'Stop recurring billing'}
+            {canceling ? t('rb.stopping') : t('rb.stop')}
           </button>
         </div>
       </div>
@@ -291,7 +294,7 @@ export function RecurringBillingPanel({ client, stripeAccountId, onUpdated }: Pr
   if (stripe === null) {
     return (
       <div className="lv-card lv-card-pad">
-        <p className="lv-small">Card payments are unavailable right now. Try again in a few minutes.</p>
+        <p className="lv-small">{t('rb.unavailable')}</p>
       </div>
     );
   }

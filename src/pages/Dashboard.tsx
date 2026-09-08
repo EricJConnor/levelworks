@@ -12,7 +12,7 @@ import { PricingCountdown } from '@/components/PricingCountdown';
 import { DeleteAccountDialog } from '@/components/DeleteAccountDialog';
 import { EdgeFunctionDiagnostic } from '@/components/EdgeFunctionDiagnostic';
 import AuthModal from '@/components/AuthModal';
-import { useT } from '@/i18n';
+import { useT, useLang } from '@/i18n';
 import { Loader2, Gift, User, Mail, Calendar, Lock, AlertTriangle, Wrench, ArrowLeft } from 'lucide-react';
 
 // One class list for the six tabs, so the strip reads as the app's own
@@ -137,7 +137,7 @@ export default function Dashboard() {
             <TabsTrigger value="danger" className={TAB}><AlertTriangle className="w-3.5 h-3.5" />{t('pg.dash.tabDelete')}</TabsTrigger>
           </TabsList>
           <TabsContent value="profile"><ProfileEditor /></TabsContent>
-          <TabsContent value="subscription"><SubscriptionCard subscription={subscription} onCancel={() => setCancelDialogOpen(true)} onUpdatePayment={() => setUpdatePaymentOpen(true)} /><PricingCountdown className="mt-4" /></TabsContent>
+          <TabsContent value="subscription">{isAnnual(profile) ? <AnnualCard profile={profile} /> : <><SubscriptionCard subscription={subscription} onCancel={() => setCancelDialogOpen(true)} onUpdatePayment={() => setUpdatePaymentOpen(true)} /><PricingCountdown className="mt-4" /></>}</TabsContent>
           <TabsContent value="security"><ChangePasswordForm /></TabsContent>
           <TabsContent value="referrals"><ReferralProgram /></TabsContent>
           <TabsContent value="diagnostic">
@@ -209,6 +209,36 @@ function ProfileCard({ profile, userEmail, userCreatedAt }: { profile: any; user
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+const isAnnual = (p: any) => p?.plan === 'annual' && p?.plan_expires_at && new Date(p.plan_expires_at).getTime() > Date.now();
+
+/** The $49-a-year plan: one line that says what it is and when it ends. No cancel button, nothing renews. */
+function AnnualCard({ profile }: any) {
+  const t = useT();
+  const { lang } = useLang();
+  const date = new Date(profile.plan_expires_at).toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  return (
+    <div className="lv-card" style={{ maxWidth: 560 }}>
+      <div className="lv-card-head">
+        <h2 className="lv-h2">{t('pg.dash.planTitle')}</h2>
+        <span className="lv-pill green">{t('pg.dash.annualActive')}</span>
+      </div>
+      <div className="lv-card-pad">
+        <div className="lv-grid-2">
+          <div>
+            <p className="lv-eyebrow">{t('pg.dash.planLabel')}</p>
+            <p className="lv-h3" style={{ marginTop: 4 }}>{t('pg.dash.annualName')}</p>
+          </div>
+          <div>
+            <p className="lv-eyebrow">{t('pg.dash.annualRenews')}</p>
+            <p className="lv-h3" style={{ marginTop: 4 }}>{date}</p>
+          </div>
+        </div>
+        <p className="lv-sub" style={{ marginTop: 14 }}>{t('pg.dash.annualNote')}</p>
       </div>
     </div>
   );

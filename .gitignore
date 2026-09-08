@@ -27,3 +27,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ad renderer scratch (frames, stills)
+marketing/ads/lw49/src/out/

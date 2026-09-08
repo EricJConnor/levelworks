@@ -26,7 +26,15 @@ const STORAGE_KEY = 'lw-lang';
 /** `/es` is the Spanish homepage, so the URL decides — a shared link has to
  *  open in Spanish whatever the phone that opens it remembers. */
 export function langFromPath(path: string): Lang | null {
-  return /^\/es\/?$/.test(path) ? 'es' : null;
+  return /^\/es(\/annual(\/success)?)?\/?$/.test(path) ? 'es' : null;
+}
+
+/** The same marketing page in the other language, for the toggle. */
+export function siblingPath(path: string, code: Lang): string {
+  const clean = path.replace(/\/+$/, '') || '/';
+  const rest = clean.replace(/^\/es(?=\/|$)/, '') || '/';
+  if (code === 'es') return rest === '/' ? '/es' : '/es' + rest;
+  return rest;
 }
 
 /** The URL, else the stored choice, else the browser's language, else English. */
@@ -179,10 +187,10 @@ export const LanguageToggle: React.FC<{ className?: string }> = ({ className }) 
    */
   const switchTo = (code: Lang) => {
     const path = typeof window !== 'undefined' ? window.location.pathname : '';
-    const onMarketingHome = path === '/' || langFromPath(path) !== null;
+    const onMarketingHome = path === '/' || /^\/annual(\/|$)/.test(path) || langFromPath(path) !== null;
     setLang(code);
     if (onMarketingHome) {
-      const target = code === 'es' ? '/es' : '/';
+      const target = siblingPath(path, code) + (typeof window !== 'undefined' ? window.location.search : '');
       if (path.replace(/\/+$/, '') !== target.replace(/\/+$/, '')) window.location.assign(target);
     }
   };

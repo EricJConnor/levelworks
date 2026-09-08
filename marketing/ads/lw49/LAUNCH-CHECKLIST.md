@@ -30,7 +30,7 @@ Status is kept here as each box is actually run. "Pass" means it was run and see
 | 4 | `/annual` and `/es/annual` load on mobile, Lighthouse 90+ | rendered at 390px both languages (screenshots sent); Lighthouse pending on the deployed URL |
 | 5 | No English on the Spanish page and vice versa | pass locally, both pages read through; recurring billing panel translated (was leaking) |
 | 6 | All 12 videos play, loop clean, text readable at thumbnail size | pass: rendered, ffprobe `h264 (High) yuv420p`, all < 1MB; loop fades to ground on the last 0.35s |
-| 7 | Campaign exists PAUSED with correct budget, dates, pixel, event | pending: created through Windsor once the videos are on a public URL |
+| 7 | Campaign exists PAUSED with correct budget, dates, pixel, event | campaign `52547713746537` and ad sets `LW49-EN` `52547713777737` / `LW49-ES` `52547713784537` exist PAUSED, lifetime $200, pixel 2017000758930909, Purchase. Ads pending Eric's approval of the creatives. Dates are placeholders (start tomorrow, 7 days); reset them the day it goes live |
 | 8 | Domain verified in Meta | pending: bot token cannot read Business Manager domains; check Business Settings → Brand Safety and Suitability → Domains for levelworks.org |
 | 9 | Terms, Privacy, refund policy exist and are linked (30 days stated) | pass: Terms §6 rewritten, linked from the page footer |
 | 10 | Sold-out state tested at 500 | pending: temporarily insert 500 rows? No. Test by setting `ANNUAL_CAP` to the current count + 0 on a preview, or insert one row with `refunded_at` null and cap at 1 in a preview env |

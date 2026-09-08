@@ -149,6 +149,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--navy);font-fam
 .end .cta{display:inline-flex;align-self:flex-start;margin-top:34px;height:74px;padding:0 34px;border-radius:16px;background:#fff;color:var(--navy);font-weight:700;font-size:28px;align-items:center;gap:12px;opacity:0}
 .s916 .end .cta{height:84px;font-size:32px}
 .end .cta i{font-style:normal;color:var(--blue)}
+.end .stage1,.end .stage2{position:absolute;left:80px;right:80px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;opacity:0}
+.s916 .end .stage1,.s916 .end .stage2{left:90px;right:90px}
+.end .l2.what{font-size:38px;line-height:1.3;color:#dbe3f5;margin-top:28px;font-weight:500;max-width:22ch}
+.s916 .end .l2.what{font-size:46px}
+.end .l2.offer{font-size:36px;margin-top:22px;color:#c7d3ec;line-height:1.3}
+.s916 .end .l2.offer{font-size:44px}
+.end .feats{list-style:none;margin:34px 0 0;padding:0;display:flex;flex-direction:column;gap:14px}
+.end .feats li{font-size:44px;font-weight:600;letter-spacing:-.02em;display:flex;align-items:center;gap:18px;opacity:0}
+.s916 .end .feats li{font-size:54px}
+.end .feats li i{font-style:normal;width:54px;height:54px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:28px;flex-shrink:0}
+.end .price{margin-top:6px}
 
 /* fade to ground on the last frames for a clean loop */
 .veil{position:absolute;inset:0;background:var(--navy);opacity:0;pointer-events:none}
@@ -221,6 +232,13 @@ const T = {
     },
     endSmall: 'First 500 contractors · English and Spanish',
     cta: 'Sign up', ctaSub: 'English & Spanish. Your choice.',
+    flipLine: 'Also in <b>Spanish.</b>',
+    what1: 'LevelWorks is the app for contractors.',
+    what2: 'Write the estimate on your phone. The client signs it. You get paid by card. Maintenance clients get charged every month, automatically.',
+    feats: ['Estimates', 'Invoices', 'Recurring billing'],
+    built: 'Built by a contractor in Pennsylvania.',
+    offer1: 'A full year.',
+    offer2: 'One payment. No monthly bill. No auto-renew.',
   },
   es: {
     brand: 'Level<b>Works</b>',
@@ -261,6 +279,13 @@ const T = {
     },
     endSmall: 'Solo los primeros 500 contratistas · Inglés y español',
     cta: 'Regístrate', ctaSub: 'Inglés y español. Tú eliges.',
+    flipLine: 'También en <b>inglés.</b>',
+    what1: 'LevelWorks es la app para contratistas.',
+    what2: 'Haces el presupuesto en tu teléfono. El cliente lo firma. Te pagan con tarjeta. A los clientes de mantenimiento se les cobra cada mes, en automático.',
+    feats: ['Presupuestos', 'Facturas', 'Cobros recurrentes'],
+    built: 'Hecha por un contratista en Pensilvania.',
+    offer1: 'Un año completo.',
+    offer2: 'Un solo pago. Sin mensualidad. Sin renovación automática.',
   },
 };
 
@@ -347,12 +372,23 @@ function screenHTML(L, story) {
 // ---------------------------------------------------------------- end card
 function endHTML(L, story) {
   const s = L[story === 'estimate' ? 'est' : story === 'invoice' ? 'inv' : 'rec'];
-  return `<div class="mark" data-emark>${MARKW}<span>${L.brand}</span></div>
-    <div class="l1" data-e1>${s.end1}</div>
-    <div class="l2" data-e2>${s.end2}</div>
-    <div class="price" data-e3>$49<small data-yr></small></div>
-    <div class="l3" data-e4>${L.endSmall}</div>
-    <span class="cta" data-e5>${L.cta} <i>→</i></span>`;
+  const feats = L.feats.map((f, i) => `<li data-f="${i}"><i>✓</i>${f}</li>`).join('');
+  return `<div class="stage1" data-s1>
+      <div class="mark" data-w0>${MARKW}<span>${L.brand}</span></div>
+      <div class="l1" data-w1>${L.what1}</div>
+      <div class="l2 what" data-w2>${L.what2}</div>
+      <ul class="feats" data-w3>${feats}</ul>
+      <div class="l3" data-w4>${L.built}</div>
+    </div>
+    <div class="stage2" data-s2>
+      <div class="mark" data-emark>${MARKW}<span>${L.brand}</span></div>
+      <div class="l1" data-e1>${s.end1}</div>
+      <div class="l2" data-e2>${L.offer1}</div>
+      <div class="price" data-e3>$49<small data-yr></small></div>
+      <div class="l2 offer" data-e6>${L.offer2}</div>
+      <div class="l3" data-e4>${L.endSmall}</div>
+      <span class="cta" data-e5>${L.cta} <i>→</i></span>
+    </div>`;
 }
 
 // ---------------------------------------------------------------- build both faces
@@ -373,8 +409,10 @@ const qsa = (sel, root = scr) => [...root.querySelectorAll(sel)];
 const PH = SIZE === '9x16' ? (STORY === 'estimate' ? { scale: 1.9, top: 450, h: 600 } : { scale: 1.9, top: 520, h: 540 }) : (STORY === 'estimate' ? { scale: 1.9, top: 150, h: 500 } : { scale: 1.9, top: 262, h: 440 });
 phone.style.height = PH.h + 'px';
 // Total duration 15s. Timeline (seconds):
-const FLIP_AT = 11.0, FLIP_D = .55, HOLD = 1.0;   // flip to other language at 11.0, hold, flip back by 13.1
-const END_AT = 13.15, DUR = 15;
+const FLIP_AT = 11.0, FLIP_D = .6, HOLD = 3.2;    // flip to the other language at 11.0, hold 3.2s with a line, flip back
+const END_AT = FLIP_AT + FLIP_D * 2 + HOLD + .15;   // 15.55: end screens start
+const WHAT_D = 5.6;                                 // "what LevelWorks is" holds this long
+const DUR = 26;
 
 // ---------------------------------------------------------------- per-story state
 function renderEstimate(t, L) {
@@ -529,16 +567,28 @@ function render(t) {
   if (STORY === 'estimate') renderEstimate(tt, L);
   else if (STORY === 'invoice') renderInvoice(tt, L);
   else renderRecurring(tt, L);
-  if (t >= FLIP_AT) cap.style.opacity = 0;  // captions off during the flip so the phone is the only thing moving
-  // end card
-  const e = w(t, END_AT, .35);
-  end.style.opacity = e;
-  const lag = (i) => w(t, END_AT + .15 + i * .16, .45);
+  // while the other language shows, one line says so
+  if (t >= FLIP_AT) {
+    const fl = fade(t, FLIP_AT + FLIP_D * .6, FLIP_AT + FLIP_D + HOLD + .1, .3);
+    cap.innerHTML = T[LANG].flipLine; cap.style.opacity = fl; cap.style.transform = `translateY(${(1 - w(t, FLIP_AT + FLIP_D * .6, .5)) * 14}px)`;
+    cap.style.fontSize = (SIZE === '9x16' ? 88 : 70) + 'px';
+  }
+  // end screens: 1) what LevelWorks is  2) the offer
+  end.style.opacity = w(t, END_AT, .35);
+  const S2_AT = END_AT + WHAT_D;
+  const s1 = qs('[data-s1]', end), s2 = qs('[data-s2]', end);
+  s1.style.opacity = fade(t, END_AT, S2_AT - .3, .3);
+  s2.style.opacity = w(t, S2_AT, .35);
+  const lagA = (i) => w(t, END_AT + .15 + i * .22, .45);
+  const setA = (sel, i, dy = 22) => { const el = qs(sel, end); const p = lagA(i); el.style.opacity = p; el.style.transform = `translateY(${dy - dy * p}px)`; };
+  setA('[data-w0]', 0); setA('[data-w1]', 1); setA('[data-w2]', 2); qs('[data-w3]', end).style.opacity = 1; setA('[data-w4]', 7);
+  qsa('[data-f]', end).forEach((li, i) => { const p = w(t, END_AT + 1.1 + i * .35, .4); li.style.opacity = p; li.style.transform = `translateX(${16 - 16 * p}px)`; });
+  const lag = (i) => w(t, S2_AT + .15 + i * .2, .45);
   const set = (sel, i, dy = 22) => { const el = qs(sel, end); const p = lag(i); el.style.opacity = p; el.style.transform = `translateY(${dy - dy * p}px)`; };
-  set('[data-emark]', 0); set('[data-e1]', 1); set('[data-e2]', 2); set('[data-e3]', 3, 30); set('[data-e4]', 4); set('[data-e5]', 5);
+  set('[data-emark]', 0); set('[data-e1]', 1); set('[data-e2]', 2); set('[data-e3]', 3, 30); set('[data-e6]', 4); set('[data-e4]', 5); set('[data-e5]', 6);
   // "/ year" ticks in after the price
   qs('[data-yr]', end).textContent = lag(3) > .9 ? (LANG === 'en' ? '/ year' : '/ año') : '';
-  qs('[data-yr]', end).style.opacity = w(t, END_AT + .9, .3);
+  qs('[data-yr]', end).style.opacity = w(t, S2_AT + 1.1, .3);
   // clean loop: fade to ground over the last 0.35s
   veil.style.opacity = w(t, DUR - .35, .35);
 }

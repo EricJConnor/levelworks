@@ -27,9 +27,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--navy);font-fam
   background:radial-gradient(closest-side,rgba(37,99,235,.55),rgba(37,99,235,0) 68%);pointer-events:none}
 .s916 .glow{transform:translate(-50%,-45%)}
 
+/* ---- the address, on screen the whole time */
+.url{position:absolute;left:0;right:0;top:34px;text-align:center;font-size:30px;font-weight:600;letter-spacing:.02em;color:#c7d3ec;z-index:60}
+.url b{color:#8fb0ff;font-weight:600}
+.s916 .url{top:268px;font-size:36px}
+
 /* ---- captions (big white type above the phone) */
-.cap{position:absolute;left:70px;right:70px;top:66px;font-weight:700;letter-spacing:-.035em;line-height:1.06;font-size:70px;color:#fff;opacity:0}
-.s916 .cap{top:300px;font-size:88px}
+.cap{position:absolute;left:70px;right:70px;top:96px;font-weight:700;letter-spacing:-.035em;line-height:1.06;font-size:70px;color:#fff;opacity:0}
+.s916 .cap{top:340px;font-size:88px}
 .cap b{color:#8fb0ff;font-weight:700}
 
 /* ---- the phone */
@@ -149,8 +154,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--navy);font-fam
 .end .cta{display:inline-flex;align-self:flex-start;margin-top:34px;height:74px;padding:0 34px;border-radius:16px;background:#fff;color:var(--navy);font-weight:700;font-size:28px;align-items:center;gap:12px;opacity:0}
 .s916 .end .cta{height:84px;font-size:32px}
 .end .cta i{font-style:normal;color:var(--blue)}
-.end .stage1,.end .stage2{position:absolute;left:80px;right:80px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;opacity:0}
-.s916 .end .stage1,.s916 .end .stage2{left:90px;right:90px}
+.end .stage1,.end .stage2{position:absolute;left:80px;right:80px;top:47%;transform:translateY(-50%);display:flex;flex-direction:column;opacity:0}
+.s916 .end .stage1,.s916 .end .stage2{left:90px;right:90px;top:50%}
 .end .l2.what{font-size:38px;line-height:1.3;color:#dbe3f5;margin-top:28px;font-weight:500;max-width:22ch}
 .s916 .end .l2.what{font-size:46px}
 .end .l2.offer{font-size:36px;margin-top:22px;color:#c7d3ec;line-height:1.3}
@@ -168,6 +173,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--navy);font-fam
 <body>
 <div id="stage">
   <div class="glow"></div>
+  <div class="url">levelworks<b>.org</b></div>
   <div class="cap" id="cap"></div>
   <div class="phone" id="phone">
     <div class="scr" id="scr"></div>
@@ -406,7 +412,7 @@ const qs = (sel, root = scr) => root.querySelector(sel);
 const qsa = (sel, root = scr) => [...root.querySelectorAll(sel)];
 
 // phone placement per size
-const PH = SIZE === '9x16' ? (STORY === 'estimate' ? { scale: 1.9, top: 450, h: 600 } : { scale: 1.9, top: 520, h: 540 }) : (STORY === 'estimate' ? { scale: 1.9, top: 150, h: 500 } : { scale: 1.9, top: 262, h: 440 });
+const PH = SIZE === '9x16' ? (STORY === 'estimate' ? { scale: 1.9, top: 440, h: 590 } : { scale: 1.9, top: 520, h: 540 }) : (STORY === 'estimate' ? { scale: 1.55, top: 184, h: 500 } : { scale: 1.62, top: 250, h: 440 });
 phone.style.height = PH.h + 'px';
 // Total duration 15s. Timeline (seconds):
 const FLIP_AT = 11.0, FLIP_D = .6, HOLD = 3.2;    // flip to the other language at 11.0, hold 3.2s with a line, flip back
@@ -571,7 +577,7 @@ function render(t) {
   if (t >= FLIP_AT) {
     const fl = fade(t, FLIP_AT + FLIP_D * .6, FLIP_AT + FLIP_D + HOLD + .1, .3);
     cap.innerHTML = T[LANG].flipLine; cap.style.opacity = fl; cap.style.transform = `translateY(${(1 - w(t, FLIP_AT + FLIP_D * .6, .5)) * 14}px)`;
-    cap.style.fontSize = (SIZE === '9x16' ? 88 : 70) + 'px';
+    cap.style.fontSize = (SIZE === '9x16' ? 88 : 60) + 'px';
   }
   // end screens: 1) what LevelWorks is  2) the offer
   end.style.opacity = w(t, END_AT, .35);

@@ -5,6 +5,7 @@
  * is reused rather than repeated here.
  */
 export const pages: Record<string, string> = {
+  'bc.saveTip': 'Opens your contacts. On some Android phones it saves first — tap the downloaded file to add it.',
   'bc.role': 'Estimates, invoices and payments for contractors',
   'bc.point': 'Point a camera here',
   'bc.save': 'Save to contacts',

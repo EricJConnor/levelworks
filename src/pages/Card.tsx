@@ -85,9 +85,13 @@ export default function Card() {
           <a href="https://levelworks.org">levelworks.org</a>
         </div>
 
-        <a className="lv-btn pri lg wide" href="/levelworks.vcf" download>
+        {/* No `download` attribute on purpose: it tells the browser to SAVE the
+            file, which is what put the card in Downloads instead of opening the
+            contact sheet on a real phone. Served as text/vcard, inline. */}
+        <a className="lv-btn pri lg wide" href="/levelworks.vcf" type="text/vcard">
           {t('bc.save')}
         </a>
+        <p className="bc-tip">{t('bc.saveTip')}</p>
 
         <div className="bc-links">
           <a href="/">{t('bc.seeApp')}</a>

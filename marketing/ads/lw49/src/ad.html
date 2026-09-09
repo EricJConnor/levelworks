@@ -165,6 +165,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--navy);font-fam
 .s916 .end .feats li{font-size:54px}
 .end .feats li i{font-style:normal;width:54px;height:54px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:28px;flex-shrink:0}
 .end .price{margin-top:6px}
+.end .langs{position:absolute;right:0;bottom:-10px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-size:52px;font-weight:700;letter-spacing:-.03em;color:#fff;opacity:0;padding:22px 28px;border:3px solid #8fb0ff;border-radius:22px;background:rgba(37,99,235,.18)}
+.end .langs i{display:block;width:60px;height:3px;background:#8fb0ff;border-radius:2px}
+.s916 .end .langs{position:static;align-self:flex-start;align-items:flex-start;margin-top:34px;font-size:60px}
 
 /* fade to ground on the last frames for a clean loop */
 .veil{position:absolute;inset:0;background:var(--navy);opacity:0;pointer-events:none}
@@ -241,7 +244,7 @@ const T = {
     flipLine: 'Also in <b>Spanish.</b>',
     what1: 'LevelWorks is the app for contractors.',
     what2: 'Write the estimate on your phone. The client signs it. You get paid by card. Maintenance clients get charged every month, automatically.',
-    feats: ['Estimates', 'Invoices', 'Recurring billing'],
+    feats: ['Unlimited estimates', 'Unlimited invoices', 'Recurring billing'],
     built: 'Built by a contractor in Pennsylvania.',
     offer1: 'A full year.',
     offer2: 'One payment. No monthly bill. No auto-renew.',
@@ -288,7 +291,7 @@ const T = {
     flipLine: 'También en <b>inglés.</b>',
     what1: 'LevelWorks es la app para contratistas.',
     what2: 'Haces el presupuesto en tu teléfono. El cliente lo firma. Te pagan con tarjeta. A los clientes de mantenimiento se les cobra cada mes, en automático.',
-    feats: ['Presupuestos', 'Facturas', 'Cobros recurrentes'],
+    feats: ['Presupuestos ilimitados', 'Facturas ilimitadas', 'Cobros recurrentes'],
     built: 'Hecha por un contratista en Pensilvania.',
     offer1: 'Un año completo.',
     offer2: 'Un solo pago. Sin mensualidad. Sin renovación automática.',
@@ -385,6 +388,7 @@ function endHTML(L, story) {
       <div class="l2 what" data-w2>${L.what2}</div>
       <ul class="feats" data-w3>${feats}</ul>
       <div class="l3" data-w4>${L.built}</div>
+      <div class="langs" data-w5><span>English</span><i></i><span>Español</span></div>
     </div>
     <div class="stage2" data-s2>
       <div class="mark" data-emark>${MARKW}<span>${L.brand}</span></div>
@@ -417,8 +421,8 @@ phone.style.height = PH.h + 'px';
 // Total duration 15s. Timeline (seconds):
 const FLIP_AT = 11.0, FLIP_D = .6, HOLD = 3.2;    // flip to the other language at 11.0, hold 3.2s with a line, flip back
 const END_AT = FLIP_AT + FLIP_D * 2 + HOLD + .15;   // 15.55: end screens start
-const WHAT_D = 5.6;                                 // "what LevelWorks is" holds this long
-const DUR = 26;
+const WHAT_D = 6.4;                                 // "what LevelWorks is" holds this long
+const DUR = 27;
 
 // ---------------------------------------------------------------- per-story state
 function renderEstimate(t, L) {
@@ -588,6 +592,7 @@ function render(t) {
   const lagA = (i) => w(t, END_AT + .15 + i * .22, .45);
   const setA = (sel, i, dy = 22) => { const el = qs(sel, end); const p = lagA(i); el.style.opacity = p; el.style.transform = `translateY(${dy - dy * p}px)`; };
   setA('[data-w0]', 0); setA('[data-w1]', 1); setA('[data-w2]', 2); qs('[data-w3]', end).style.opacity = 1; setA('[data-w4]', 7);
+  { const el = qs('[data-w5]', end); const p = w(t, END_AT + 2.6, .5, easeOutBack); el.style.opacity = Math.min(1, p); el.style.transform = `scale(${.85 + .15 * p})`; }
   qsa('[data-f]', end).forEach((li, i) => { const p = w(t, END_AT + 1.1 + i * .35, .4); li.style.opacity = p; li.style.transform = `translateX(${16 - 16 * p}px)`; });
   const lag = (i) => w(t, S2_AT + .15 + i * .2, .45);
   const set = (sel, i, dy = 22) => { const el = qs(sel, end); const p = lag(i); el.style.opacity = p; el.style.transform = `translateY(${dy - dy * p}px)`; };

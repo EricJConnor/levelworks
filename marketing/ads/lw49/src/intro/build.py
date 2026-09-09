@@ -21,15 +21,15 @@ FONT = str(HERE / 'inter-bold.ttf')
 SRC = str(HERE / 'eric-intro.mov')
 BASE = HERE.parent / 'base'
 OUT = HERE.parent.parent
-INTRO_END = 5.9          # after ".org"
+INTRO_END = 5.6          # after "Check it out."
 XF = 0.35                # crossfade into the story
 
 CAPS = {
-    'en': [(0.0, 1.8, "Hey, my name is Eric,"), (1.8, 3.0, "I'm a contractor,"), (3.0, 5.9, "and my app is levelworks.org")],
-    'es': [(0.0, 1.8, "Hola, soy Eric,"), (1.8, 3.0, "soy contratista,"), (3.0, 5.9, "y mi app es levelworks.org")],
+    'en': [(0.0, 1.6, "My name is Eric, I'm a contractor"), (1.6, 4.4, "and I made an app called levelworks.org"), (4.4, 5.6, "Check it out.")],
+    'es': [(0.0, 1.6, "Soy Eric, soy contratista"), (1.6, 4.4, "e hice una app: levelworks.org"), (4.4, 5.6, "Échale un ojo.")],
 }
 LAYOUT = {  # crop of the 1080x1920 upright source, caption y, url label y/size
-    '1x1':  dict(crop='1080:1080:0:230', cap_y=830, cap_size=54, url_y=34, url_size=30),
+    '1x1':  dict(crop='1080:1080:0:120', cap_y=830, cap_size=50, url_y=34, url_size=30),
     '9x16': dict(crop='1080:1920:0:0',   cap_y=1440, cap_size=62, url_y=268, url_size=36),
 }
 
@@ -74,7 +74,7 @@ def final(story, size, lang):
     out = OUT / f'lw49_{story}_{size}{suf}.mp4'
     ip = intro(size, lang)
     run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(ip), '-i', str(base),
-         '-f', 'lavfi', '-t', '26', '-i', 'anullsrc=r=48000:cl=stereo',
+         '-f', 'lavfi', '-t', '27', '-i', 'anullsrc=r=48000:cl=stereo',
          '-filter_complex', f"[0:v][1:v]xfade=transition=fade:duration={XF}:offset={INTRO_END-XF}[v];[0:a][2:a]acrossfade=d={XF}[a]",
          '-map', '[v]', '-map', '[a]', '-c:v', 'libx264', '-preset', 'slow', '-crf', '22', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
          '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '128k', str(out)])

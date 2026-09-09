@@ -302,62 +302,39 @@ only pricing that may appear anywhere.
 
 ## The $49 annual launch (LW49), Sep 8–9 2026 — WHERE IT STANDS
 
-Eric's brief: sell "a year of LevelWorks for $49" with $200 of Meta ads, English and Spanish.
-Everything is built and **merged to `main`, live on levelworks.org** (PRs #27, #28). Full
-operating notes in `marketing/ads/lw49/README.md`, status table in
-`marketing/ads/lw49/LAUNCH-CHECKLIST.md`. Read both before touching anything.
+Everything is built, live on levelworks.org, and verified with real money. Notes in
+`marketing/ads/lw49/README.md` (operating rules), status in `marketing/ads/lw49/LAUNCH-CHECKLIST.md`.
 
-**Decisions Eric made (do not reopen):** no $31 second-year offer; the counter shows real
-purchases only (never seeded; the honest lever is the CREW promo code for contractors he knows,
-which still has to be created in Stripe by hand since this environment was blocked from creating a
-100% coupon); the third feature word is **Recurring billing**, not Scheduling (the app has no
-scheduling); the ad is Concept A, "the ad is his phone" (the 9:47pm text, the estimate building
-itself, the reply, the signature), then a 3s Spanish hold, then "what LevelWorks is", then the
-offer, 26s, `levelworks.org` on screen throughout, bottom band clear for Facebook's button. He
-said "much better" to the final cut; explicit upload approval still pending. Budget is a $200 test
-of cost-per-purchase; 175 purchases is the goal for the scaled run, not for $200.
+**Decisions Eric made (do not reopen):** no $31 second-year offer; the counter shows real purchases
+only, never seeded (CREW is the honest lever: 100% off, 15 uses, for contractors he knows); the third
+feature word is **Recurring billing** (there is no scheduling in the app); the ad is his shop selfie
+("My name is Eric, I'm a contractor, and I made an app called levelworks.org. Check it out.") then the
+phone story, a 3s Spanish hold, "what LevelWorks is" (Unlimited estimates / Unlimited invoices /
+Recurring billing, English · Español block), the offer; ~32s; approved. $200 is a cost-per-purchase
+test; 175 purchases is the goal for the scaled run.
 
-**What exists.** Stripe (live mode): product `prod_VDyfIRzZOz2Dfz`, price
-`price_1UDWi6CrlMKmuUj4z7Whuzoh`, webhook endpoint `we_1UDX36CrlMKmuUj4vyfcsWwm` →
-`https://levelworks.org/api/stripe-annual-webhook`. Supabase: `supabase/sql/annual_launch.sql`
-has been run in production (counter RPC answers 0). Meta: campaign `52547713746537`
-`LW49-Annual-Launch-Sep2026` PAUSED, $200 lifetime, ad sets `LW49-EN` `52547713777737` and
-`LW49-ES` `52547713784537` PAUSED, Purchase-optimised on pixel 2017000758930909; **no ads
-created yet**. The twelve videos are at `https://levelworks.org/marketing/ads/lw49/…mp4` (public,
-so Meta can fetch them). Facebook page id 1109311048926616 (LevelWorks.org); the bot token cannot
-read the page, so ads go through Windsor (`create_ad_video` + `create_ad` with a creative spec)
-or Eric assigns the page to the levelworksadbot system user.
+**The flow after paying** (Eric's design): `/annual/success` confirms the session with Stripe,
+fulfils the purchase itself (`fulfilSession` in `api/_lib/annual.js`, idempotent with the webhook via
+the unique `stripe_session_id`), then a brand-new buyer picks a password on that screen and lands in
+the app with a four-step tour (`src/components/Tour.tsx`, `/app?tour=1`, once); an existing account
+is told the year is on it and signs in as usual. "Brand new" is judged by creation time and never
+having signed in, because Supabase's `generateLink` creates a missing user on the fly with no
+metadata (that mistake shipped once and was caught by the $0 test).
 
-**Vercel env vars** (Eric pasted them Sep 8): `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ANNUAL_49`,
-`STRIPE_ANNUAL_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `META_CAPI_TOKEN`, `CRON_SECRET`.
-`/api/annual-env-check?key=<CRON_SECRET>` fingerprints them without revealing them. **As of
-bedtime Sep 8 the two Stripe values carry a non-ASCII character and Stripe rejects them**
-(checkout answers "connection to Stripe"); Eric was asked to clear and re-paste both and
-redeploy. Correct fingerprints: STRIPE_SECRET_KEY `330931fa` (107 chars),
-STRIPE_ANNUAL_WEBHOOK_SECRET `c331559a` (38 chars). The other four already match.
-Secrets themselves are not in the repo; Eric has them (they were exchanged in the Sep 8 chat;
-the webhook secret can be rotated from the Stripe endpoint if lost).
+**Ids.** Stripe live: product `prod_VDyfIRzZOz2Dfz`, price `price_1UDWi6CrlMKmuUj4z7Whuzoh`, webhook
+`we_1UDX36CrlMKmuUj4vyfcsWwm` → `https://www.levelworks.org/api/stripe-annual-webhook` (**www**: the
+bare domain 307-redirects and Stripe does not follow redirects; the first purchase bounced on that),
+promo `CREW`. Meta: campaign `52547713746537` PAUSED, ad sets `52547713777737` EN / `52547713784537`
+ES, six ads (ids in the checklist), old campaign `Level-Works-Signups-Test1` paused. Vercel env vars
+all verified by fingerprint (`/api/annual-env-check?key=<CRON_SECRET>`); copying a secret out of the
+chat window corrupted one character twice, a plain text file fixed it.
 
-**Gotchas learned.** levelworks.org 307-redirects, so `curl -L` drops the Authorization header:
-test the cron with the query-param check endpoint or hit the final host directly. Vercel preview
-deployments are behind Vercel Authentication, so nothing external can reach a preview; that is
-why the branch was merged before the purchase test. The auto-mode classifier blocks reading
-customer rows with the service key and blocked creating a 100% coupon; verify database state
-through the anon RPC, a test login, or ask Eric. `pkill -f render.mjs` kills the shell that runs
-it (exit 144); kill by pid.
+**Left for Eric:** confirm levelworks.org shows Verified under Meta Business Settings → Brand Safety →
+Domains; look at Events Manager once for the three pixel events; pick the go-live day. To go live:
+reset the ad sets' start/end to that day, then set the campaign ACTIVE (Windsor `enable_campaign` or
+Ads Manager). Rules for after: `marketing/ads/lw49/README.md`.
 
-**Next, in order.** (1) Eric re-pastes the two Stripe values, redeploys; confirm with the env
-check, then `POST /api/annual-checkout` must return a Stripe URL. (2) Eric buys a year on his own
-card from levelworks.org/annual; confirm the account, plan, `annual_claimed_count()` = 1, the
-welcome email; refund from the Stripe dashboard, confirm the counter drops to 0. (3) Pixel test
-with `META_TEST_EVENT_CODE`. (4) Upload the six videos and create six ads (paused) under the two
-ad sets: 1:1 on feed, 9:16 on Stories/Reels, copy in the README. (5) Lighthouse on the live
-page, sold-out test, domain verification check. (6) Hand Eric the switch list: campaign →
-ACTIVE, reset its dates to the day he flips it. Eric has not yet answered whether to pause the
-old campaign `Level-Works-Signups-Test1` ($10/day, still running).
-
-**Separate, important:** row-level security is not enforcing on `estimates` (and likely
-`invoices`, `clients`): any logged-in user can read every user's rows. Found while screenshotting.
-Needs its own fix after the launch (enable RLS with per-user policies plus a policy for the
-public view-by-token pages). The demo account `demo.lw49@levelworks.org` exists in production for
-screenshots (`node scripts/lw49-demo.mjs delete` removes it).
+**Separate, important:** row-level security is not enforcing on `estimates` (and likely `invoices`,
+`clients`): any logged-in user can read every user's rows. Needs its own fix after the launch. The
+demo account `demo.lw49@levelworks.org` exists in production for screenshots
+(`node scripts/lw49-demo.mjs delete` removes it).

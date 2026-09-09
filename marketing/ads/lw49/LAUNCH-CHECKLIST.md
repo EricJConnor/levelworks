@@ -20,22 +20,24 @@ Status is kept here as each box is actually run. "Pass" means it was run and see
 | `CRON_SECRET` | the random string given in chat |
 | `RESEND_API_KEY` | optional. With it, emails come from "Eric at LevelWorks <eric@levelworks.org>"; without it they go through the app's existing send-email function from noreply@levelworks.org |
 
-## Pre-launch checks
+## Pre-launch checks (run Sep 9 2026)
 
 | # | Check | Status |
 |---|---|---|
-| 1 | Test purchase → account created → login link works → counter incremented | pending: needs SQL + env vars, then Eric buys a year on his own card |
-| 2 | Refund → plan reverted → counter decremented | pending: same purchase refunded from the Stripe dashboard |
-| 3 | Pixel: PageView, InitiateCheckout, Purchase visible in Meta Test Events; Purchase deduped browser vs CAPI | pending: set `META_TEST_EVENT_CODE` in Vercel while testing, then remove |
-| 4 | `/annual` and `/es/annual` load on mobile, Lighthouse 90+ | rendered at 390px both languages (screenshots sent); Lighthouse pending on the deployed URL |
-| 5 | No English on the Spanish page and vice versa | pass locally, both pages read through; recurring billing panel translated (was leaking) |
-| 6 | All 12 videos play, loop clean, text readable at thumbnail size | pass: rendered, ffprobe `h264 (High) yuv420p`, all < 1MB; loop fades to ground on the last 0.35s |
-| 7 | Campaign exists PAUSED with correct budget, dates, pixel, event | campaign `52547713746537` and ad sets `LW49-EN` `52547713777737` / `LW49-ES` `52547713784537` exist PAUSED, lifetime $200, pixel 2017000758930909, Purchase. Ads pending Eric's approval of the creatives. Dates are placeholders (start tomorrow, 7 days); reset them the day it goes live |
-| 8 | Domain verified in Meta | pending: bot token cannot read Business Manager domains; check Business Settings → Brand Safety and Suitability → Domains for levelworks.org |
-| 9 | Terms, Privacy, refund policy exist and are linked (30 days stated) | pass: Terms §6 rewritten, linked from the page footer |
-| 10 | Sold-out state tested at 500 | pending: temporarily insert 500 rows? No. Test by setting `ANNUAL_CAP` to the current count + 0 on a preview, or insert one row with `refunded_at` null and cap at 1 in a preview env |
-| 11 | Annual plan shows on the user's Plan tab | code done; verify with the test purchase |
-| 12 | Stripe webhook signing secret is the live one | the endpoint was created in live mode; the secret in Vercel must be the one from `we_1UDX36CrlMKmuUj4vyfcsWwm` |
+| 1 | Purchase → account → login → counter | **pass**. Eric paid $49 on his own card (counter 0→1, plan set through Sep 9 2027, existing-account path). A $0 CREW purchase with a throwaway email ran the brand-new path headless: set-password screen → signed in → four-step tour → estimate builder open. Test accounts removed. |
+| 2 | Refund → plan reverted → counter decremented | **pass**. Refund `re_3UDs3yCrlMKmuUj41yhqfXG9`; Stripe delivered `charge.refunded`, counter 1→0, plan cleared. |
+| 3 | Pixel events and CAPI dedupe | browser events fire on the live page (PageView, InitiateCheckout, Purchase with the session id as eventID) and the server sends Purchase through CAPI with the same id. **Not yet seen in Events Manager**: needs Eric to open Test Events, or to read the pixel's event list after the first real purchase. |
+| 4 | Pages load on mobile, speed | pass: both pages load in well under a second on a phone viewport (DOMContentLoaded ~150ms, load ~250ms); no video, one WebP above the fold. Lighthouse score itself not run from this environment. |
+| 5 | No language leaks | pass, checked on the live pages: /es/annual has no English strings, /es/annual/success is Spanish, recurring billing panel translated. |
+| 6 | Videos | pass: twelve files, Eric's shop intro, ~32s, all under 4MB, H.264 yuv420p, thumbnails. Approved by Eric ("ads approved"). |
+| 7 | Campaign PAUSED with budget, pixel, event | pass: campaign `52547713746537`, ad sets `52547713777737` (EN) / `52547713784537` (ES), six ads `LW49-EN-estimate` `52547888264137` `LW49-EN-invoice` `52547888759337` `LW49-EN-recurring` `52547888892337` `LW49-ES-estimate` `52547889012337` `LW49-ES-invoice` `52547889205537` `LW49-ES-recurring` `52547889637537`, all PAUSED, in Meta review. 1:1 on feed, 9:16 on Stories/Reels via asset customization. **Dates are placeholders**: reset start/end to the go-live day before enabling. |
+| 8 | Domain verified in Meta | **unknown**: the bot token cannot read Business Manager domains. Eric checks Business Settings → Brand Safety and Suitability → Domains. |
+| 9 | Terms, Privacy, 30-day refund | pass. |
+| 10 | Sold-out state | pass: with the counter forced to 500 the button reads "Sold out — join for $5/month" and the line explains. |
+| 11 | Annual plan on the Plan tab | code done; seen only through the API on Eric's account (plan set, then cleared by the refund). |
+| 12 | Live webhook secret | pass: live endpoint `we_1UDX36CrlMKmuUj4vyfcsWwm`, now at the **www** host (the bare domain redirects and Stripe does not follow redirects; this bit the first purchase). |
+
+Old campaign `Level-Works-Signups-Test1` paused Sep 9 at Eric's word. CREW promo code exists (`promo_1UDsNHCrlMKmuUj4uCxRbQk0`, 100% off, 15 uses).
 
 ## Known gaps, stated plainly
 

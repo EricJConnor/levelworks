@@ -1102,3 +1102,12 @@ button.lv-row:hover, a.lv-row:hover { background: var(--lv-surface-2); }
   .bc-links a:hover { color: var(--lv-ink); border-color: var(--lv-ink); }
 }
 .bc-tip { margin-top: -12px; color: var(--lv-mute); font-size: 12px; line-height: 1.45; max-width: 32ch; opacity: .85; }
+
+/* ---------------------------------------------------------------- first-run tour */
+.lv-tour { position: fixed; inset: 0; z-index: 400; }
+.lv-tour-scrim { position: absolute; inset: 0; background: rgba(11, 18, 32, .42); }
+.lv-tour-ring { position: absolute; border-radius: 12px; box-shadow: 0 0 0 3px var(--lv-blue), 0 0 0 9999px rgba(11, 18, 32, .42); background: transparent; pointer-events: none; }
+.lv-tour + .lv-tour-scrim { display: none; }
+.lv-tour-card { position: absolute; width: min(360px, calc(100vw - 32px)); background: var(--lv-surface); border: 1px solid var(--lv-line); border-radius: var(--lv-r-lg); box-shadow: var(--lv-shadow-lg); padding: 16px 18px 14px; }
+.lv-tour-acts { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 14px; }
+.lv-tour-acts .quiet { margin-right: auto; }

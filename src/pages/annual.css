@@ -79,3 +79,8 @@
   .an-bottom { max-width: 640px; }
   .an-bottom .an-cta { width: 100%; }
 }
+
+/* the set-up-your-login form after paying */
+.an-setup { text-align: left; margin-top: 22px; display: flex; flex-direction: column; gap: 12px; }
+.an-setup .lv-field { margin: 0; }
+.an-setup .lw-btn { margin-top: 6px; }

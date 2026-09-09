@@ -14,8 +14,7 @@
  *   5. welcome email: a one-tap login link for a new account, a receipt-style note for an old one
  */
 import Stripe from 'stripe';
-import { admin, json, readBody, normalizeLang, findOrCreateUser, magicLink, grantAnnual, revokeAnnual, sendMail, capiPurchase, missingEnv, SITE_URL } from './_lib/annual.js';
-import { EMAILS, fmtDate } from './_lib/emails.js';
+import { admin, json, readBody, revokeAnnual, fulfilSession, missingEnv } from './_lib/annual.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -46,7 +45,7 @@ export default async function handler(req, res) {
       const s = event.data.object;
       if (s.metadata?.plan !== 'annual_49') return json(res, 200, { ok: true, ignored: 'not annual' });
       if (s.payment_status !== 'paid' && s.amount_total !== 0) return json(res, 200, { ok: true, ignored: s.payment_status });
-      const out = await fulfil(stripe, s, req);
+      const out = await fulfil(stripe, s);
       return json(res, 200, { ok: true, ...out });
     }
     if (event.type === 'charge.refunded') {
@@ -63,44 +62,9 @@ export default async function handler(req, res) {
   }
 }
 
-async function fulfil(stripe, s, req) {
-  const a = admin();
-  const email = String(s.customer_details?.email || s.customer_email || '').trim().toLowerCase();
-  if (!email) throw new Error('session has no email');
-  const lang = normalizeLang(s.metadata?.lang);
-
-  const { user, created } = await findOrCreateUser(email, lang);
-  const expires = await grantAnnual(user.id, lang);
-
-  const row = {
-    email, user_id: user.id,
-    stripe_session_id: s.id,
-    stripe_payment_intent: typeof s.payment_intent === 'string' ? s.payment_intent : s.payment_intent?.id || null,
-    amount: s.amount_total ?? 4900, currency: s.currency || 'usd', lang,
-    utm_source: s.metadata?.utm_source || null, utm_medium: s.metadata?.utm_medium || null,
-    utm_campaign: s.metadata?.utm_campaign || null, utm_content: s.metadata?.utm_content || null,
-  };
-  const ins = await a.from('annual_purchases').upsert(row, { onConflict: 'stripe_session_id' });
-  if (ins.error) throw new Error('annual_purchases: ' + ins.error.message);
-
-  const capi = await capiPurchase({
-    eventId: s.id, email, value: (s.amount_total ?? 4900) / 100,
-    sourceUrl: `${SITE_URL}${lang === 'es' ? '/es' : ''}/annual/success`,
-    eventTime: s.created,
-  });
-
-  let mail;
-  try {
-    const m = created
-      ? EMAILS.annualWelcomeNew[lang](await magicLink(email))
-      : EMAILS.annualWelcomeExisting[lang](fmtDate(expires, lang));
-    mail = await sendMail({ to: email, ...m });
-  } catch (e) {
-    // The purchase is recorded either way; a mail failure is logged, not retried into a double grant.
-    console.error('[annual-webhook] welcome mail failed', e);
-    mail = { error: e.message };
-  }
-  return { user_id: user.id, created, expires, capi, mail };
+async function fulfil(stripe, s) {
+  const r = await fulfilSession(s);
+  return { user_id: r.user.id, created: r.created, expires: r.expires, alreadyDone: r.alreadyDone, capi: r.capi, mail: r.mail };
 }
 
 async function refund(ch) {

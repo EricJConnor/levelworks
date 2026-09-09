@@ -16,7 +16,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(here, '..');
 const FFMPEG = process.env.FFMPEG || '/usr/local/lib/python3.11/dist-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v7.0.2';
 const DIMS = { '1x1': [1080, 1080], '9x16': [1080, 1920] };
-const FPS = 30, DUR = 26;
+const FPS = 30, DUR = 27;
 
 const [, , mode, ...rest] = process.argv;
 

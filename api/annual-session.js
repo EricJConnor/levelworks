@@ -44,7 +44,8 @@ export default async function handler(req, res) {
   catch (e) { return json(res, 500, { error: 'fulfil', message: e.message }); }
 
   const u = r.user;
-  const fresh = u.user_metadata?.source === 'annual_49_launch' && !u.last_sign_in_at;
+  // Brand new = never signed in and created no earlier than the payment itself.
+  const fresh = !u.last_sign_in_at && new Date(u.created_at).getTime() >= s.created * 1000 - 120000;
   if (!password) return json(res, 200, { email: r.email, lang: r.lang, canSetPassword: fresh, expires: r.expires });
 
   if (!fresh) return json(res, 403, { error: 'existing_account', email: r.email });

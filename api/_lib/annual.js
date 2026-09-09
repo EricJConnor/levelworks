@@ -76,7 +76,14 @@ export async function claimedCount() {
 export async function findOrCreateUser(email, lang) {
   const a = admin();
   const probe = await a.auth.admin.generateLink({ type: 'magiclink', email });
-  if (!probe.error && probe.data?.user) return { user: probe.data.user, created: false };
+  if (!probe.error && probe.data?.user) {
+    // generateLink creates a missing user on the fly, so "new" is decided by
+    // the clock: created in the last two minutes and never signed in.
+    const u = probe.data.user;
+    const created = !u.last_sign_in_at && Date.now() - new Date(u.created_at).getTime() < 120000;
+    if (created) await a.auth.admin.updateUserById(u.id, { user_metadata: { ...(u.user_metadata || {}), lang, source: 'annual_49_launch' } });
+    return { user: u, created };
+  }
   const made = await a.auth.admin.createUser({
     email,
     email_confirm: true,

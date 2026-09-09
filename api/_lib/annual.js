@@ -23,7 +23,9 @@ export const SUPABASE_URL = 'https://djrsmuafbbzxpbdibolq.supabase.co';
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqcnNtdWFmYmJ6eHBiZGlib2xxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5ODE1OTIsImV4cCI6MjA5MDU1NzU5Mn0.vIKq1NjFXX3w7Jj09AEU8F4KLxG9O6TA-bsDl7vFKlw';
 export const PIXEL_ID = '2017000758930909';
 export const ANNUAL_CAP = 500;
-export const SITE_URL = (process.env.SITE_URL || 'https://levelworks.org').replace(/\/$/, '');
+// www is the canonical host: the bare domain 307-redirects, and Stripe's webhook
+// delivery and some mail clients do not follow redirects.
+export const SITE_URL = (process.env.SITE_URL || 'https://www.levelworks.org').replace(/\/$/, '');
 export const ERIC_REPLY_TO = 'eric@ec-homes.com';
 
 export function missingEnv(...names) {
@@ -202,4 +204,52 @@ export async function capiPurchase({ eventId, email, value = 49, sourceUrl, ip, 
   } catch (e) {
     return { error: String(e) };
   }
+}
+
+// ---------------------------------------------------------------- fulfilment
+/**
+ * Turn a paid Checkout Session into an account, a year, a counter row, a
+ * Purchase event and a welcome email. Idempotent per session: the
+ * annual_purchases insert (unique on stripe_session_id) is the lock, so the
+ * webhook and the success page can both call this and only one does the work.
+ * Returns { user, created, expires, alreadyDone }.
+ */
+export async function fulfilSession(s, { sendWelcome = true } = {}) {
+  const a = admin();
+  const email = String(s.customer_details?.email || s.customer_email || '').trim().toLowerCase();
+  if (!email) throw new Error('session has no email');
+  const lang = normalizeLang(s.metadata?.lang);
+  const row = {
+    email, stripe_session_id: s.id,
+    stripe_payment_intent: typeof s.payment_intent === 'string' ? s.payment_intent : s.payment_intent?.id || null,
+    amount: s.amount_total ?? 4900, currency: s.currency || 'usd', lang,
+    utm_source: s.metadata?.utm_source || null, utm_medium: s.metadata?.utm_medium || null,
+    utm_campaign: s.metadata?.utm_campaign || null, utm_content: s.metadata?.utm_content || null,
+  };
+  const ins = await a.from('annual_purchases').insert(row).select('id').maybeSingle();
+  if (ins.error) {
+    if (String(ins.error.code) !== '23505') throw new Error('annual_purchases: ' + ins.error.message);
+    // Already fulfilled (or in progress): return the user without granting again.
+    const { user, created } = await findOrCreateUser(email, lang);
+    const { data: p } = await a.from('profiles').select('plan_expires_at').eq('user_id', user.id).maybeSingle();
+    return { user, created, expires: p?.plan_expires_at || null, alreadyDone: true, email, lang };
+  }
+  const { user, created } = await findOrCreateUser(email, lang);
+  const expires = await grantAnnual(user.id, lang);
+  await a.from('annual_purchases').update({ user_id: user.id }).eq('id', ins.data.id);
+  const capi = await capiPurchase({
+    eventId: s.id, email, value: (s.amount_total ?? 4900) / 100,
+    sourceUrl: `${SITE_URL}${lang === 'es' ? '/es' : ''}/annual/success`, eventTime: s.created,
+  });
+  let mail = { skipped: true };
+  if (sendWelcome) {
+    try {
+      const { EMAILS, fmtDate } = await import('./emails.js');
+      const m = created
+        ? EMAILS.annualWelcomeNew[lang](await magicLink(email))
+        : EMAILS.annualWelcomeExisting[lang](fmtDate(expires, lang));
+      mail = await sendMail({ to: email, ...m });
+    } catch (e) { console.error('[fulfil] welcome mail failed', e); mail = { error: e.message }; }
+  }
+  return { user, created, expires, alreadyDone: false, email, lang, capi, mail };
 }

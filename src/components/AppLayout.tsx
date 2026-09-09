@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { HelpModal } from './HelpModal';
 import { Mark } from './Mark';
 import { LanguageToggle, useT } from '@/i18n';
+import { Tour, tourRequested } from './Tour';
 
 type View = 'dashboard' | 'clients' | 'notifications' | 'estimates' | 'photos' | 'invoices' | 'account' | 'notes';
 
@@ -92,6 +93,9 @@ export const AppLayout: React.FC = () => {
   const checkPushStatus = async () => { setPushEnabled(await isPushSubscribed()); };
   const handleSignOut = async () => { await supabase.auth.signOut(); };
   const handleAccountClick = () => { setCurrentView('account'); setMobileMenuOpen(false); };
+  // First-run tour: /app?tour=1 (the screen after a $49 purchase lands here), once.
+  const [showTour, setShowTour] = useState(false);
+  useEffect(() => { if (tourRequested()) { const id = setTimeout(() => setShowTour(true), 600); return () => clearTimeout(id); } }, []);
   const handleHelpClick = () => { setShowHelpModal(true); setMobileMenuOpen(false); };
 
   const navItems: { key: View; label: string; icon: React.ElementType }[] = [
@@ -146,7 +150,7 @@ export const AppLayout: React.FC = () => {
             </button>
             <nav className="lv-nav lv-hide-mobile" aria-label={t('lst.sectionsNav')}>
               {navItems.map(item => (
-                <button key={item.key} className={currentView === item.key ? 'on' : ''} onClick={() => handleNavClick(item.key)}>
+                <button key={item.key} className={currentView === item.key ? 'on' : ''} data-tour={item.key === 'clients' ? 'clients' : undefined} onClick={() => handleNavClick(item.key)}>
                   {item.label}
                 </button>
               ))}
@@ -154,15 +158,15 @@ export const AppLayout: React.FC = () => {
           </div>
 
           <div className="lv-hdr-tools">
-            <button className="lv-btn pri sm lv-hide-mobile" onClick={newEstimate}><Plus size={15} /> {t('nav.newEstimate')}</button>
-            <button className="lv-btn sec sm lv-hide-mobile" onClick={newInvoice}><Plus size={15} /> {t('nav.invoice')}</button>
+            <button className="lv-btn pri sm lv-hide-mobile" data-tour="estimate" onClick={newEstimate}><Plus size={15} /> {t('nav.newEstimate')}</button>
+            <button className="lv-btn sec sm lv-hide-mobile" data-tour="invoice" onClick={newInvoice}><Plus size={15} /> {t('nav.invoice')}</button>
             <LanguageToggle />
             <button className="lv-icon-btn lv-hide-mobile" onClick={handleHelpClick} title={t('nav.help')} aria-label={t('nav.help')}><HelpCircle size={19} /></button>
             <button className="lv-icon-btn lv-hide-mobile" onClick={() => handleNavClick('notifications')} title={t('nav.notifications')} aria-label={t('nav.notifications')}>
               <Bell size={19} />
               {!pushEnabled && <span className="dot" />}
             </button>
-            <button className="lv-btn quiet sm lv-hide-mobile" onClick={handleAccountClick}>
+            <button className="lv-btn quiet sm lv-hide-mobile" data-tour="account" onClick={handleAccountClick}>
               {profile?.profile_photo_url
                 ? <img src={profile.profile_photo_url} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
                 : <User size={15} />}
@@ -171,7 +175,7 @@ export const AppLayout: React.FC = () => {
             <button className="lv-icon-btn lv-hide-mobile" onClick={handleSignOut} title={t('a.signOut')} aria-label={t('a.signOut')}><LogOut size={18} /></button>
 
             {/* mobile: one primary action lives in the header, the rest in the tab bar */}
-            <button className="lv-btn pri sm lv-hide-desktop" onClick={newEstimate}><Plus size={15} /> {t('m.estimate')}</button>
+            <button className="lv-btn pri sm lv-hide-desktop" data-tour="estimate" onClick={newEstimate}><Plus size={15} /> {t('m.estimate')}</button>
           </div>
         </div>
       </header>
@@ -227,12 +231,13 @@ export const AppLayout: React.FC = () => {
 
       <nav className="lv-tabs lv-hide-desktop" aria-label={t('lst.mainNav')}>
         {navItems.slice(0, 4).map(({ key, label, icon: Icon }) => (
-          <button key={key} className={currentView === key ? 'on' : ''} onClick={() => handleNavClick(key)}>
+          <button key={key} className={currentView === key ? 'on' : ''} data-tour={key === 'invoices' ? 'invoice' : key === 'clients' ? 'clients' : undefined} onClick={() => handleNavClick(key)}>
             <Icon size={21} /><span>{label}</span>
           </button>
         ))}
         <button
           className={mobileMenuOpen || !['dashboard', 'estimates', 'invoices', 'clients'].includes(currentView) ? 'on' : ''}
+          data-tour="account"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           <Menu size={21} /><span>{t('nav.more')}</span>
@@ -258,6 +263,7 @@ export const AppLayout: React.FC = () => {
         />
       )}
       {showHelpModal && <HelpModal onClose={() => setShowHelpModal(false)} />}
+      {showTour && <Tour onFinish={() => setShowTour(false)} onOpenAccount={handleAccountClick} onNewEstimate={newEstimate} />}
       <span style={{ display: 'none' }}>{viewTitle[currentView]}</span>
     </div>
   );

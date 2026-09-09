@@ -236,6 +236,12 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement>(null);
 
+  // /?signup=1 (from the annual page's "start a free trial" line) opens the
+  // signup form straight away instead of making them find the button.
+  useEffect(() => {
+    if (searchParams.get('signup') === '1') { setAuthMode('signup'); setShowAuth(true); }
+  }, [searchParams]);
+
   useEffect(() => {
     const checkExistingSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();

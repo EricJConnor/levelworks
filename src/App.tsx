@@ -24,6 +24,8 @@ import Onboarding from "./pages/Onboarding";
 import Terms from "./pages/Terms";
 import Card from "./pages/Card";
 import Privacy from "./pages/Privacy";
+import AnnualPage from "./pages/AnnualPage";
+import AnnualSuccess from "./pages/AnnualSuccess";
 import ResetPassword from "./pages/ResetPassword";
 import StripeConnectCallback from "./pages/StripeConnectCallback";
 
@@ -57,6 +59,11 @@ const App = () => (
                       build time (scripts/prerender-es.mjs); this route is what
                       takes over once the bundle loads. */}
                   <Route path="/es" element={<LandingPage />} />
+                  {/* The $49-a-year launch page every ad lands on, and its Spanish twin. */}
+                  <Route path="/annual" element={<AnnualPage />} />
+                  <Route path="/es/annual" element={<AnnualPage />} />
+                  <Route path="/annual/success" element={<AnnualSuccess />} />
+                  <Route path="/es/annual/success" element={<AnnualSuccess />} />
                   <Route path="/app" element={<Index />} />
                   <Route path="/welcome" element={<Onboarding />} />
                   <Route path="/dashboard" element={<Dashboard />} />

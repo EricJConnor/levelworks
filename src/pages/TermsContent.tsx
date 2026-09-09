@@ -13,10 +13,10 @@ export default function TermsContent() {
       <p className="mb-4"><strong>Limitations:</strong> Referral rewards are non-transferable and have no cash value. We reserve the right to modify or terminate the referral program at any time. Abuse of the referral program, including self-referrals or fraudulent referrals, may result in account termination.</p>
       
       <h2 className="text-2xl font-semibold mt-8 mb-4 text-slate-900">6. Refund Policy</h2>
-      <p className="mb-4">Refunds are available within 7 days of charge if you are unsatisfied with the Service. Contact support@levelworks.app to request a refund. No refunds for partial months or unused trial periods.</p>
+      <p className="mb-4">Refunds are available within 30 days of any charge, no questions asked. This applies to the monthly plan and to the $49 annual plan alike. Email support@levelworks.org from the address on your account and the charge is returned to your card; an annual refund ends the annual plan and the account returns to the standard plan. After 30 days, charges are not refunded, and no refunds are made for partial months.</p>
       
       <h2 className="text-2xl font-semibold mt-8 mb-4 text-slate-900">7. Cancellation</h2>
-      <p className="mb-4">You may cancel your subscription at any time. Upon cancellation, you will retain access until the end of your current billing period. No refunds for early cancellation.</p>
+      <p className="mb-4">You may cancel your subscription at any time. Upon cancellation, you will retain access until the end of your current billing period. The annual plan is a single payment for one year of access; it does not renew automatically, and at the end of the year you may buy another year or continue on the monthly plan.</p>
       
       <h2 className="text-2xl font-semibold mt-8 mb-4 text-slate-900">8. User Conduct</h2>
       <p className="mb-4">You agree not to: (a) use the Service for illegal purposes; (b) transmit viruses or malicious code; (c) attempt to gain unauthorized access; (d) interfere with the Service's operation; (e) impersonate others; (f) scrape or data mine; (g) violate intellectual property rights.</p>

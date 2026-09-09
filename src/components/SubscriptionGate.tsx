@@ -153,6 +153,15 @@ export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) 
       setUserEmail(user.email || '');
       setUserName(user.user_metadata?.full_name || '');
 
+      // The $49 annual plan lives on the profile, not in Stripe subscriptions:
+      // a live annual plan is paid, full stop, and never sees the trial banner.
+      const { data: prof } = await supabase.from('profiles').select('plan, plan_expires_at').eq('user_id', user.id).maybeSingle();
+      if (prof?.plan === 'annual' && prof.plan_expires_at && new Date(prof.plan_expires_at).getTime() > Date.now()) {
+        clearTimeout(timeout);
+        setStatus('active');
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         body: { userId: user.id, userEmail: user.email, userName: user.user_metadata?.full_name || '' }
       });

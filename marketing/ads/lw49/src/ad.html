@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LW49 ad</title>
+<link rel="stylesheet" href="inter.css">
+<style>
+/* ------------------------------------------------------------------
+   LW49 ad — "Concept A": the ad is the contractor's phone.
+   Everything on screen is positioned from a single time value t (seconds)
+   by render(t) below, so Playwright can seek to any frame and the video is
+   exact at 30fps. No CSS animations, no transitions: they cannot be seeked.
+   Palette and type are the app's own (src/app-ui.css).
+   ------------------------------------------------------------------ */
+:root{
+  --ink:#0b1220;--ink2:#1f2937;--mute:#5b6472;--faint:#8a93a3;
+  --line:#e6e9ef;--line2:#d8dde6;--bg:#f5f7fb;--sunken:#f1f4f9;
+  --blue:#2563eb;--blue2:#1d4ed8;--bluesoft:#e8efff;--green:#16a34a;--greensoft:#e8f7ee;
+  --amber:#d97706;--ambersoft:#fff4e0;--red:#dc2626;--navy:#0b1b33;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--navy);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:#fff}
+#stage{position:relative;width:1080px;height:1080px;overflow:hidden;background:var(--navy)}
+#stage.s916{height:1920px}
+/* a soft blue light behind the phone, so the ground is not flat */
+.glow{position:absolute;left:50%;top:50%;width:1400px;height:1400px;transform:translate(-50%,-40%);
+  background:radial-gradient(closest-side,rgba(37,99,235,.55),rgba(37,99,235,0) 68%);pointer-events:none}
+.s916 .glow{transform:translate(-50%,-45%)}
+
+/* ---- the address, on screen the whole time */
+.url{position:absolute;left:0;right:0;top:34px;text-align:center;font-size:30px;font-weight:600;letter-spacing:.02em;color:#c7d3ec;z-index:60}
+.url b{color:#8fb0ff;font-weight:600}
+.s916 .url{top:268px;font-size:36px}
+
+/* ---- captions (big white type above the phone) */
+.cap{position:absolute;left:70px;right:70px;top:96px;font-weight:700;letter-spacing:-.035em;line-height:1.06;font-size:70px;color:#fff;opacity:0}
+.s916 .cap{top:340px;font-size:88px}
+.cap b{color:#8fb0ff;font-weight:700}
+
+/* ---- the phone */
+.phone{position:absolute;left:50%;top:0;width:390px;height:844px;transform-origin:top center;
+  background:#000;border-radius:54px;padding:12px;box-shadow:0 40px 80px -30px rgba(0,0,0,.7),0 0 0 2px rgba(255,255,255,.08)}
+.phone .scr{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--bg);color:var(--ink)}
+.notch{position:absolute;left:50%;top:0;transform:translateX(-50%);width:120px;height:32px;background:#000;border-radius:0 0 20px 20px;z-index:20}
+.status{position:absolute;left:0;right:0;top:0;height:50px;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;font-weight:600;color:var(--ink);z-index:10}
+.status .r{display:flex;gap:6px;align-items:center}
+.status .r i{display:inline-block;width:22px;height:11px;border:1.5px solid var(--ink);border-radius:3px;position:relative}
+.status .r i:after{content:'';position:absolute;left:1.5px;top:1.5px;bottom:1.5px;width:70%;background:var(--ink);border-radius:1px}
+
+/* ---- app header (matches .lv-hdr) */
+.hdr{position:absolute;left:0;right:0;top:50px;height:56px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:5}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;letter-spacing:-.02em;color:var(--ink)}
+.brand b{color:var(--blue)}
+.brand svg{width:24px;height:24px}
+.hdr .x{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;color:var(--mute);font-size:16px}
+.hdr .tot{font-size:19px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.hdr .sub{font-size:11px;color:var(--mute);font-weight:500;text-align:right}
+
+/* ---- screen body */
+.body{position:absolute;left:0;right:0;top:106px;bottom:0;padding:14px 14px 90px;overflow:hidden}
+.body.nobar{padding-bottom:14px}
+.add{border:1.5px dashed var(--line2);border-radius:12px;height:44px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--mute);font-size:14px;font-weight:600;background:transparent}
+.add b{color:var(--blue);font-size:18px;font-weight:600}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(11,18,32,.04);margin-bottom:12px}
+.card .ch{padding:9px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:13.5px;font-weight:600;color:var(--ink)}
+.card .cb{padding:12px 14px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.pill{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:999px;font-size:11.5px;font-weight:600;background:var(--sunken);color:var(--mute);white-space:nowrap}
+.pill.blue{background:var(--bluesoft);color:var(--blue2)}
+.pill.green{background:var(--greensoft);color:var(--green)}
+.pill.amber{background:var(--ambersoft);color:var(--amber)}
+.pill.red{background:#fee2e2;color:var(--red)}
+.num{font-variant-numeric:tabular-nums}
+
+/* line items */
+.item{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;position:relative;overflow:hidden}
+.item .ih{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.item .n{width:22px;height:22px;border-radius:7px;background:var(--sunken);color:var(--mute);font-size:11.5px;font-weight:700;display:grid;place-items:center}
+.item .it{margin-left:auto;font-size:14.5px;font-weight:650;color:var(--ink)}
+.item .d{font-size:15px;color:var(--ink);min-height:20px;white-space:nowrap;overflow:hidden}
+.item .qr{display:flex;gap:10px;margin-top:6px;font-size:12.5px;color:var(--mute)}
+.item .qr span b{color:var(--ink2);font-weight:600}
+.caret{display:inline-block;width:2px;height:17px;background:var(--blue);vertical-align:-3px;margin-left:1px}
+
+/* summary */
+.sum .row{display:flex;justify-content:space-between;padding:7px 0;font-size:14px;color:var(--mute);border-bottom:1px solid var(--line)}
+.sum .row:last-child{border-bottom:0}
+.sum .row.total{font-size:17px;font-weight:700;color:var(--ink)}
+.sum .row.bal span:last-child{color:var(--green);font-weight:700}
+.sum .row.total span:last-child{font-weight:800}
+
+/* action bar */
+.bar{position:absolute;left:0;right:0;bottom:0;height:80px;background:#fff;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;padding:0 14px 8px;box-shadow:0 -12px 28px -18px rgba(11,18,32,.35)}
+.btn{height:46px;border-radius:11px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;padding:0 16px;white-space:nowrap}
+.btn.sec{border:1px solid var(--line2);color:var(--ink);background:#fff;flex:1}
+.btn.pri{background:var(--blue);color:#fff;flex:1.6;position:relative;overflow:hidden}
+.btn.pri .ripple{position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.35);transform:translate(-50%,-50%) scale(0);}
+
+/* finger tap */
+.tap{position:absolute;width:58px;height:58px;border-radius:50%;background:rgba(37,99,235,.18);border:2px solid rgba(37,99,235,.55);transform:translate(-50%,-50%) scale(0);z-index:30;pointer-events:none}
+
+/* toast */
+.toast{position:absolute;left:50%;bottom:96px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center;opacity:0;z-index:25;white-space:nowrap}
+.toast .ok{width:18px;height:18px;border-radius:50%;background:var(--green);display:grid;place-items:center;font-size:11px}
+
+/* iOS style notification banner (on the phone) */
+.noti{position:absolute;left:10px;right:10px;top:54px;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-radius:22px;padding:12px 14px;box-shadow:0 10px 30px -10px rgba(0,0,0,.35);display:flex;gap:12px;align-items:center;z-index:40;color:var(--ink);opacity:0}
+.noti .ic{width:40px;height:40px;border-radius:11px;flex-shrink:0;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px}
+.noti .ic.msg{background:#34c759}
+.noti .ic.lw{background:var(--blue)}
+.noti .ic.lw svg{width:26px;height:26px;color:#fff}
+.noti .t{flex:1;min-width:0}
+.noti .t .a{display:flex;justify-content:space-between;font-size:13px;font-weight:600}
+.noti .t .a i{font-style:normal;color:var(--faint);font-weight:500}
+.noti .t .m{font-size:14.5px;line-height:1.3;margin-top:1px}
+
+/* client reply bubble + signature */
+.reply{position:absolute;left:16px;right:16px;top:118px;z-index:35;opacity:0}
+.bubble{display:inline-block;max-width:80%;background:#e9e9eb;color:#000;font-size:16px;line-height:1.3;padding:10px 14px;border-radius:20px;border-bottom-left-radius:6px;box-shadow:0 6px 20px -8px rgba(0,0,0,.35)}
+.sigcard{position:absolute;left:14px;right:14px;bottom:96px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;z-index:26;opacity:0;box-shadow:0 20px 40px -20px rgba(11,18,32,.4)}
+.sigcard .eyebrow{margin-bottom:6px}
+.sigcard svg{width:100%;height:88px;display:block}
+.sigcard .sl{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:12.5px;color:var(--mute)}
+
+/* invoice status stamp */
+.stamp{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;font-weight:700;font-size:14px}
+.paidbig{position:absolute;left:14px;right:14px;top:120px;background:#e4f5ea;border:1px solid #bfe9cd;border-radius:14px;padding:16px;z-index:26;opacity:0;display:flex;gap:12px;align-items:center}
+.paidbig .ck{width:44px;height:44px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800;flex-shrink:0}
+.paidbig .pt{font-size:17px;font-weight:700;color:#14532d;line-height:1.2}
+.paidbig .ps{font-size:13px;color:#166534;margin-top:2px}
+
+/* recurring rows */
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.rrow:last-child{border-bottom:0}
+.rrow .l{color:var(--ink);font-weight:500}
+.rrow .l small{display:block;color:var(--faint);font-size:12px;font-weight:500;margin-top:1px}
+.rrow .r{display:flex;gap:8px;align-items:center;font-weight:600}
+
+/* ---- end card */
+.end{position:absolute;inset:0;background:var(--navy);opacity:0;padding:90px 80px;display:flex;flex-direction:column;justify-content:center;gap:0}
+.s916 .end{padding:300px 90px 340px}
+.end .mark{display:flex;align-items:center;gap:12px;font-weight:700;font-size:34px;letter-spacing:-.02em;margin-bottom:56px;opacity:0}
+.end .mark svg{width:42px;height:42px}
+.end .mark b{color:#8fb0ff}
+.end .l1{font-size:72px;font-weight:700;letter-spacing:-.035em;line-height:1.05;opacity:0}
+.s916 .end .l1{font-size:78px}
+.end .l2{font-size:48px;font-weight:500;letter-spacing:-.03em;line-height:1.1;margin-top:34px;color:#c7d3ec;opacity:0}
+.s916 .end .l2{font-size:56px}
+.end .price{font-size:250px;font-weight:800;letter-spacing:-.06em;line-height:.95;margin-top:10px;opacity:0;color:#fff}
+.s916 .end .price{font-size:290px}
+.end .price small{font-size:.32em;font-weight:600;letter-spacing:-.02em;color:#8fb0ff;margin-left:14px;vertical-align:baseline}
+.end .l3{font-size:26px;font-weight:500;color:#8fa0c2;margin-top:40px;opacity:0;letter-spacing:-.01em}
+.s916 .end .l3{font-size:32px}
+.end .cta{display:inline-flex;align-self:flex-start;margin-top:34px;height:74px;padding:0 34px;border-radius:16px;background:#fff;color:var(--navy);font-weight:700;font-size:28px;align-items:center;gap:12px;opacity:0}
+.s916 .end .cta{height:84px;font-size:32px}
+.end .cta i{font-style:normal;color:var(--blue)}
+.end .stage1,.end .stage2{position:absolute;left:80px;right:80px;top:47%;transform:translateY(-50%);display:flex;flex-direction:column;opacity:0}
+.s916 .end .stage1,.s916 .end .stage2{left:90px;right:90px;top:50%}
+.end .l2.what{font-size:38px;line-height:1.3;color:#dbe3f5;margin-top:28px;font-weight:500;max-width:22ch}
+.s916 .end .l2.what{font-size:46px}
+.end .l2.offer{font-size:36px;margin-top:22px;color:#c7d3ec;line-height:1.3}
+.s916 .end .l2.offer{font-size:44px}
+.end .feats{list-style:none;margin:34px 0 0;padding:0;display:flex;flex-direction:column;gap:14px}
+.end .feats li{font-size:44px;font-weight:600;letter-spacing:-.02em;display:flex;align-items:center;gap:18px;opacity:0}
+.s916 .end .feats li{font-size:54px}
+.end .feats li i{font-style:normal;width:54px;height:54px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:28px;flex-shrink:0}
+.end .price{margin-top:6px}
+
+/* fade to ground on the last frames for a clean loop */
+.veil{position:absolute;inset:0;background:var(--navy);opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="glow"></div>
+  <div class="url">levelworks<b>.org</b></div>
+  <div class="cap" id="cap"></div>
+  <div class="phone" id="phone">
+    <div class="scr" id="scr"></div>
+    <div class="notch"></div>
+  </div>
+  <div class="end" id="end"></div>
+  <div class="veil" id="veil"></div>
+</div>
+
+<script>
+// ---------------------------------------------------------------- setup
+const q = new URLSearchParams(location.search);
+const STORY = q.get('story') || 'estimate';     // estimate | invoice | recurring
+const SIZE  = q.get('size')  || '1x1';          // 1x1 | 9x16
+const LANG  = q.get('lang')  || 'en';           // first language shown; flips to the other
+const OTHER = LANG === 'en' ? 'es' : 'en';
+const stage = document.getElementById('stage');
+if (SIZE === '9x16') stage.classList.add('s916');
+
+const MARK = `<svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="1.5" y="8.5" width="25" height="11" rx="3.5" stroke="currentColor" stroke-width="2"/><rect x="10" y="11" width="8" height="6" rx="2" fill="#2563eb"/><path d="M8.5 9v10M19.5 9v10" stroke="currentColor" stroke-width="1.5" stroke-opacity=".35"/></svg>`;
+const MARKW = MARK.replace('fill="#2563eb"','fill="#8fb0ff"');
+
+// ---------------------------------------------------------------- copy
+const T = {
+  en: {
+    brand: 'Level<b>Works</b>',
+    time: '9:47 PM', timeShort: '9:47',
+    // estimate
+    est: {
+      from: 'Mike R.', msg: 'Hey, can you get me a price on the bathroom?',
+      title: 'New estimate', proj: 'Bathroom remodel', client: 'Mike R.', clientEye: 'Prepared for',
+      items: [
+        ['Demo existing tile', 1, 450],
+        ['Tile, floor and shower', 1, 2800],
+        ['Vanity install', 1, 350],
+        ['Labor', 1, 1900],
+      ],
+      qty: 'Qty', rate: 'Rate', total: 'Total', deposit: 'Deposit (30%)', balance: 'Balance on completion',
+      preview: 'Preview', send: 'Send to client', sent: 'Sent to Mike R.',
+      reply: 'Looks good, when can you start?', sigEye: 'Client signature', signed: 'Signed', sigBy: 'Mike R. · just now',
+      end1: 'That took 90 seconds.', end2: 'A year of LevelWorks.',
+    },
+    inv: {
+      from: 'LevelWorks', noti: 'Sarah K. paid $2,400.00', notiSub: 'Invoice #1042 · Roof repair',
+      title: 'Invoice #1042', proj: 'Roof repair', client: 'Sarah K.', clientEye: 'Billed to',
+      items: [['Replace damaged shingles', 1, 1450], ['Flashing and seal', 1, 650], ['Haul away', 1, 300]],
+      unpaid: 'Unpaid', paid: 'Paid', due: 'Due Sep 15', paidLine: 'Paid Sep 8 · Card ending 4242',
+      paidBig: 'Paid in full', paidBigSub: '$2,400.00 · deposited to your bank',
+      cap1: 'You were on a roof.<br>She paid from <b>her couch.</b>',
+      cap2: 'No checks.<br>No <b>“I’ll drop it off Friday.”</b>',
+      end1: 'Get paid the day you finish.', end2: 'A year of LevelWorks.',
+      total: 'Total', payBtn: 'Send reminder', markBtn: 'Mark as paid',
+    },
+    rec: {
+      from: 'LevelWorks', notis: [['Johnson HVAC · Maintenance', '$180.00 charged', 'Sep 1'], ['Johnson HVAC · Maintenance', '$180.00 charged', 'Oct 1'], ['Johnson HVAC · Maintenance', '$180.00 charged', 'Nov 1']],
+      title: 'Recurring billing', client: 'Johnson HVAC', plan: 'Maintenance plan', amt: '$180.00', per: '/ month',
+      auto: 'Charged automatically', next: 'Next charge', nextDate: 'Dec 1', status: 'Active',
+      hist: 'History', rows: [['Nov 1', 'Paid'], ['Oct 1', 'Paid'], ['Sep 1', 'Paid']],
+      cap1: 'Set it once.<br>Every month, the money <b>just shows up.</b>',
+      cap2: 'Card fails?<br>It retries <b>and tells you.</b>',
+      end1: 'Maintenance contracts on autopilot.', end2: 'A year of LevelWorks.',
+    },
+    endSmall: 'First 500 contractors · English and Spanish',
+    cta: 'Sign up', ctaSub: 'English & Spanish. Your choice.',
+    flipLine: 'Also in <b>Spanish.</b>',
+    what1: 'LevelWorks is the app for contractors.',
+    what2: 'Write the estimate on your phone. The client signs it. You get paid by card. Maintenance clients get charged every month, automatically.',
+    feats: ['Estimates', 'Invoices', 'Recurring billing'],
+    built: 'Built by a contractor in Pennsylvania.',
+    offer1: 'A full year.',
+    offer2: 'One payment. No monthly bill. No auto-renew.',
+  },
+  es: {
+    brand: 'Level<b>Works</b>',
+    time: '9:47 PM', timeShort: '9:47',
+    est: {
+      from: 'Carlos M.', msg: 'Oye, ¿me pasas un precio para el baño?',
+      title: 'Nuevo presupuesto', proj: 'Remodelación de baño', client: 'Carlos M.', clientEye: 'Preparado para',
+      items: [
+        ['Demolición de azulejo', 1, 450],
+        ['Azulejo, piso y ducha', 1, 2800],
+        ['Instalación de lavabo', 1, 350],
+        ['Mano de obra', 1, 1900],
+      ],
+      qty: 'Cant.', rate: 'Precio', total: 'Total', deposit: 'Anticipo (30%)', balance: 'Saldo al terminar',
+      preview: 'Vista previa', send: 'Enviar al cliente', sent: 'Enviado a Carlos M.',
+      reply: 'Se ve bien, ¿cuándo puedes empezar?', sigEye: 'Firma del cliente', signed: 'Firmado', sigBy: 'Carlos M. · ahora',
+      end1: 'Eso tomó 90 segundos.', end2: 'Un año de LevelWorks.',
+    },
+    inv: {
+      from: 'LevelWorks', noti: 'Sara K. pagó $2,400.00', notiSub: 'Factura #1042 · Reparación de techo',
+      title: 'Factura #1042', proj: 'Reparación de techo', client: 'Sara K.', clientEye: 'Facturado a',
+      items: [['Cambio de tejas dañadas', 1, 1450], ['Tapajuntas y sellado', 1, 650], ['Retiro de escombro', 1, 300]],
+      unpaid: 'Sin pagar', paid: 'Pagada', due: 'Vence 15 sep', paidLine: 'Pagada 8 sep · Tarjeta 4242',
+      paidBig: 'Pagada por completo', paidBigSub: '$2,400.00 · depositado en tu banco',
+      cap1: 'Tú estabas en un techo.<br>Ella pagó <b>desde su sofá.</b>',
+      cap2: 'Sin cheques.<br>Sin <b>“te lo llevo el viernes”.</b>',
+      end1: 'Cobra el día que terminas.', end2: 'Un año de LevelWorks.',
+      total: 'Total', payBtn: 'Enviar recordatorio', markBtn: 'Marcar pagada',
+    },
+    rec: {
+      from: 'LevelWorks', notis: [['Johnson HVAC · Mantenimiento', '$180.00 cobrados', '1 sep'], ['Johnson HVAC · Mantenimiento', '$180.00 cobrados', '1 oct'], ['Johnson HVAC · Mantenimiento', '$180.00 cobrados', '1 nov']],
+      title: 'Cobros recurrentes', client: 'Johnson HVAC', plan: 'Plan de mantenimiento', amt: '$180.00', per: '/ mes',
+      auto: 'Se cobra automáticamente', next: 'Próximo cobro', nextDate: '1 dic', status: 'Activo',
+      hist: 'Historial', rows: [['1 nov', 'Pagado'], ['1 oct', 'Pagado'], ['1 sep', 'Pagado']],
+      cap1: 'Configúralo una vez.<br>Cada mes, el dinero <b>llega solo.</b>',
+      cap2: '¿Falla la tarjeta?<br>Se reintenta <b>y te avisa.</b>',
+      end1: 'Contratos de mantenimiento en automático.', end2: 'Un año de LevelWorks.',
+    },
+    endSmall: 'Solo los primeros 500 contratistas · Inglés y español',
+    cta: 'Regístrate', ctaSub: 'Inglés y español. Tú eliges.',
+    flipLine: 'También en <b>inglés.</b>',
+    what1: 'LevelWorks es la app para contratistas.',
+    what2: 'Haces el presupuesto en tu teléfono. El cliente lo firma. Te pagan con tarjeta. A los clientes de mantenimiento se les cobra cada mes, en automático.',
+    feats: ['Presupuestos', 'Facturas', 'Cobros recurrentes'],
+    built: 'Hecha por un contratista en Pensilvania.',
+    offer1: 'Un año completo.',
+    offer2: 'Un solo pago. Sin mensualidad. Sin renovación automática.',
+  },
+};
+
+const money = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money0 = n => '$' + Math.round(n).toLocaleString('en-US');
+
+// ---------------------------------------------------------------- helpers
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const easeOut = p => 1 - Math.pow(1 - p, 3);
+const easeInOut = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+const easeOutBack = p => { const c = 1.70158; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+// progress of a window [start, start+dur]
+const w = (t, start, dur, ease = easeOut) => ease(clamp((t - start) / dur));
+// on/off with fade
+const fade = (t, on, off, f = .25) => Math.min(w(t, on, f), 1 - w(t, off, f));
+
+// ---------------------------------------------------------------- screens
+function screenHTML(L, story) {
+  const s = L[story === 'estimate' ? 'est' : story === 'invoice' ? 'inv' : 'rec'];
+  const status = `<div class="status"><span>${L.timeShort}</span><span class="r"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="#0b1220"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#0b1220"/><rect x="10" y="2.5" width="3" height="9.5" rx="1" fill="#0b1220"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#0b1220"/></svg><i></i></span></div>`;
+  if (story === 'estimate') {
+    const items = s.items.map((it, i) => `
+      <div class="item" data-i="${i}">
+        <div class="ih"><span class="n">${i + 1}</span><span class="pill" data-tag>${L === T.en ? 'Bathroom' : 'Baño'}</span><span class="it num" data-lt></span></div>
+        <div class="d"><span data-desc></span><span class="caret" data-caret></span></div>
+        <div class="qr"><span>${s.qty} <b>${it[1]}</b></span><span>${s.rate} <b class="num">${money(it[2])}</b></span></div>
+      </div>`).join('');
+    return `${status}
+      <div class="hdr"><div><div class="eyebrow">${s.title}</div><div style="font-weight:700;font-size:15px;margin-top:2px">${s.proj}</div></div><div style="text-align:right"><div class="sub">${s.total}</div><div class="tot num" data-htot>$0</div></div></div>
+      <div class="body"><div data-inner>
+        <div class="card"><div class="cb" style="display:flex;justify-content:space-between;align-items:center"><div><div class="eyebrow">${s.clientEye}</div><div style="font-weight:600;font-size:15px;margin-top:3px">${s.client}</div></div><span class="pill blue">${L === T.en ? 'Client' : 'Cliente'}</span></div></div>
+        <div data-items>${items}<div class="add"><b>+</b> ${L === T.en ? 'Add line item' : 'Agregar partida'}</div></div>
+        <div class="card sum" data-sum style="opacity:0"><div class="cb">
+          <div class="row total"><span>${s.total}</span><span class="num" data-stot></span></div>
+          <div class="row"><span>${s.deposit}</span><span class="num" data-sdep></span></div>
+          <div class="row bal"><span>${s.balance}</span><span class="num" data-sbal></span></div>
+        </div></div>
+      </div></div>
+      <div class="bar"><span class="btn sec">${s.preview}</span><span class="btn pri" data-send><span class="ripple" data-ripple></span>${s.send}</span></div>
+      <div class="tap" data-tap></div>
+      <div class="toast" data-toast><span class="ok">✓</span>${s.sent}</div>
+      <div class="noti" data-noti><div class="ic msg">💬</div><div class="t"><div class="a"><span>${s.from}</span><i>${L.time}</i></div><div class="m">${s.msg}</div></div></div>
+      <div class="noti" data-reply><div class="ic msg">💬</div><div class="t"><div class="a"><span>${s.from}</span><i>${L === T.en ? 'now' : 'ahora'}</i></div><div class="m">${s.reply}</div></div></div>
+      <div class="sigcard" data-sig><div class="eyebrow">${s.sigEye}</div>
+        <svg viewBox="0 0 320 80" fill="none"><path data-sigpath d="M14 56 C 22 20, 34 8, 40 22 C 46 38, 36 62, 30 60 C 26 58, 44 34, 60 30 C 74 27, 70 48, 66 52 C 62 56, 72 40, 84 36 C 98 32, 92 50, 100 46 C 112 40, 118 22, 124 30 C 130 40, 122 56, 130 54 C 140 52, 150 34, 162 30 C 178 26, 172 48, 168 50 C 164 52, 176 40, 188 36 C 202 32, 214 30, 226 34 C 236 38, 232 52, 240 50 C 252 48, 258 30, 270 26 C 284 22, 292 32, 300 40 M 20 66 C 80 62, 200 60, 306 62" stroke="#0b1220" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="sl"><span>${s.sigBy}</span><span class="pill green" data-signed>✓ ${s.signed}</span></div></div>`;
+  }
+  if (story === 'invoice') {
+    const items = s.items.map(it => `<div class="rrow"><span class="l">${it[0]}</span><span class="r num">${money(it[2])}</span></div>`).join('');
+    return `${status}
+      <div class="hdr"><div class="brand">${MARK}<span>${L.brand}</span></div><span class="x">✕</span></div>
+      <div class="body nobar">
+        <div class="card" data-clientcard><div class="cb">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div><div class="eyebrow">${s.clientEye}</div><div style="font-weight:700;font-size:17px;margin-top:3px">${s.client}</div><div style="font-size:13px;color:var(--mute);margin-top:2px">${s.proj}</div></div>
+            <div style="text-align:right"><div class="eyebrow">${s.title}</div><div style="margin-top:6px"><span class="stamp" data-stamp></span></div></div>
+          </div>
+          <div style="font-size:12.5px;color:var(--mute);margin-top:10px" data-dueline>${s.due}</div>
+        </div></div>
+        <div class="card"><div class="cb">${items}
+          <div class="rrow" style="border-top:1px solid var(--line);margin-top:4px"><span class="l" style="font-weight:700;font-size:16px">${s.total}</span><span class="r num" style="font-size:18px;font-weight:800">$2,400.00</span></div>
+        </div></div>
+      </div>
+      <div class="noti" data-noti><div class="ic lw">${MARKW}</div><div class="t"><div class="a"><span>${s.from}</span><i>${L === T.en ? 'now' : 'ahora'}</i></div><div class="m"><b>${s.noti}</b><br><span style="color:var(--mute);font-size:13px">${s.notiSub}</span></div></div></div>
+      <div class="paidbig" data-paid><div class="ck">✓</div><div><div class="pt">${s.paidBig}</div><div class="ps">${s.paidBigSub}</div></div></div>`;
+  }
+  // recurring
+  const rows = s.rows.map(r => `<div class="rrow" data-hrow><span class="l">${r[0]}</span><span class="r"><span class="num">$180.00</span><span class="pill green">${r[1]}</span></span></div>`).join('');
+  const notis = s.notis.map((n, i) => `<div class="noti" data-noti="${i}" style="top:${54 + i * 0}px"><div class="ic lw">${MARKW}</div><div class="t"><div class="a"><span>${n[0]}</span><i>${n[2]}</i></div><div class="m"><b>${n[1]}</b></div></div></div>`).join('');
+  return `${status}
+    <div class="hdr"><div class="brand">${MARK}<span>${L.brand}</span></div><span class="x">✕</span></div>
+    <div class="body nobar">
+      <div class="card"><div class="cb">
+        <div style="display:flex;justify-content:space-between;align-items:center"><div class="eyebrow">${s.client}</div><span class="pill green">${s.status}</span></div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:6px"><span class="num" style="font-size:30px;font-weight:800;letter-spacing:-.03em">${s.amt}</span><span style="color:var(--mute);font-size:14px;font-weight:500">${s.per}</span></div>
+        <div style="font-size:13.5px;color:var(--mute);margin-top:2px">${s.plan}</div>
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="pill blue" data-autopill>⟳ ${s.auto}</span><span class="pill">${s.next}: <b style="color:var(--ink);margin-left:3px">${s.nextDate}</b></span></div>
+      </div></div>
+      <div class="card"><div class="ch">${s.hist}</div><div class="cb" style="padding-top:2px;padding-bottom:2px">${rows}</div></div>
+    </div>
+    ${notis}`;
+}
+
+// ---------------------------------------------------------------- end card
+function endHTML(L, story) {
+  const s = L[story === 'estimate' ? 'est' : story === 'invoice' ? 'inv' : 'rec'];
+  const feats = L.feats.map((f, i) => `<li data-f="${i}"><i>✓</i>${f}</li>`).join('');
+  return `<div class="stage1" data-s1>
+      <div class="mark" data-w0>${MARKW}<span>${L.brand}</span></div>
+      <div class="l1" data-w1>${L.what1}</div>
+      <div class="l2 what" data-w2>${L.what2}</div>
+      <ul class="feats" data-w3>${feats}</ul>
+      <div class="l3" data-w4>${L.built}</div>
+    </div>
+    <div class="stage2" data-s2>
+      <div class="mark" data-emark>${MARKW}<span>${L.brand}</span></div>
+      <div class="l1" data-e1>${s.end1}</div>
+      <div class="l2" data-e2>${L.offer1}</div>
+      <div class="price" data-e3>$49<small data-yr></small></div>
+      <div class="l2 offer" data-e6>${L.offer2}</div>
+      <div class="l3" data-e4>${L.endSmall}</div>
+      <span class="cta" data-e5>${L.cta} <i>→</i></span>
+    </div>`;
+}
+
+// ---------------------------------------------------------------- build both faces
+const scr = document.getElementById('scr');
+const phone = document.getElementById('phone');
+const cap = document.getElementById('cap');
+const end = document.getElementById('end');
+const veil = document.getElementById('veil');
+const faces = { [LANG]: screenHTML(T[LANG], STORY), [OTHER]: screenHTML(T[OTHER], STORY) };
+let face = LANG;
+function setFace(l) { if (face === l) return; face = l; scr.innerHTML = faces[l]; }
+scr.innerHTML = faces[LANG];
+end.innerHTML = endHTML(T[LANG], STORY);
+const qs = (sel, root = scr) => root.querySelector(sel);
+const qsa = (sel, root = scr) => [...root.querySelectorAll(sel)];
+
+// phone placement per size
+const PH = SIZE === '9x16' ? (STORY === 'estimate' ? { scale: 1.9, top: 440, h: 590 } : { scale: 1.9, top: 520, h: 540 }) : (STORY === 'estimate' ? { scale: 1.55, top: 184, h: 500 } : { scale: 1.62, top: 250, h: 440 });
+phone.style.height = PH.h + 'px';
+// Total duration 15s. Timeline (seconds):
+const FLIP_AT = 11.0, FLIP_D = .6, HOLD = 3.2;    // flip to the other language at 11.0, hold 3.2s with a line, flip back
+const END_AT = FLIP_AT + FLIP_D * 2 + HOLD + .15;   // 15.55: end screens start
+const WHAT_D = 5.6;                                 // "what LevelWorks is" holds this long
+const DUR = 26;
+
+// ---------------------------------------------------------------- per-story state
+function renderEstimate(t, L) {
+  const s = L.est;
+  // notification 0.2 → slides in, holds until 1.6 then goes
+  const n = qs('[data-noti]');
+  const nIn = w(t, .15, .45, easeOutBack), nOut = w(t, 1.55, .3);
+  n.style.opacity = Math.min(nIn, 1 - nOut);
+  n.style.transform = `translateY(${(-30 + 30 * nIn) - 20 * nOut}px)`;
+  // items type in 1.7 .. 6.4  (4 items, 1.15s each; typing 0.65s)
+  const items = qsa('.item');
+  let total = 0;
+  items.forEach((el, i) => {
+    const st = 1.7 + i * 1.15;
+    const a = w(t, st, .3);
+    el.style.opacity = a; el.style.transform = `translateY(${12 - 12 * a}px)`;
+    const txt = s.items[i][0];
+    const p = clamp((t - st - .1) / .62);
+    const chars = Math.round(p * txt.length);
+    qs('[data-desc]', el).textContent = txt.slice(0, chars);
+    const caretOn = t > st + .05 && t < st + .95 ? (Math.floor(t * 4) % 2 === 0 ? 1 : 0) : 0;
+    qs('[data-caret]', el).style.opacity = caretOn;
+    const lt = w(t, st + .78, .25);
+    const ltEl = qs('[data-lt]', el);
+    ltEl.style.opacity = lt; ltEl.textContent = money(s.items[i][2]);
+    if (t > st + .78) total += s.items[i][2];
+  });
+  qs('[data-htot]').textContent = money0(total);
+  const sum = qs('[data-sum]');
+  const su = w(t, 6.1, .4);
+  sum.style.opacity = su; sum.style.transform = `translateY(${12 - 12 * su}px)`;
+  qs('[data-stot]').textContent = money(total);
+  qs('[data-sdep]').textContent = money(total * .3);
+  qs('[data-sbal]').textContent = money(total * .7);
+  // scroll the body so the summary is visible once items are in
+  const body = qs('.body'), inner = qs('[data-inner]');
+  if (!body._targets) {
+    const visH = body.clientHeight - 90 - 14;
+    const tg = el => Math.max(0, el.offsetTop + el.offsetHeight + 10 - visH);
+    body._targets = [...items.map((el, i) => [1.7 + i * 1.15, tg(el)]), [6.1, tg(sum)]];
+  }
+  let sc = 0;
+  for (const [st, target] of body._targets) { const p = w(t, st, .4, easeInOut); sc = sc + (target - sc) * p; }
+  inner.style.transform = `translateY(${-sc}px)`;
+  // tap on Send at 7.0
+  const tap = qs('[data-tap]');
+  const send = qs('[data-send]');
+  const tp = w(t, 6.95, .28, easeOutBack), tf = w(t, 7.35, .25);
+  const sr = send.getBoundingClientRect(), pr = scr.getBoundingClientRect();
+  tap.style.left = ((sr.left + sr.width / 2 - pr.left) / PH.scale) + 'px'; tap.style.top = ((sr.top + sr.height / 2 - pr.top) / PH.scale) + 'px';
+  tap.style.transform = `translate(-50%,-50%) scale(${tp * (1 - tf)})`;
+  send.style.transform = `scale(${1 - .06 * fade(t, 7.02, 7.25, .12)})`;
+  const rp = w(t, 7.05, .5);
+  qs('[data-ripple]').style.transform = `translate(-50%,-50%) scale(${rp * 40})`;
+  qs('[data-ripple]').style.opacity = 1 - rp;
+  // toast 7.3 → 8.6
+  const toast = qs('[data-toast]');
+  const to = fade(t, 7.3, 8.5, .25);
+  toast.style.opacity = to; toast.style.transform = `translate(-50%, ${20 - 20 * to}px)`;
+  // reply 8.6
+  const rep = qs('[data-reply]');
+  const ri = w(t, 8.55, .45, easeOutBack);
+  rep.style.opacity = ri; rep.style.transform = `translateY(${-30 + 30 * ri}px)`;
+  // signature 9.4 → draws 9.6..10.6, "Signed" pops 10.6
+  const sig = qs('[data-sig]');
+  const si = w(t, 9.35, .4);
+  sig.style.opacity = si; sig.style.transform = `translateY(${20 - 20 * si}px)`;
+  const path = qs('[data-sigpath]');
+  const len = 1100; path.style.strokeDasharray = len;
+  path.style.strokeDashoffset = len * (1 - w(t, 9.6, 1.05, easeInOut));
+  const sg = w(t, 10.62, .3, easeOutBack);
+  qs('[data-signed]').style.transform = `scale(${sg})`;
+  qs('[data-signed]').style.opacity = sg > 0 ? 1 : 0;
+}
+
+function renderInvoice(t, L) {
+  const s = L.inv;
+  const n = qs('[data-noti]');
+  const nIn = w(t, .15, .45, easeOutBack), nOut = w(t, 1.9, .3);
+  n.style.opacity = Math.min(nIn, 1 - nOut);
+  n.style.transform = `translateY(${(-30 + 30 * nIn) - 20 * nOut}px)`;
+  // stamp: Unpaid until 3.0, then Paid
+  const stamp = qs('[data-stamp]');
+  const flip = w(t, 2.9, .35, easeOutBack);
+  const paid = t > 3.05;
+  stamp.textContent = paid ? '✓ ' + s.paid : s.unpaid;
+  stamp.style.background = paid ? 'var(--greensoft)' : 'var(--ambersoft)';
+  stamp.style.color = paid ? 'var(--green)' : 'var(--amber)';
+  stamp.style.transform = `scale(${paid ? .8 + .2 * flip : 1 - .15 * w(t, 2.75, .2)})`;
+  qs('[data-dueline]').textContent = paid ? s.paidLine : s.due;
+  // big paid card 3.2 → 5.0
+  const pb = qs('[data-paid]'), cc = qs('[data-clientcard]');
+  pb.style.top = (106 + cc.offsetTop) + 'px'; pb.style.height = cc.offsetHeight + 'px';
+  const p = fade(t, 3.25, 5.2, .3);
+  pb.style.opacity = p; pb.style.transform = `translateY(${-14 + 14 * p}px) scale(${.96 + .04 * p})`;
+  // captions
+  captions(t, [[4.9, 7.9, s.cap1], [8.0, 10.9, s.cap2]]);
+}
+
+function renderRecurring(t, L) {
+  const s = L.rec;
+  // three notifications stack 0.2 / 0.8 / 1.4, then all slide away at 2.4
+  qsa('[data-noti]').forEach((n, i) => {
+    const st = .2 + i * .6;
+    const a = w(t, st, .45, easeOutBack), out = w(t, 2.5 + i * .08, .3);
+    n.style.opacity = Math.min(a, 1 - out);
+    n.style.transform = `translateY(${(-30 + 30 * a) + i * 88 - 20 * out}px)`;
+  });
+  // history rows glow in sequence 3.0..4.2
+  qsa('[data-hrow]').forEach((r, i) => {
+    const a = w(t, 2.9 + (2 - i) * .35, .35);
+    r.style.opacity = .35 + .65 * a;
+  });
+  const ap = qs('[data-autopill]');
+  const pulse = fade(t, 2.9, 4.6, .3);
+  ap.style.boxShadow = `0 0 0 ${4 * pulse}px rgba(37,99,235,${.25 * pulse})`;
+  captions(t, [[4.9, 7.9, s.cap1], [8.0, 10.9, s.cap2]]);
+}
+
+function captions(t, list) {
+  let html = '', op = 0, y = 0;
+  for (const [on, off, h] of list) {
+    const f = fade(t, on, off, .3);
+    if (f > 0) { html = h; op = f; y = (1 - w(t, on, .5)) * 16; }
+  }
+  cap.innerHTML = html; cap.style.opacity = op; cap.style.transform = `translateY(${y}px)`;
+  const room = PH.top - 18 - parseFloat(getComputedStyle(cap).top);
+  let fs = SIZE === '9x16' ? 88 : 70;
+  cap.style.fontSize = fs + 'px';
+  while (cap.scrollHeight > room && fs > 40) { fs -= 2; cap.style.fontSize = fs + 'px'; }
+}
+
+// ---------------------------------------------------------------- master
+function render(t) {
+  t = clamp(t, 0, DUR);
+  // which face is showing (flip halfway through each turn)
+  const f1 = w(t, FLIP_AT, FLIP_D, easeInOut);                    // 0→1 to other
+  const f2 = w(t, FLIP_AT + FLIP_D + HOLD, FLIP_D, easeInOut);    // 0→1 back
+  const angle = 180 * f1 - 180 * f2;                              // 0 → 180 → 0
+  const showOther = angle > 90;
+  setFace(showOther ? OTHER : LANG);
+  // the face on the back must be mirrored so it reads correctly when turned
+  scr.style.transform = showOther ? 'scaleX(-1)' : '';
+  // phone position + flip
+  const intro = w(t, 0, .6);
+  phone.style.transform = `translateX(-50%) translateY(${PH.top + 30 * (1 - intro)}px) scale(${PH.scale}) perspective(1200px) rotateY(${angle}deg)`;
+  phone.style.opacity = t < END_AT + .3 ? 1 : 1 - w(t, END_AT, .3);
+  // story on the current face at the *frozen* moment while flipped
+  const tt = t > FLIP_AT ? Math.min(t, FLIP_AT) + (showOther ? 0 : 0) : t;
+  const L = T[face];
+  // while the other face shows, show the same finished state (t frozen at FLIP_AT)
+  if (STORY === 'estimate') renderEstimate(tt, L);
+  else if (STORY === 'invoice') renderInvoice(tt, L);
+  else renderRecurring(tt, L);
+  // while the other language shows, one line says so
+  if (t >= FLIP_AT) {
+    const fl = fade(t, FLIP_AT + FLIP_D * .6, FLIP_AT + FLIP_D + HOLD + .1, .3);
+    cap.innerHTML = T[LANG].flipLine; cap.style.opacity = fl; cap.style.transform = `translateY(${(1 - w(t, FLIP_AT + FLIP_D * .6, .5)) * 14}px)`;
+    cap.style.fontSize = (SIZE === '9x16' ? 88 : 60) + 'px';
+  }
+  // end screens: 1) what LevelWorks is  2) the offer
+  end.style.opacity = w(t, END_AT, .35);
+  const S2_AT = END_AT + WHAT_D;
+  const s1 = qs('[data-s1]', end), s2 = qs('[data-s2]', end);
+  s1.style.opacity = fade(t, END_AT, S2_AT - .3, .3);
+  s2.style.opacity = w(t, S2_AT, .35);
+  const lagA = (i) => w(t, END_AT + .15 + i * .22, .45);
+  const setA = (sel, i, dy = 22) => { const el = qs(sel, end); const p = lagA(i); el.style.opacity = p; el.style.transform = `translateY(${dy - dy * p}px)`; };
+  setA('[data-w0]', 0); setA('[data-w1]', 1); setA('[data-w2]', 2); qs('[data-w3]', end).style.opacity = 1; setA('[data-w4]', 7);
+  qsa('[data-f]', end).forEach((li, i) => { const p = w(t, END_AT + 1.1 + i * .35, .4); li.style.opacity = p; li.style.transform = `translateX(${16 - 16 * p}px)`; });
+  const lag = (i) => w(t, S2_AT + .15 + i * .2, .45);
+  const set = (sel, i, dy = 22) => { const el = qs(sel, end); const p = lag(i); el.style.opacity = p; el.style.transform = `translateY(${dy - dy * p}px)`; };
+  set('[data-emark]', 0); set('[data-e1]', 1); set('[data-e2]', 2); set('[data-e3]', 3, 30); set('[data-e6]', 4); set('[data-e4]', 5); set('[data-e5]', 6);
+  // "/ year" ticks in after the price
+  qs('[data-yr]', end).textContent = lag(3) > .9 ? (LANG === 'en' ? '/ year' : '/ año') : '';
+  qs('[data-yr]', end).style.opacity = w(t, S2_AT + 1.1, .3);
+  // clean loop: fade to ground over the last 0.35s
+  veil.style.opacity = w(t, DUR - .35, .35);
+}
+window.render = render;
+window.AD = { DUR, FPS: 30 };
+render(parseFloat(q.get('t') || '0'));
+</script>
+</body>
+</html>

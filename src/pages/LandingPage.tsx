@@ -628,6 +628,7 @@ export default function LandingPage() {
                 <li><button onClick={() => scrollTo('payments')}>{t('lp.navPayments')}</button></li>
                 <li><button onClick={() => scrollTo('how-it-works')}>{t('lp.navHowItWorks')}</button></li>
                 <li><button onClick={() => scrollTo('pricing')}>{t('lp.navPricing')}</button></li>
+                <li><a href={t('lp.footerGuidesHref')}>{t('lp.footerGuides')}</a></li>
               </ul>
             </div>
             <div>

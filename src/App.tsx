@@ -28,6 +28,7 @@ import AnnualPage from "./pages/AnnualPage";
 import AnnualSuccess from "./pages/AnnualSuccess";
 import ResetPassword from "./pages/ResetPassword";
 import StripeConnectCallback from "./pages/StripeConnectCallback";
+import { guideRoutes } from "./pages/GuidePage";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
                       takes over once the bundle loads. */}
                   <Route path="/es" element={<LandingPage />} />
                   {/* The $49-a-year launch page every ad lands on, and its Spanish twin. */}
+                  {guideRoutes()}
                   <Route path="/annual" element={<AnnualPage />} />
                   <Route path="/es/annual" element={<AnnualPage />} />
                   <Route path="/annual/success" element={<AnnualSuccess />} />

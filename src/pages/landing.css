@@ -438,3 +438,77 @@
   .lw-hdr-cta .hdr-cta-short { display: none; }
   .lw-hdr-cta .hdr-cta-long { display: inline-flex; order: 4; flex: 1 0 100%; width: 100%; height: 44px; font-size: 15px; justify-content: center; }
 }
+
+/* ------------------------------------------------------------------ */
+/* Guides (/guides, /es/guias) — the search pages. Same shell, article  */
+/* measure of ~68 characters, the product pitch as a card, not a banner. */
+/* ------------------------------------------------------------------ */
+.lw-guide-shell { min-height: 100vh; display: flex; flex-direction: column; }
+.lw-guide-shell .lw-hdr-cta .signin { display: inline-flex; }
+@media (max-width: 1000px) { .lw-guide-shell .lw-hdr-cta .signin { display: none; } .lw-guide-shell .lw-nav { display: flex; } }
+.lw-guide-main { flex: 1; padding: 40px 0 72px; }
+.lw-guide-head { max-width: 720px; margin-bottom: 36px; }
+.lw-guide-head .lw-h2 { margin: 12px 0 14px; }
+.lw-guide-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.lw-guide-card { display: flex; flex-direction: column; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px; text-decoration: none; box-shadow: var(--shadow); transition: transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease); }
+.lw-guide-card:hover { transform: translateY(-2px); border-color: #c9d4ee; box-shadow: var(--shadow-lg); }
+.lw-guide-card h3 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; color: var(--ink); margin: 0; }
+.lw-guide-card p { font-size: 14px; line-height: 1.55; color: var(--mute); margin: 0; flex: 1; }
+.lw-guide-card .more { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: var(--blue); }
+@media (max-width: 900px) { .lw-guide-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .lw-guide-grid { grid-template-columns: 1fr; } }
+
+.lw-guide { max-width: 720px; }
+.lw-guide-crumb { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--mute); margin-bottom: 18px; min-width: 0; }
+.lw-guide-crumb a { color: var(--blue); text-decoration: none; font-weight: 500; white-space: nowrap; }
+.lw-guide-crumb span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lw-guide .lw-h2 { margin-bottom: 12px; }
+.lw-guide-meta { font-size: 13.5px; color: var(--mute); margin-bottom: 22px; }
+.lw-guide > .lw-lead { margin-bottom: 8px; }
+.lw-guide section { margin-top: 36px; }
+.lw-guide h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; color: var(--ink); margin: 0 0 12px; }
+.lw-guide p { font-size: 17px; line-height: 1.7; color: var(--ink-2); margin: 0 0 16px; }
+.lw-guide ul, .lw-guide ol { margin: 0 0 16px; padding-left: 22px; display: grid; gap: 8px; }
+/* Tailwind's preflight strips list markers globally; an article needs them back. */
+.lw-guide ul { list-style: disc; }
+.lw-guide ol { list-style: decimal; }
+.lw-guide li { font-size: 17px; line-height: 1.6; color: var(--ink-2); padding-left: 4px; }
+.lw-guide li::marker { color: var(--blue); font-weight: 600; }
+.lw-guide-tip { background: var(--blue-soft); border-left: 3px solid var(--blue); border-radius: 0 12px 12px 0; padding: 14px 18px; font-size: 16px; color: var(--blue-2); }
+.lw-guide-faq { border-top: 1px solid var(--line); padding-top: 28px; }
+.lw-guide-faq h3 { font-size: 17px; font-weight: 600; margin: 18px 0 6px; color: var(--ink); }
+.lw-guide-faq p { font-size: 16px; }
+
+.lw-guide-cta { background: var(--navy); color: #fff; border-radius: 20px; padding: 28px; margin: 36px 0 8px; display: grid; gap: 10px; position: relative; overflow: hidden; }
+.lw-guide-cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(500px 220px at 90% 0%, rgba(59,130,246,.45), transparent 65%); pointer-events: none; }
+.lw-guide-cta > * { position: relative; }
+.lw-guide-cta h3 { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; color: #fff; margin: 0; }
+.lw-guide-cta p { font-size: 15.5px; line-height: 1.6; color: rgba(255,255,255,.82); margin: 0; }
+.lw-guide-cta .lw-btn { justify-self: start; margin-top: 6px; }
+.lw-guide-cta .fine { font-size: 13px; color: rgba(255,255,255,.62); }
+.lw-guide-main > .lw-wrap > .lw-guide-cta { max-width: 720px; margin-top: 44px; }
+
+.lw-guide-more { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--line); }
+.lw-guide-more .lw-h3 { margin-bottom: 18px; }
+.lw-guide-ft { padding: 24px 0; }
+.lw-guide-ft .bot { padding-top: 0; }
+.lw-guide-ft .bot a { color: var(--mute); text-decoration: none; }
+.lw-guide-ft .bot a:hover { color: var(--ink); }
+@media (max-width: 560px) {
+  .lw-guide-main { padding-top: 24px; }
+  .lw-guide p, .lw-guide li { font-size: 16px; }
+  .lw-guide h2 { font-size: 21px; }
+  .lw-guide-cta { padding: 22px; }
+  /* Phone header: logo, flag, short button. The Guides link lives in the
+     breadcrumb and the footer, so the header does not need it here. */
+  .lw-guide-shell .lw-nav { display: none; }
+  .lw-guide-shell .lw-hdr-cta .hdr-cta-long { display: none; }
+  .lw-guide-shell .lw-hdr-cta .hdr-cta-short { display: inline-flex; order: 3; flex: 0 0 auto; width: auto; height: 40px; font-size: 14px; }
+  .lw-guide-shell .lw-hdr .lw-wrap { flex-wrap: nowrap; padding-top: 0; padding-bottom: 0; min-height: 62px; }
+}
+/* Under 460px the guide header keeps the mark alone, as the app header does,
+   so the flag and the trial button both fit without clipping. */
+@media (max-width: 460px) {
+  .lw-guide-shell .lw-logo span { display: none; }
+  .lw-guide-shell .lw-hdr .lw-wrap { gap: 10px; }
+}

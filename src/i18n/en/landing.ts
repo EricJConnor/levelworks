@@ -200,6 +200,8 @@ export const landing: Record<string, string> = {
 
   // ---- footer ----
   'lp.footerAbout': 'Estimates, signatures, invoices, payments and recurring billing for contractors. Built by a contractor in Philadelphia, PA.',
+  'lp.footerGuides': 'Guides',
+  'lp.footerGuidesHref': '/guides',
   'lp.footerProduct': 'Product',
   'lp.footerAccount': 'Account',
   'lp.footerCompany': 'Company',

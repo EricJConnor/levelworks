@@ -19,7 +19,7 @@ import Stripe from 'stripe';
 import { admin, json, sendMail, missingEnv, normalizeLang } from './_lib/annual.js';
 import { EMAILS } from './_lib/emails.js';
 import { syncAudience } from './_lib/audience.js';
-import { runBroadcast, BROADCASTS } from './_lib/broadcasts.js';
+import { runBroadcast, BROADCASTS, ensureTracking } from './_lib/broadcasts.js';
 
 const DAY = 86400 * 1000;
 
@@ -119,6 +119,8 @@ export default async function handler(req, res) {
 
   // 6. Draft each broadcast in Resend once (never sent from here); Eric sends from the dashboard.
   if (!dry) {
+    try { report.tracking = await ensureTracking(); }
+    catch (e) { report.errors.push('tracking: ' + e.message); }
     report.broadcasts = {};
     for (const which of BROADCASTS) {
       try { report.broadcasts[which] = await runBroadcast(which, 'draft'); }

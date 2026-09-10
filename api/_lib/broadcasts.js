@@ -11,6 +11,19 @@ import { EMAILS } from './emails.js';
 import { AUDIENCES, resend } from './audience.js';
 
 export const FROM = 'Eric at LevelWorks <eric@levelworks.org>';
+export const DOMAIN = 'levelworks.org';
+
+/** Resend's open and click tracking on the sending domain; Eric asked for it (Sep 10). Idempotent. */
+export async function ensureTracking() {
+  const list = await resend('/domains');
+  const d = (list.data || []).find(x => x.name === DOMAIN);
+  if (!d) return { domain: DOMAIN, found: false };
+  const full = await resend(`/domains/${d.id}`);
+  const before = { open: !!full.open_tracking, click: !!full.click_tracking };
+  if (before.open && before.click) return { domain: DOMAIN, found: true, tracking: before, changed: false };
+  await resend(`/domains/${d.id}`, { method: 'PATCH', body: JSON.stringify({ open_tracking: true, click_tracking: true }) });
+  return { domain: DOMAIN, found: true, tracking: { open: true, click: true }, changed: true, before };
+}
 export const BROADCASTS = ['annualBlast'];
 
 export function broadcastCopy(which) {

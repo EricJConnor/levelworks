@@ -170,9 +170,10 @@ export function layout({ lang, lines, cta, ctaUrl, ps, image, unsubscribe }) {
   const unsub = unsubscribe
     ? ` · <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color:#8a93a3">${lang === 'es' ? 'Cancelar suscripción' : 'Unsubscribe'}</a>`
     : '';
+  // No street address by Eric's choice (it is his home). His email stands in its place.
   const foot = (lang === 'es'
-    ? 'LevelWorks · Wyncote, PA · Responde a este correo y te llega a Eric.'
-    : 'LevelWorks · Wyncote, PA · Reply to this email and it reaches Eric.') + unsub;
+    ? `LevelWorks · Wyncote, PA · ${ERIC_REPLY_TO} · Responde a este correo y te llega a Eric.`
+    : `LevelWorks · Wyncote, PA · ${ERIC_REPLY_TO} · Reply to this email and it reaches Eric.`) + unsub;
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;background:#f5f7fb;font-family:Inter,-apple-system,Segoe UI,Roboto,sans-serif">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f7fb;padding:28px 12px"><tr><td align="center">

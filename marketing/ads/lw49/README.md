@@ -62,9 +62,13 @@ Every user is kept in two Resend audiences, **"LevelWorks users · English"** an
 users · Español"**, by `api/_lib/audience.js`. The daily cron adds new sign-ups; a first load or a
 check is `GET /api/sync-audience?key=<CRON_SECRET>` (`&dry=1` counts without adding). Demo and test
 accounts at `@levelworks.org` are left out, and a contact Resend already has is never touched, so an
-unsubscribe sticks. To send an update or an offer: Resend → Broadcasts → New → pick the audience →
-from "Eric at LevelWorks <eric@levelworks.org>" → send. Resend adds the unsubscribe link; the
-business address at the bottom is on Eric.
+unsubscribe sticks. **Sending a blast.** Copy lives in `EMAILS` (`api/_lib/emails.js`) and the list of broadcasts in
+`api/_lib/broadcasts.js`. The daily cron **drafts** each one in Resend once; Eric opens Resend →
+Broadcasts, reads it, presses Send. No key needed. `GET /api/blast?key=<CRON_SECRET>&which=<name>`
+reports, `&lang=en` shows the email, `&send=1` sends straight away. A broadcast's name is the lock,
+so nothing goes twice. Resend adds the unsubscribe link. The footer carries Eric's email instead of
+a street address by his choice (it is his home); US law technically wants a postal address, a PO box
+would satisfy it.
 
 ## Go-live switch list (Eric does these by hand)
 

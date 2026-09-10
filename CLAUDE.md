@@ -324,15 +324,48 @@ metadata (that mistake shipped once and was caught by the $0 test).
 **Ids.** Stripe live: product `prod_VDyfIRzZOz2Dfz`, price `price_1UDWi6CrlMKmuUj4z7Whuzoh`, webhook
 `we_1UDX36CrlMKmuUj4vyfcsWwm` → `https://www.levelworks.org/api/stripe-annual-webhook` (**www**: the
 bare domain 307-redirects and Stripe does not follow redirects; the first purchase bounced on that),
-promo `CREW`. Meta: campaign `52547713746537` PAUSED, ad sets `52547713777737` EN / `52547713784537`
+promo `CREW`. Meta: campaign `52547713746537` (ACTIVE since Sep 9), ad sets `52547713777737` EN / `52547713784537`
 ES, six ads (ids in the checklist; recreated Sep 10 with the music cut, the originals deleted, because the bot token can upload videos but cannot create a creative that names the Page, so new ads go through Windsor `create_ad`), old campaign `Level-Works-Signups-Test1` paused. Vercel env vars
 all verified by fingerprint (`/api/annual-env-check?key=<CRON_SECRET>`); copying a secret out of the
 chat window corrupted one character twice, a plain text file fixed it.
 
-**Left for Eric:** confirm levelworks.org shows Verified under Meta Business Settings → Brand Safety →
-Domains; look at Events Manager once for the three pixel events; pick the go-live day. To go live:
-reset the ad sets' start/end to that day, then set the campaign ACTIVE (Windsor `enable_campaign` or
-Ads Manager). Rules for after: `marketing/ads/lw49/README.md`.
+**LIVE since Sep 9 2026, 6:28pm PT (Eric: "we can roll").** Campaign `52547713746537`, ad sets
+`52547713777737` EN / `52547713784537` ES and all six ads ACTIVE, approved, first cents spent at the
+one-hour check. Schedule is Sep 9 3pm PT through **Sep 16 6:30pm PT** (Meta would not let the start
+move once it was in the past; `+` in a Graph timestamp must be URL-encoded or it reads as a space),
+$200 lifetime, CBO. Rules for the week are in `marketing/ads/lw49/README.md`: nothing touched for the
+first 48h, then read cost per purchase.
+
+**Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
+owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also
+has an empty personal ad account `2227206028141508`, and Ads Manager opens on that one by default,
+showing "Get set up to run ads" and a $100 limit that belong to it, not to ours. The link that works:
+`https://adsmanager.facebook.com/adsmanager/manage/campaigns?global_scope_id=1245227667768739&business_id=1245227667768739&act=3071713068446`.
+Billing for the right account: `https://business.facebook.com/billing_hub/payment_settings?asset_id=3071713068446&business_id=1245227667768739`.
+On it: MasterCard ····3292, **prepaid funds** (Eric added $200 on Sep 9), a leftover $34.16 bill from
+the June campaign that Meta settles out of the funds (so ~$166 for ads unless he tops up $35, which
+was offered and left to him), and the $100/month account spending limit, which he was told to
+remove (`spend_cap` read 0 afterwards, so it is gone).
+
+**The pixel** (`2017000758930909`, "LevelWorks Web Pixel") is on the site, fires, and both ad sets
+optimise for Purchase on it. Meta's "set up a pixel, 14% lower cost" card shows because there are no
+Purchase events yet; it clears itself. The June campaign `52532618280737` (paused) spent $315 and got
+13 sign-ups on the same pixel; that history is on the pixel and the account and Advantage+ uses it.
+A retargeting audience of its 194 clickers is worth $20 to $30 **after** this week, not now.
+
+**Checking on it from a new session.** The Meta bot token and every other secret lived in the old
+session's scratchpad `.env`, which is gone. Ask Eric by name for what is needed (Meta system-user
+token for `levelworksadbot`, or use Windsor's `facebook` connector, account `3071713068446`, which
+needs no token). Read: campaign/ad set/ad `effective_status` and `ad_review_feedback`, insights
+(impressions, reach, spend, link clicks, purchases), `act_…?fields=balance,amount_spent,spend_cap`,
+and `https://www.levelworks.org/api/annual-count` (real purchases; 0 at go-live). The Graph token
+can read all of that and delete ads, but **cannot create a creative that names the Page** ("No
+permission to access this profile"): new ads go through Windsor `create_ad` with the full
+`creative` spec (`asset_feed_spec` videos use `thumbnail_url`, not `image_url`). A morning check-in
+was scheduled for Sep 10 9am PT inside the old session only; it will not reach a new one.
+
+**Still Eric's:** confirm levelworks.org is Verified under Business Settings → Brand Safety →
+Domains (the bot token cannot read it); glance at Events Manager once for the three events.
 
 **Separate, important:** row-level security is not enforcing on `estimates` (and likely `invoices`,
 `clients`): any logged-in user can read every user's rows. Needs its own fix after the launch. The

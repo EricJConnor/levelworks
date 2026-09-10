@@ -9,6 +9,7 @@
  *    have no active monthly subscription in Stripe.
  *
  * 5. Add every user to the Resend audiences (api/_lib/audience.js) for broadcasts.
+ * 6. Draft each broadcast in Resend once, so Eric can send it from the dashboard.
  *
  * Every send moves profiles.nudge_stage forward so nothing goes twice.
  * Vercel calls this with "Authorization: Bearer <CRON_SECRET>"; anything else is refused.
@@ -18,6 +19,7 @@ import Stripe from 'stripe';
 import { admin, json, sendMail, missingEnv, normalizeLang } from './_lib/annual.js';
 import { EMAILS } from './_lib/emails.js';
 import { syncAudience } from './_lib/audience.js';
+import { runBroadcast, BROADCASTS } from './_lib/broadcasts.js';
 
 const DAY = 86400 * 1000;
 
@@ -110,6 +112,15 @@ export default async function handler(req, res) {
   // 5. Resend audiences, so a broadcast from the Resend dashboard reaches everyone.
   try { report.audience = await syncAudience({ dry }); }
   catch (e) { report.errors.push('audience: ' + e.message); }
+
+  // 6. Draft each broadcast in Resend once (never sent from here); Eric sends from the dashboard.
+  if (!dry) {
+    report.broadcasts = {};
+    for (const which of BROADCASTS) {
+      try { report.broadcasts[which] = await runBroadcast(which, 'draft'); }
+      catch (e) { report.errors.push(`broadcast ${which}: ` + e.message); }
+    }
+  }
 
   return json(res, 200, { ok: true, dry, ...report });
 }

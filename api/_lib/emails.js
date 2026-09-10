@@ -141,22 +141,22 @@ export const EMAILS = {
   /** One-time broadcast to everyone who ever signed up: the $49 year. Sent through /api/blast. */
   annualBlast: {
     en: () => ({
-      subject: 'A year of LevelWorks for $49',
+      subject: 'You hear about the deals first. A year for $49',
       html: layout({ lang: 'en', unsubscribe: true, lines: [
-        'You signed up for LevelWorks at some point, so you’re hearing this first.',
-        'For the first 500 contractors, a full year is $49. One payment, no auto-renew, unlimited estimates and invoices, recurring billing, English and Spanish. That’s under a dollar a week, and it comes off the page when the 500 are gone.',
-        'If you’re on the $5 monthly plan, it switches over and you won’t be charged twice. If you signed up and got busy, this is a good excuse to build one estimate and see what it does.',
+        'Thank you for signing up for levelworks.org. As a member, you hear about the deals first, and this is the first one.',
+        'Right now we’re offering a full year of LevelWorks for $49. One payment, no auto-renew. Unlimited estimates, unlimited invoices, recurring billing, English and Spanish. It’s for the first 500 contractors and it comes off the page when they’re gone.',
+        'If you’re on the $5 monthly plan, it switches over and you won’t be charged twice. If you signed up and got busy, this is a good time to build one estimate and see what it does.',
       ], cta: 'Get a year for $49', ctaUrl: `${SITE_URL}/annual?utm_source=email&utm_medium=email&utm_campaign=lw49&utm_content=blast1`,
-      ps: 'Questions, or something in the app that bugs you? Reply to this email. It comes to me.' }),
+      ps: 'Questions? Reply to this email, it comes straight to me.' }),
     }),
     es: () => ({
-      subject: 'Un año de LevelWorks por $49',
+      subject: 'Las ofertas te llegan primero. Un año por $49',
       html: layout({ lang: 'es', unsubscribe: true, lines: [
-        'En algún momento te registraste en LevelWorks, así que te lo cuento a ti primero.',
-        'Para los primeros 500 contratistas, un año completo cuesta $49. Un solo pago, sin renovación automática, presupuestos y facturas ilimitados, cobros recurrentes, en inglés y en español. Sale a menos de un dólar por semana, y desaparece de la página cuando se acaben los 500.',
-        'Si estás en el plan de $5 al mes, se cambia solo y no te cobramos dos veces. Si te registraste y luego se te llenó la semana, es una buena excusa para hacer un presupuesto y ver cómo funciona.',
+        'Gracias por registrarte en levelworks.org. Como miembro, las ofertas te llegan primero, y esta es la primera.',
+        'Ahora mismo ofrecemos un año completo de LevelWorks por $49. Un solo pago, sin renovación automática. Presupuestos ilimitados, facturas ilimitadas, cobros recurrentes, en inglés y en español. Es para los primeros 500 contratistas y desaparece de la página cuando se acaben.',
+        'Si estás en el plan de $5 al mes, se cambia solo y no te cobramos dos veces. Si te registraste y luego se te llenó la semana, es buen momento para hacer un presupuesto y ver cómo funciona.',
       ], cta: 'Tomar un año por $49', ctaUrl: `${SITE_URL}/es/annual?utm_source=email&utm_medium=email&utm_campaign=lw49&utm_content=blast1`,
-      ps: '¿Preguntas, o algo en la app que te molesta? Responde a este correo. Me llega a mí.' }),
+      ps: '¿Preguntas? Responde a este correo, me llega directo a mí.' }),
     }),
   },
 };

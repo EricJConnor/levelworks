@@ -371,3 +371,50 @@ Domains (the bot token cannot read it); glance at Events Manager once for the th
 `clients`): any logged-in user can read every user's rows. Needs its own fix after the launch. The
 demo account `demo.lw49@levelworks.org` exists in production for screenshots
 (`node scripts/lw49-demo.mjs delete` removes it).
+
+## Email list and blasts through Resend (Sep 10 2026) — WHERE IT STANDS
+
+Eric asked how to email everyone who ever signed up. Built and live the same day, first blast sent.
+
+**How it works.** `api/_lib/audience.js` keeps two Resend audiences in step with `auth.users`:
+"LevelWorks users · English" and "LevelWorks users · Español", by `profiles.lang` then sign-up
+metadata. `@levelworks.org` (demo, test) is skipped; a contact Resend already has is never touched,
+so an unsubscribe sticks. `api/_lib/broadcasts.js` turns copy in `EMAILS` (`api/_lib/emails.js`)
+into one Resend broadcast per language, named `<which> · <lang>`; **the name is the lock**, nothing
+is created or sent twice. The daily cron (`/api/cron-annual`, 13:00 UTC = 9am ET) syncs the
+audiences, **drafts** each broadcast listed in `BROADCASTS`, and turns on open/click tracking for
+the domain. Eric then opens Resend → Broadcasts, reads the draft, presses Send. That is the whole
+flow and it is the one he understands: **no secret, no URL, just the Resend dashboard.**
+
+- `GET /api/audience-status` is **public, read-only, counts and names only** (Resend key present,
+  contacts per audience, broadcasts with status, domain tracking flags). It exists because Eric
+  **cannot copy and paste secrets** and this session holds none. Read it before saying anything is
+  wrong. `/api/sync-audience?key=` and `/api/blast?key=&which=&send=1` exist but need `CRON_SECRET`.
+- **To run the cron now** (no secret): Vercel → project → Settings → Cron Jobs → **Run** next to
+  `/api/cron-annual`. Eric knows this move now. The run prints its report as a `console.log` line in
+  Vercel logs (`cron-annual {...}`), so it can be read in the dashboard.
+- **The red `DEP0169 url.parse()` line in Vercel logs on every cron run is Node noise, not an
+  error.** It counts under the "Error" filter. Silence it some time; do not chase it as a failure.
+- **What shipped Sep 10:** `RESEND_API_KEY` was **not** in Vercel until Eric added it that morning
+  (the "optional" note in the checklist was misleading; the fallback mail path is a Supabase
+  function that does not exist, so every nudge had been failing with a 400). After the key:
+  English audience 45 contacts, `annualBlast · en` **sent 10:24am ET to 45**, subject "You hear
+  about the deals first. A year for $49", link tagged `utm_campaign=lw49&utm_content=blast1`. No
+  Spanish audience yet because no user has `lang=es`; it creates itself when one does. Domain
+  `levelworks.org` verified, open + click tracking on (applies to sends after 10:27am ET, so the
+  first blast shows delivered/bounced only).
+- **Copy rules Eric set:** open with "Thank you for signing up for levelworks.org. As a member, you
+  hear about the deals first…". Footer carries **his email, not a street address**: the address is
+  his home and he will not print it. US law wants a postal address on marketing mail; a PO box would
+  satisfy it. Raised once, his call, do not nag.
+- **Nudges** (`cron-annual`) now go only to accounts created on or after Sep 9 2026 and never to
+  `@levelworks.org`. A March sign-up getting "a week in and no estimate yet" was wrong.
+- **Next blast:** add an entry to `EMAILS` (en + es, no arguments) and its key to `BROADCASTS`;
+  the next cron drafts it; Eric sends. Measure by clicks in Resend and by `utm_content` on the
+  Stripe session, never by opens (Apple Mail inflates them).
+
+**LW49 ads, morning of Sep 10** (Windsor `facebook`, account `3071713068446`): all ACTIVE, ~$14 of
+$200 spent in the first 18h, ~230 reach, 5 link clicks, 0 purchases, spend cap 0, CBO leaning to the
+Spanish set early. Normal. Nothing to touch before Friday evening (48h rule). The two Supabase users
+created Sep 8 (`…in@getapservices.com`, `y.m.moore@gmail.com`) are organic sign-ups from before the
+ads went live, not ad results.

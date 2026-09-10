@@ -8,6 +8,8 @@
  * 4. Day 25 of a free trial: the $49 year, to people who are not annual and
  *    have no active monthly subscription in Stripe.
  *
+ * 5. Add every user to the Resend audiences (api/_lib/audience.js) for broadcasts.
+ *
  * Every send moves profiles.nudge_stage forward so nothing goes twice.
  * Vercel calls this with "Authorization: Bearer <CRON_SECRET>"; anything else is refused.
  * Add ?dry=1 to see what would be sent without sending.
@@ -15,6 +17,7 @@
 import Stripe from 'stripe';
 import { admin, json, sendMail, missingEnv, normalizeLang } from './_lib/annual.js';
 import { EMAILS } from './_lib/emails.js';
+import { syncAudience } from './_lib/audience.js';
 
 const DAY = 86400 * 1000;
 
@@ -104,5 +107,9 @@ export default async function handler(req, res) {
     report.sent.push({ email, pick, lang });
     budget--;
   }
+  // 5. Resend audiences, so a broadcast from the Resend dashboard reaches everyone.
+  try { report.audience = await syncAudience({ dry }); }
+  catch (e) { report.errors.push('audience: ' + e.message); }
+
   return json(res, 200, { ok: true, dry, ...report });
 }

@@ -1,0 +1,4 @@
+# unused music candidates stay out of the repo; music-1167.mp3 (Close Up) is the one in use
+music-*.mp3
+!music-1167.mp3
+__pycache__/

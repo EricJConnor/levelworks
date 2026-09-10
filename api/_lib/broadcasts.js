@@ -26,6 +26,18 @@ export async function ensureTracking() {
 }
 export const BROADCASTS = ['annualBlast'];
 
+/** A plain-text twin of the HTML; mail without one reads as spammier. */
+export function toText(html) {
+  return String(html)
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<a [^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, (_, href, label) => `${label.replace(/<[^>]+>/g, '').trim()}: ${href}`)
+    .replace(/<\/(p|div|tr|h\d)>/gi, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 export function broadcastCopy(which) {
   const mail = EMAILS[which];
   if (!mail || !mail.en || !mail.es || mail.en.length) return null;
@@ -53,7 +65,7 @@ export async function runBroadcast(which, mode = 'draft') {
     if (mode === 'dry') { out[l] = { would: b ? 'send the draft' : 'create a draft', audience: aud.name, subject: m.subject }; continue; }
     if (!b) {
       b = await resend('/broadcasts', { method: 'POST', body: JSON.stringify({
-        name, audience_id: aud.id, from: FROM, reply_to: ERIC_REPLY_TO, subject: m.subject, html: m.html,
+        name, audience_id: aud.id, from: FROM, reply_to: ERIC_REPLY_TO, subject: m.subject, html: m.html, text: toText(m.html),
       }) });
       out[l] = { drafted: true, id: b.id, audience: aud.name, subject: m.subject };
     } else {

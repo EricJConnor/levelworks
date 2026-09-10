@@ -8,6 +8,7 @@
  */
 import { json } from './_lib/annual.js';
 import { AUDIENCES, resend } from './_lib/audience.js';
+import { DOMAIN } from './_lib/broadcasts.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -24,6 +25,12 @@ export default async function handler(req, res) {
     }
     const b = await resend('/broadcasts');
     out.broadcasts = (b.data || []).map(x => ({ name: x.name, status: x.status, created: x.created_at, sent: x.sent_at || null }));
+    const doms = await resend('/domains');
+    const d = (doms.data || []).find(x => x.name === DOMAIN);
+    if (d) {
+      const full = await resend(`/domains/${d.id}`);
+      out.domain = { name: DOMAIN, status: full.status, openTracking: !!full.open_tracking, clickTracking: !!full.click_tracking };
+    }
   } catch (e) {
     out.errors.push(e.message);
   }

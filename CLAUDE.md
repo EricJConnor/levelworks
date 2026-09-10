@@ -310,7 +310,7 @@ only, never seeded (CREW is the honest lever: 100% off, 15 uses, for contractors
 feature word is **Recurring billing** (there is no scheduling in the app); the ad is his shop selfie
 ("My name is Eric, I'm a contractor, and I made an app called levelworks.org. Check it out.") then the
 phone story, a 3s Spanish hold, "what LevelWorks is" (Unlimited estimates / Unlimited invoices /
-Recurring billing, English · Español block), the offer; ~32s; approved. $200 is a cost-per-purchase
+Recurring billing, English · Español block), the offer; ~32s; approved. **Music (Sep 10):** "Close Up" (Mixkit 1167, free licence) under the phone story only, never under his voice, playing to the last frame; Eric picked it from six options and asked for it to run to the end. Rocky and the NFL themes are copyrighted and Meta mutes or rejects them; `build.py` takes `LW49_MUSIC` to swap the track. $200 is a cost-per-purchase
 test; 175 purchases is the goal for the scaled run.
 
 **The flow after paying** (Eric's design): `/annual/success` confirms the session with Stripe,
@@ -325,7 +325,7 @@ metadata (that mistake shipped once and was caught by the $0 test).
 `we_1UDX36CrlMKmuUj4vyfcsWwm` → `https://www.levelworks.org/api/stripe-annual-webhook` (**www**: the
 bare domain 307-redirects and Stripe does not follow redirects; the first purchase bounced on that),
 promo `CREW`. Meta: campaign `52547713746537` PAUSED, ad sets `52547713777737` EN / `52547713784537`
-ES, six ads (ids in the checklist), old campaign `Level-Works-Signups-Test1` paused. Vercel env vars
+ES, six ads (ids in the checklist; recreated Sep 10 with the music cut, the originals deleted, because the bot token can upload videos but cannot create a creative that names the Page, so new ads go through Windsor `create_ad`), old campaign `Level-Works-Signups-Test1` paused. Vercel env vars
 all verified by fingerprint (`/api/annual-env-check?key=<CRON_SECRET>`); copying a secret out of the
 chat window corrupted one character twice, a plain text file fixed it.
 

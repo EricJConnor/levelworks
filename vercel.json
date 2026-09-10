@@ -31,6 +31,22 @@
       "destination": "/es/index.html"
     },
     {
+      "source": "/guides",
+      "destination": "/guides/index.html"
+    },
+    {
+      "source": "/guides/:slug",
+      "destination": "/guides/:slug/index.html"
+    },
+    {
+      "source": "/es/guias",
+      "destination": "/es/guias/index.html"
+    },
+    {
+      "source": "/es/guias/:slug",
+      "destination": "/es/guias/:slug/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

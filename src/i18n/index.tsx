@@ -26,7 +26,13 @@ const STORAGE_KEY = 'lw-lang';
 /** `/es` is the Spanish homepage, so the URL decides — a shared link has to
  *  open in Spanish whatever the phone that opens it remembers. */
 export function langFromPath(path: string): Lang | null {
-  return /^\/es(\/annual(\/success)?)?\/?$/.test(path) ? 'es' : null;
+  if (/^\/es(\/|$)/.test(path)) return 'es';
+  // The English guides are the one English marketing path that has a Spanish
+  // twin at a different slug, so the URL has to win over a stored choice there
+  // too, or a Spanish reader on an English link sees a Spanish switcher over
+  // an English page.
+  if (/^\/guides(\/|$)/.test(path)) return 'en';
+  return null;
 }
 
 /** The same marketing page in the other language, for the toggle. */
@@ -69,7 +75,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode; initial?: L
     const path = window.location.pathname;
     // Arriving on /es is itself a choice: remember it, so the rest of the app
     // and the next visit are Spanish too.
-    if (langFromPath(path) === lang) {
+    if (lang === 'es' && langFromPath(path) === 'es') {
       try { localStorage.setItem(STORAGE_KEY, lang); } catch { /* nothing to do */ }
     }
     // A Spanish reader who lands on the English homepage belongs on the Spanish
@@ -159,7 +165,7 @@ const LANGS: LangOption[] = [
  * it and the other language is one tap away. The abbreviation carries the
  * meaning — the flag is what makes it findable at a glance.
  */
-export const LanguageToggle: React.FC<{ className?: string }> = ({ className }) => {
+export const LanguageToggle: React.FC<{ className?: string; siblingHref?: string }> = ({ className, siblingHref }) => {
   const { lang, setLang } = useLang();
   const [open, setOpen] = useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
@@ -189,6 +195,8 @@ export const LanguageToggle: React.FC<{ className?: string }> = ({ className }) 
     const path = typeof window !== 'undefined' ? window.location.pathname : '';
     const onMarketingHome = path === '/' || /^\/annual(\/|$)/.test(path) || langFromPath(path) !== null;
     setLang(code);
+    // A page that knows its own twin (a guide, whose slug is translated) says so.
+    if (siblingHref) { window.location.assign(siblingHref); return; }
     if (onMarketingHome) {
       const target = siblingPath(path, code) + (typeof window !== 'undefined' ? window.location.search : '');
       if (path.replace(/\/+$/, '') !== target.replace(/\/+$/, '')) window.location.assign(target);

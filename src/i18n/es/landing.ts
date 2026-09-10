@@ -211,6 +211,8 @@ export const landing: Record<string, string> = {
 
   // ---- footer ----
   'lp.footerAbout': 'Presupuestos, firmas, facturas, pagos y cobro recurrente para contratistas. Hecha por un contratista en Filadelfia, Pensilvania.',
+  'lp.footerGuides': 'Guías',
+  'lp.footerGuidesHref': '/es/guias',
   'lp.footerProduct': 'Producto',
   'lp.footerAccount': 'Cuenta',
   'lp.footerCompany': 'Empresa',

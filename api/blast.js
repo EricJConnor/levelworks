@@ -38,5 +38,6 @@ export default async function handler(req, res) {
   } catch (e) {
     report.errors.push(e.message);
   }
+  console.log('blast', JSON.stringify(report));
   return json(res, report.errors.length ? 500 : 200, { ok: !report.errors.length, ...report });
 }

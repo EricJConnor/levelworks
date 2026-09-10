@@ -74,11 +74,15 @@ export default async function handler(req, res) {
     return false;
   }
 
+  // Nudges are for people who signed up since the launch. Someone from April who never
+  // made an estimate should not get "a week in and no estimate yet" in September.
+  const LAUNCH = new Date('2026-09-09T00:00:00-07:00').getTime();
   let budget = 150; // sends per run, so one bad day cannot spam
   for (const u of users) {
     if (budget <= 0) break;
     const email = (u.email || '').toLowerCase();
-    if (!email) continue;
+    if (!email || email.endsWith('@levelworks.org')) continue;
+    if (new Date(u.created_at).getTime() < LAUNCH) continue;
     const p = byId.get(u.id) || {};
     const lang = normalizeLang(p.lang || u.user_metadata?.lang);
     const ageDays = (now - new Date(u.created_at).getTime()) / DAY;
@@ -122,5 +126,7 @@ export default async function handler(req, res) {
     }
   }
 
+  // Into the Vercel log, so a run can be read there without the secret.
+  console.log('cron-annual', JSON.stringify({ dry, ...report }));
   return json(res, 200, { ok: true, dry, ...report });
 }

@@ -18,8 +18,10 @@ export default async function handler(req, res) {
   if (missing.length) return json(res, 503, { error: 'not_configured', message: `Missing in Vercel: ${missing.join(', ')}` });
   try {
     const report = await syncAudience({ dry: url.searchParams.get('dry') === '1' });
+    console.log('sync-audience', JSON.stringify(report));
     return json(res, 200, { ok: true, ...report });
   } catch (e) {
+    console.error('sync-audience', e.message);
     return json(res, 500, { ok: false, error: e.message });
   }
 }

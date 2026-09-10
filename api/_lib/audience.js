@@ -21,7 +21,7 @@ export const AUDIENCES = {
   es: 'LevelWorks users · Español',
 };
 
-async function resend(path, init = {}) {
+export async function resend(path, init = {}) {
   const r = await fetch(RESEND + path, {
     ...init,
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json', ...(init.headers || {}) },

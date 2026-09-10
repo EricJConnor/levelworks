@@ -161,14 +161,18 @@ export async function sendMail({ to, subject, html, text }) {
 }
 
 /** Plain, short, from Eric. One column, one button, no header graphic. */
-export function layout({ lang, lines, cta, ctaUrl, ps, image }) {
+export function layout({ lang, lines, cta, ctaUrl, ps, image, unsubscribe }) {
   const btn = cta ? `<p style="margin:26px 0"><a href="${ctaUrl}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;font-weight:600;font-size:16px;padding:14px 22px;border-radius:10px">${escapeHtml(cta)}</a></p>` : '';
   const img = image ? `<p style="margin:22px 0"><img src="${image}" alt="" width="360" style="width:100%;max-width:360px;border:1px solid #e6e9ef;border-radius:12px;display:block"></p>` : '';
   const body = lines.map(l => `<p style="margin:0 0 16px;font-size:16px;line-height:1.55;color:#0b1220">${l}</p>`).join('');
   const psHtml = ps ? `<p style="margin:26px 0 0;font-size:14px;line-height:1.5;color:#5b6472">${ps}</p>` : '';
-  const foot = lang === 'es'
+  // Broadcasts carry Resend's unsubscribe link; the placeholder is filled per recipient at send time.
+  const unsub = unsubscribe
+    ? ` · <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color:#8a93a3">${lang === 'es' ? 'Cancelar suscripción' : 'Unsubscribe'}</a>`
+    : '';
+  const foot = (lang === 'es'
     ? 'LevelWorks · Wyncote, PA · Responde a este correo y te llega a Eric.'
-    : 'LevelWorks · Wyncote, PA · Reply to this email and it reaches Eric.';
+    : 'LevelWorks · Wyncote, PA · Reply to this email and it reaches Eric.') + unsub;
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;background:#f5f7fb;font-family:Inter,-apple-system,Segoe UI,Roboto,sans-serif">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f7fb;padding:28px 12px"><tr><td align="center">

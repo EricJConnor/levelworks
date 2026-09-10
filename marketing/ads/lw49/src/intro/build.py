@@ -10,7 +10,7 @@ Outputs: ../../lw49_<story>_<size>[_es].mp4      (the files that go to Meta)
 
 The intro is tone-mapped to SDR, cropped to the ad's frame, captioned with his words
 (feeds play silent) in the ad's language, and cross-faded into the phone story.
-Audio: his voice, normalised, then silence under the story.
+Audio: his voice, normalised, then (with LW49_MUSIC=<file>) a music bed under the story only.
 """
 import subprocess, sys, os, pathlib
 from PIL import Image, ImageDraw, ImageFont
@@ -23,6 +23,16 @@ BASE = HERE.parent / 'base'
 OUT = HERE.parent.parent
 INTRO_END = 5.6          # after "Check it out."
 XF = 0.35                # crossfade into the story
+DUR = 27                 # length of the phone story render
+MUSIC_LUFS = -25         # the bed sits ~8 dB under his voice (intro is normalised to -16)
+# Music under the phone story only, never under his voice (Eric, Sep 10). A Mixkit Stock Music
+# Free License track; its integrated loudness is measured here so every track lands at the same level.
+MUSIC = os.environ.get("LW49_MUSIC", str(HERE / "music-1167.mp3"))  # "Close Up", Eric's pick, plays to the end
+
+def lufs(path):
+    r = subprocess.run([FF, '-hide_banner', '-nostats', '-i', str(path), '-t', str(DUR), '-af', 'ebur128', '-f', 'null', '-'], capture_output=True, text=True)
+    lines = [l for l in r.stderr.splitlines() if l.strip().startswith('I:')]
+    return float(lines[-1].split()[1])
 
 CAPS = {
     'en': [(0.0, 1.6, "My name is Eric, I'm a contractor"), (1.6, 4.4, "and I made an app called levelworks.org"), (4.4, 5.6, "Check it out.")],
@@ -68,18 +78,26 @@ def intro(size, lang):
          '-r', '30', '-c:a', 'aac', '-b:a', '128k', '-ar', '48000', str(out)])
     return out
 
-def final(story, size, lang):
+def final(story, size, lang, music=MUSIC, out=None):
     suf = '' if lang == 'en' else '_es'
     base = BASE / f'lw49_{story}_{size}{suf}.mp4'
-    out = OUT / f'lw49_{story}_{size}{suf}.mp4'
+    out = pathlib.Path(out) if out else OUT / f'lw49_{story}_{size}{suf}.mp4'
     ip = intro(size, lang)
-    run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(ip), '-i', str(base),
-         '-f', 'lavfi', '-t', '27', '-i', 'anullsrc=r=48000:cl=stereo',
-         '-filter_complex', f"[0:v][1:v]xfade=transition=fade:duration={XF}:offset={INTRO_END-XF}[v];[0:a][2:a]acrossfade=d={XF}[a]",
+    bed_len = DUR                        # acrossfade eats XF: intro (5.6) + DUR - XF = the 32.25s video, so the bed runs to the last frame
+    if music:
+        gain = MUSIC_LUFS - lufs(music)
+        bed_in = ['-i', str(music)]
+        bed = (f"[2:a]atrim=0:{bed_len},asetpts=PTS-STARTPTS,volume={gain:.1f}dB,"
+               f"afade=t=in:st=0:d=1.4,afade=t=out:st={bed_len-0.25}:d=0.25,aresample=48000[m]")
+    else:
+        bed_in = ['-f', 'lavfi', '-t', str(bed_len), '-i', 'anullsrc=r=48000:cl=stereo']
+        bed = "[2:a]anull[m]"
+    run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(ip), '-i', str(base), *bed_in,
+         '-filter_complex', f"[0:v][1:v]xfade=transition=fade:duration={XF}:offset={INTRO_END-XF}[v];{bed};[0:a][m]acrossfade=d={XF}[a]",
          '-map', '[v]', '-map', '[a]', '-c:v', 'libx264', '-preset', 'slow', '-crf', '22', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
          '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '128k', str(out)])
     # first frame as the static fallback
-    run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(out), '-frames:v', '1', str(OUT / f'lw49_{story}_{size}{suf}.png')])
+    run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(out), '-frames:v', '1', str(out.with_suffix('.png'))])
     print('final', out.name, round(out.stat().st_size / 1e6, 2), 'MB')
 
 if __name__ == '__main__':

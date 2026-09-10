@@ -20,6 +20,8 @@ Status is kept here as each box is actually run. "Pass" means it was run and see
 | `CRON_SECRET` | the random string given in chat |
 | `RESEND_API_KEY` | optional. With it, emails come from "Eric at LevelWorks <eric@levelworks.org>"; without it they go through the app's existing send-email function from noreply@levelworks.org |
 
+**LIVE since Sep 9 2026, 6:30pm PT** (Eric funded the account and said roll). Campaign, both ad sets and all six ads ACTIVE; the ads were in Meta's final delivery check at the moment of enabling. Runs through Sep 16, 6:30pm PT, $200 lifetime. Rules for the week: `README.md`.
+
 ## Pre-launch checks (run Sep 9 2026)
 
 | # | Check | Status |

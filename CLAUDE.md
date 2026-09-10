@@ -418,3 +418,15 @@ $200 spent in the first 18h, ~230 reach, 5 link clicks, 0 purchases, spend cap 0
 Spanish set early. Normal. Nothing to touch before Friday evening (48h rule). The two Supabase users
 created Sep 8 (`…in@getapservices.com`, `y.m.moore@gmail.com`) are organic sign-ups from before the
 ads went live, not ad results.
+
+**Deliverability, Sep 10 (afternoon).** The first blast went to Eric's own Gmail spam with the
+button dead (Gmail disables links inside the spam folder). Cause was DNS, not the copy: the Resend
+SPF record had been pasted under `resend._domainkey` instead of `send`, so `send.levelworks.org`
+had no SPF and the DKIM selector carried a stray second TXT; with `_dmarc` at `p=quarantine` that
+is a guaranteed spam folder. Eric fixed both records in GoDaddy the same day (TXT `send` =
+`v=spf1 include:amazonses.com ~all`; the stray one deleted), verified from here by DNS lookup.
+Broadcasts now also carry a plain-text part (`toText` in `broadcasts.js`). **Write off the Sep 10
+blast as a cold start** and send a second one with a fresh opening a few days later, as a new
+`EMAILS` entry (the name lock will not resend the first). Check `_dmarc`, `send` and
+`resend._domainkey` with a DNS lookup before any future blast; `dig` is not installed here,
+`node -e "require('node:dns').promises.resolveTxt(...)"` works.

@@ -416,7 +416,7 @@ const qs = (sel, root = scr) => root.querySelector(sel);
 const qsa = (sel, root = scr) => [...root.querySelectorAll(sel)];
 
 // phone placement per size
-const PH = SIZE === '9x16' ? (STORY === 'estimate' ? { scale: 1.9, top: 440, h: 590 } : { scale: 1.9, top: 520, h: 540 }) : (STORY === 'estimate' ? { scale: 1.55, top: 184, h: 500 } : { scale: 1.62, top: 250, h: 440 });
+const PH = SIZE === '9x16' ? (STORY === 'estimate' ? { scale: 2.05, top: 440, h: 546 } : { scale: 2.05, top: 520, h: 507 }) : (STORY === 'estimate' ? { scale: 1.55, top: 184, h: 500 } : { scale: 1.62, top: 250, h: 440 });
 phone.style.height = PH.h + 'px';
 // Total duration 15s. Timeline (seconds):
 const FLIP_AT = 11.0, FLIP_D = .6, HOLD = 3.2;    // flip to the other language at 11.0, hold 3.2s with a line, flip back

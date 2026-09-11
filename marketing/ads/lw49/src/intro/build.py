@@ -94,7 +94,7 @@ def final(story, size, lang, music=MUSIC, out=None):
         bed = "[2:a]anull[m]"
     run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(ip), '-i', str(base), *bed_in,
          '-filter_complex', f"[0:v][1:v]xfade=transition=fade:duration={XF}:offset={INTRO_END-XF}[v];{bed};[0:a][m]acrossfade=d={XF}[a]",
-         '-map', '[v]', '-map', '[a]', '-c:v', 'libx264', '-preset', 'slow', '-crf', '22', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
+         '-map', '[v]', '-map', '[a]', '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
          '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '128k', str(out)])
     # first frame as the static fallback
     run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(out), '-frames:v', '1', str(out.with_suffix('.png'))])

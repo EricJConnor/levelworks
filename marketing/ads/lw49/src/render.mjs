@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const OUT = path.resolve(here, '..');
+const OUT = path.resolve(here, 'base');   // intermediate renders; build.py adds the intro and music
 const FFMPEG = process.env.FFMPEG || '/usr/local/lib/python3.11/dist-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v7.0.2';
 const DIMS = { '1x1': [1080, 1080], '9x16': [1080, 1920] };
 const FPS = 30, DUR = 27;
@@ -59,8 +59,9 @@ async function video(browser, story, size, lang) {
   const encode = crf => execFileSync(FFMPEG, ['-y', '-framerate', String(FPS), '-i', `${dir}/f%04d.png`,
     '-c:v', 'libx264', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-crf', String(crf), '-preset', 'slow',
     '-movflags', '+faststart', '-r', String(FPS), mp4], { stdio: 'ignore' });
-  let crf = 23; encode(crf);
-  while (statSync(mp4).size > 4 * 1024 * 1024 && crf < 34) { crf += 2; encode(crf); }
+  // Near-lossless: this file is re-encoded twice more (intro+music, then Meta's own transcode), and
+  // the phone's UI text is 11-15px; every lossy generation below this made it mush on Stories.
+  const crf = 16; encode(crf);
   console.log('video', mp4, (statSync(mp4).size / 1024 / 1024).toFixed(2) + 'MB', 'crf', crf);
   rmSync(dir, { recursive: true, force: true });
 }

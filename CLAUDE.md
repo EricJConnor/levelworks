@@ -395,8 +395,12 @@ ad sets **`52548403738937` LW49-EN-LPV / `52548403747337` LW49-ES-LPV** (LANDING
 targeting, no promoted_object and no attribution_spec: Meta rejects both for this goal, and the
 `+` in timestamps must be URL-encoded), six ads reusing the sharp creatives by `creative_id`
 (EN estimate `52548403760537`, invoice `52548403763737`, recurring `52548403770737`; ES estimate
-`52548403783737`, invoice `52548403790137`, recurring `52548403801937`). The original campaign
-`52547713746537` is PAUSED with its $63.54 of history; do not delete it. Runs to Sep 16 6:30pm PT.
+`52548403783737`, invoice `52548403790137`, recurring `52548403801937`). **The LPV campaign never delivered**: nine hours after activation, everything ACTIVE and approved,
+zero impressions, `delivery_estimate` reporting `estimate_dau: 0`. So at 4pm PT Sep 11 the original
+campaign `52547713746537` was switched back ON (its $136.46 remaining budget is still there) so the
+evening was not lost; the LPV campaign is left ACTIVE in case Meta starts it. If it still shows zero
+by Sep 12, pause it and stop chasing it; the purchase-optimised campaign is the one running. Do not
+delete either campaign. Runs to Sep 16 6:30pm PT.
 
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also

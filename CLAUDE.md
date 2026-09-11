@@ -336,6 +336,18 @@ move once it was in the past; `+` in a Graph timestamp must be URL-encoded or it
 $200 lifetime, CBO. Rules for the week are in `marketing/ads/lw49/README.md`: nothing touched for the
 first 48h, then read cost per purchase.
 
+**Switched to landing-page-view optimisation, Sep 11 6:50am PT (Eric: "do it now").** Day 1.5 read:
+$63.54, 646 reached, 24 link clicks, 19 landing page views, 0 purchases, CPM ~$79: Meta was bidding
+for purchases on a pixel with no purchase history. The change cannot be made inside a CBO campaign
+(error 1885760, "duplicate the campaign"), so the live campaign is now **`52548403713537`
+LW49-Annual-Launch-Sep2026-LPV** (OUTCOME_TRAFFIC, lifetime $136.46 = the unspent remainder, CBO),
+ad sets **`52548403738937` LW49-EN-LPV / `52548403747337` LW49-ES-LPV** (LANDING_PAGE_VIEWS, same
+targeting, no promoted_object and no attribution_spec: Meta rejects both for this goal, and the
+`+` in timestamps must be URL-encoded), six ads reusing the sharp creatives by `creative_id`
+(EN estimate `52548403760537`, invoice `52548403763737`, recurring `52548403770737`; ES estimate
+`52548403783737`, invoice `52548403790137`, recurring `52548403801937`). The original campaign
+`52547713746537` is PAUSED with its $63.54 of history; do not delete it. Runs to Sep 16 6:30pm PT.
+
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also
 has an empty personal ad account `2227206028141508`, and Ads Manager opens on that one by default,

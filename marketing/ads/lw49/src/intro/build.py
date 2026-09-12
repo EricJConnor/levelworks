@@ -12,7 +12,7 @@ The intro is tone-mapped to SDR, cropped to the ad's frame, captioned with his w
 (feeds play silent) in the ad's language, and cross-faded into the phone story.
 Audio: his voice, normalised, then (with LW49_MUSIC=<file>) a music bed under the story only.
 """
-import subprocess, sys, os, pathlib
+import subprocess, sys, os, pathlib, re
 from PIL import Image, ImageDraw, ImageFont
 
 HERE = pathlib.Path(__file__).parent
@@ -100,11 +100,14 @@ def final(story, size, lang, music=MUSIC, out=None):
     run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(out), '-frames:v', '1', str(out.with_suffix('.png'))])
     print('final', out.name, round(out.stat().st_size / 1e6, 2), 'MB')
 
-def plain(story, size, lang, music=MUSIC, dur=20):
+def plain(story, size, lang, music=MUSIC, dur=None):
     """No intro: the base render with the music bed from the first frame (the second-run ad)."""
     suf = '' if lang == 'en' else '_es'
     base = BASE / f'lw49_{story}_{size}{suf}.mp4'
     out = OUT / f'lw49_{story}_{size}{suf}.mp4'
+    if dur is None:
+        pr = subprocess.run([FF, '-i', str(base)], capture_output=True, text=True).stderr
+        h, m, sec = re.search(r'Duration: (\d+):(\d+):([\d.]+)', pr).groups(); dur = int(h) * 3600 + int(m) * 60 + float(sec)
     gain = -16 - lufs(music)                 # no voice to sit under: full ad loudness, where Meta normalises to
     run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(base), '-i', str(music),
          '-filter_complex', f"[1:a]atrim=0:{dur},asetpts=PTS-STARTPTS,volume={gain:.1f}dB,afade=t=in:st=0:d=0.6,afade=t=out:st={dur-0.5}:d=0.5,aresample=48000[a]",

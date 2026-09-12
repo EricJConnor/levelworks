@@ -38,9 +38,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--navy);font-fam
 .offer b{color:#fff}
 /* the flying words */
 .fly{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;opacity:0;
-  font-size:104px;font-weight:800;letter-spacing:-.045em;line-height:1;color:#fff;white-space:nowrap;will-change:transform,opacity}
-.s916 .fly{font-size:118px;top:47%}
-.fly small{display:block;font-size:.42em;font-weight:600;letter-spacing:-.02em;color:var(--sky);margin-top:14px;white-space:normal}
+  font-size:112px;font-weight:800;letter-spacing:-.045em;line-height:1;color:#fff;white-space:nowrap;will-change:transform,opacity}
+.s916 .fly{font-size:128px;top:47%}
+.fly small{display:block;font-size:.62em;font-weight:700;letter-spacing:-.03em;color:var(--sky);margin-top:18px;white-space:normal}
+.fly.two small{font-size:1em;color:#fff;margin-top:10px}
 /* the price */
 .price{font-size:300px;font-weight:800;letter-spacing:-.07em;line-height:.9;color:#fff}
 .s916 .price{font-size:340px}
@@ -84,7 +85,7 @@ const T = {
     punch: 'You’re getting <u>ripped off.</u>',
     offer: 'Here at <b>levelworks.org</b> we offer',
     words: [['Unlimited', 'estimates'], ['Unlimited', 'invoices'], ['Billing', 'through Stripe'], ['Your logo', 'on everything'],
-            ['English', 'and Spanish'], ['Recurring', 'billing'], ['Photo', 'updates'], ['And more.', '']],
+            ['English', 'and Español', 'two'], ['Recurring', 'billing'], ['Photo', 'updates'], ['And more.', '']],
     per: 'a month', year: 'Or a full year for <b>$49.</b>',
     free: 'Free for 30 days. Cancel any time.',
   },
@@ -93,7 +94,7 @@ const T = {
     punch: 'Te están <u>cobrando de más.</u>',
     offer: 'En <b>levelworks.org</b> te ofrecemos',
     words: [['Presupuestos', 'ilimitados'], ['Facturas', 'ilimitadas'], ['Cobros', 'con Stripe'], ['Tu logo', 'en todo'],
-            ['Español', 'e inglés'], ['Cobros', 'recurrentes'], ['Fotos', 'de avance'], ['Y más.', '']],
+            ['Español', 'e inglés', 'two'], ['Cobros', 'recurrentes'], ['Fotos', 'de avance'], ['Y más.', '']],
     per: 'al mes', year: 'O un año completo por <b>$49.</b>',
     free: 'Gratis 30 días. Cancela cuando quieras.',
   },
@@ -116,10 +117,10 @@ const win = (t, a, b, f = .3) => t < a ? 0 : t < a + f ? (t - a) / f : t < b - f
 
 const Q_AT = 0.15, PUNCH_AT = 1.55, Q_END = 3.7;
 const OFFER_AT = 3.85, OFFER_END = 5.2;
-const FLY_AT = 5.15, STEP = 1.05;                   // 8 words → ends at 13.55
-const PRICE_AT = FLY_AT + T.words.length * STEP + .05, YEAR_AT = PRICE_AT + 1.6, PRICE_END = PRICE_AT + 3.9;
+const FLY_AT = 5.15, STEP = 1.45;                   // Eric: slower; 8 words → ends at ~16.75
+const PRICE_AT = FLY_AT + T.words.length * STEP + .05, YEAR_AT = PRICE_AT + 1.7, PRICE_END = PRICE_AT + 4.3;
 const END_AT = PRICE_END + .1;
-const DUR = 20;
+const DUR = Math.round((END_AT + 2.8) * 10) / 10;
 window.DUR = DUR;
 
 function show(el, op, y = 0, s = 1) {
@@ -143,12 +144,13 @@ function render(t) {
   const k = Math.floor((t - FLY_AT) / STEP);
   if (t >= FLY_AT && k < T.words.length) {
     const u = (t - FLY_AT - k * STEP) / STEP;            // 0..1 within this word
-    const [a, b] = T.words[k];
+    const [a, b, cls] = T.words[k];
+    fly.className = 'fly' + (cls ? ' ' + cls : '');
     fly.innerHTML = `${a}${b ? `<small>${b}</small>` : ''}`;
     let s, op, blur = 0, x = 0;
-    if (u < .22) { const e = out(u / .22); s = .12 + .88 * e; op = e; blur = (1 - e) * 6; }        // arrives from far
-    else if (u < .82) { s = 1 + (u - .22) * .06; op = 1; }                                            // holds, creeping closer
-    else { const e = inn((u - .82) / .18); s = 1.04 + e * 3.2; op = 1 - e; blur = e * 10; }           // flies past the camera
+    if (u < .2) { const e = out(u / .2); s = .12 + .88 * e; op = e; blur = (1 - e) * 6; }          // arrives from far
+    else if (u < .86) { s = 1 + (u - .2) * .05; op = 1; }                                             // holds, creeping closer
+    else { const e = inn((u - .86) / .14); s = 1.03 + e * 3.2; op = 1 - e; blur = e * 10; }           // flies past the camera
     x = (k % 2 ? 1 : -1) * (s > 1.1 ? (s - 1) * 120 : 0);
     fly.style.opacity = op;
     fly.style.filter = blur ? `blur(${blur}px)` : 'none';

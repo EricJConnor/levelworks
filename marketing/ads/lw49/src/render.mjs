@@ -17,7 +17,7 @@ const OUT = path.resolve(here, 'base');   // intermediate renders; build.py adds
 const FFMPEG = process.env.FFMPEG || '/usr/local/lib/python3.11/dist-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v7.0.2';
 const DIMS = { '1x1': [1080, 1080], '9x16': [1080, 1920] };
 const FPS = 30;
-const DUR_OF = story => story === 'ripoff' ? 20 : 27;       // ripoff.html is the 20s second-run ad
+const DUR_OF = story => story === 'ripoff' ? 24 : 27;       // ripoff.html sets window.DUR; keep this in step with it
 const FILE_OF = story => story === 'ripoff' ? 'ripoff.html' : 'ad.html';
 
 const [, , mode, ...rest] = process.argv;
@@ -49,7 +49,8 @@ async function video(browser, story, size, lang) {
   const n = name(story, size, lang);
   const dir = `${here}/out/frames/${n}`;
   rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
-  const frames = FPS * DUR_OF(story);
+  const dur = (await page.evaluate(() => window.DUR)) || DUR_OF(story);
+  const frames = Math.round(FPS * dur);
   for (let i = 0; i < frames; i++) {
     await page.evaluate(t => window.render(t), i / FPS);
     await page.screenshot({ path: `${dir}/f${String(i).padStart(4, '0')}.png`, type: 'png' });

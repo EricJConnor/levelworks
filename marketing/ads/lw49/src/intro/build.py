@@ -105,7 +105,7 @@ def plain(story, size, lang, music=MUSIC, dur=20):
     suf = '' if lang == 'en' else '_es'
     base = BASE / f'lw49_{story}_{size}{suf}.mp4'
     out = OUT / f'lw49_{story}_{size}{suf}.mp4'
-    gain = MUSIC_LUFS + 3 - lufs(music)      # no voice to sit under, so 3 dB louder than the bed
+    gain = -16 - lufs(music)                 # no voice to sit under: full ad loudness, where Meta normalises to
     run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(base), '-i', str(music),
          '-filter_complex', f"[1:a]atrim=0:{dur},asetpts=PTS-STARTPTS,volume={gain:.1f}dB,afade=t=in:st=0:d=0.6,afade=t=out:st={dur-0.5}:d=0.5,aresample=48000[a]",
          '-map', '0:v', '-map', '[a]', '-t', str(dur), '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-profile:v', 'high',

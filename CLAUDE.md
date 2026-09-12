@@ -398,8 +398,8 @@ targeting, no promoted_object and no attribution_spec: Meta rejects both for thi
 `52548403783737`, invoice `52548403790137`, recurring `52548403801937`). **The LPV campaign never delivered**: nine hours after activation, everything ACTIVE and approved,
 zero impressions, `delivery_estimate` reporting `estimate_dau: 0`. So at 4pm PT Sep 11 the original
 campaign `52547713746537` was switched back ON (its $136.46 remaining budget is still there) so the
-evening was not lost; the LPV campaign is left ACTIVE in case Meta starts it. If it still shows zero
-by Sep 12, pause it and stop chasing it; the purchase-optimised campaign is the one running. Do not
+evening was not lost; the LPV campaign was still at zero on Sep 12 morning and is now PAUSED; stop chasing it.
+The purchase-optimised campaign is the one running. Do not
 delete either campaign. Runs to Sep 16 6:30pm PT.
 
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is

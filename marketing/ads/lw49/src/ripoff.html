@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LW49 ad — ripped off</title>
+<link rel="stylesheet" href="inter.css">
+<style>
+/* ------------------------------------------------------------------
+   LW49 ad, second run (Eric, Sep 12): "if you're paying more than $5 a month
+   for estimates you're getting ripped off", then the features fly at the
+   viewer one after another, then the price. Text and music only; Eric on
+   camera comes in the next run. Same rule as ad.html: everything is a pure
+   function of t (seconds) in render(t), no CSS animation, so frames seek exactly.
+   ------------------------------------------------------------------ */
+:root{--navy:#0b1b33;--blue:#2563eb;--sky:#8fb0ff;--pale:#c7d3ec}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--navy);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:#fff}
+#stage{position:relative;width:1080px;height:1080px;overflow:hidden;background:var(--navy);perspective:1200px}
+#stage.s916{height:1920px}
+.glow{position:absolute;left:50%;top:50%;width:1500px;height:1500px;transform:translate(-50%,-50%);
+  background:radial-gradient(closest-side,rgba(37,99,235,.5),rgba(37,99,235,0) 70%);pointer-events:none}
+
+.url{position:absolute;left:0;right:0;top:34px;text-align:center;font-size:30px;font-weight:600;letter-spacing:.02em;color:var(--pale);z-index:60}
+.url b{color:var(--sky);font-weight:600}
+.s916 .url{top:268px;font-size:36px}
+
+/* every text block is centred in the safe area and shown/hidden by render() */
+.blk{position:absolute;left:80px;right:80px;top:50%;transform:translateY(-50%);text-align:center;opacity:0;will-change:transform,opacity}
+.s916 .blk{left:90px;right:90px;top:47%}
+.q{font-size:74px;font-weight:600;letter-spacing:-.035em;line-height:1.08;color:var(--pale)}
+.s916 .q{font-size:88px}
+.q b{color:#fff;font-weight:700}
+.punch{font-size:118px;font-weight:800;letter-spacing:-.05em;line-height:1;color:#fff;margin-top:36px}
+.s916 .punch{font-size:136px}
+.punch u{text-decoration:none;color:#ff5a5a}
+.offer{font-size:64px;font-weight:600;letter-spacing:-.03em;line-height:1.15;color:var(--pale)}
+.s916 .offer{font-size:76px}
+.offer b{color:#fff}
+/* the flying words */
+.fly{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;opacity:0;
+  font-size:104px;font-weight:800;letter-spacing:-.045em;line-height:1;color:#fff;white-space:nowrap;will-change:transform,opacity}
+.s916 .fly{font-size:118px;top:47%}
+.fly small{display:block;font-size:.42em;font-weight:600;letter-spacing:-.02em;color:var(--sky);margin-top:14px;white-space:normal}
+/* the price */
+.price{font-size:300px;font-weight:800;letter-spacing:-.07em;line-height:.9;color:#fff}
+.s916 .price{font-size:340px}
+.price small{font-size:.24em;font-weight:600;letter-spacing:-.02em;color:var(--sky);margin-left:10px}
+.year{font-size:58px;font-weight:600;letter-spacing:-.03em;color:var(--pale);margin-top:44px;opacity:0}
+.s916 .year{font-size:68px}
+.year b{color:#fff}
+/* end */
+.site{font-size:96px;font-weight:800;letter-spacing:-.045em;color:#fff;line-height:1}
+.s916 .site{font-size:108px}
+.site b{color:var(--sky)}
+.free{font-size:46px;font-weight:600;color:var(--pale);margin-top:30px;letter-spacing:-.02em}
+.s916 .free{font-size:54px}
+.mark{display:flex;justify-content:center;margin-bottom:40px}
+.mark svg{width:96px;height:96px}
+.veil{position:absolute;inset:0;background:var(--navy);opacity:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="glow"></div>
+  <div class="url">levelworks<b>.org</b></div>
+  <div class="blk" id="b1"></div>
+  <div class="blk" id="b2"></div>
+  <div class="fly" id="fly"></div>
+  <div class="blk" id="b3"></div>
+  <div class="blk" id="b4"></div>
+  <div class="veil" id="veil"></div>
+</div>
+<script>
+const q = new URLSearchParams(location.search);
+const SIZE = q.get('size') || '1x1';
+const LANG = q.get('lang') || 'en';
+const stage = document.getElementById('stage');
+if (SIZE === '9x16') stage.classList.add('s916');
+const MARK = `<svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="1.5" y="8.5" width="25" height="11" rx="3.5" stroke="#8fb0ff" stroke-width="2"/><rect x="10" y="11" width="8" height="6" rx="1.5" fill="#8fb0ff"/><path d="M4 22.5h20" stroke="#8fb0ff" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+const T = {
+  en: {
+    q: 'Paying more than <b>$5 a month</b> for estimates?',
+    punch: 'You’re getting <u>ripped off.</u>',
+    offer: 'Here at <b>levelworks.org</b> we offer',
+    words: [['Unlimited', 'estimates'], ['Unlimited', 'invoices'], ['Billing', 'through Stripe'], ['Your logo', 'on everything'],
+            ['English', 'and Spanish'], ['Recurring', 'billing'], ['Photo', 'updates'], ['And more.', '']],
+    per: 'a month', year: 'Or a full year for <b>$49.</b>',
+    free: 'Free for 30 days. Cancel any time.',
+  },
+  es: {
+    q: '¿Pagas más de <b>$5 al mes</b> por hacer presupuestos?',
+    punch: 'Te están <u>cobrando de más.</u>',
+    offer: 'En <b>levelworks.org</b> te ofrecemos',
+    words: [['Presupuestos', 'ilimitados'], ['Facturas', 'ilimitadas'], ['Cobros', 'con Stripe'], ['Tu logo', 'en todo'],
+            ['Español', 'e inglés'], ['Cobros', 'recurrentes'], ['Fotos', 'de avance'], ['Y más.', '']],
+    per: 'al mes', year: 'O un año completo por <b>$49.</b>',
+    free: 'Gratis 30 días. Cancela cuando quieras.',
+  },
+}[LANG];
+
+const b1 = document.getElementById('b1'), b2 = document.getElementById('b2'), fly = document.getElementById('fly');
+const b3 = document.getElementById('b3'), b4 = document.getElementById('b4'), veil = document.getElementById('veil');
+b1.innerHTML = `<div class="q">${T.q}</div><div class="punch" id="punch">${T.punch}</div>`;
+b2.innerHTML = `<div class="offer">${T.offer}</div>`;
+b3.innerHTML = `<div class="price">$5<small>${T.per}</small></div><div class="year" id="year">${T.year}</div>`;
+b4.innerHTML = `<div class="mark">${MARK}</div><div class="site">levelworks<b>.org</b></div><div class="free">${T.free}</div>`;
+const punch = document.getElementById('punch'), year = document.getElementById('year');
+
+// ---------------------------------------------------------------- timing
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const out = x => 1 - Math.pow(1 - x, 3);            // ease-out cubic
+const inn = x => x * x * x;                         // ease-in cubic
+const w = (t, a, d) => clamp((t - a) / d);          // 0→1 over [a, a+d]
+const win = (t, a, b, f = .3) => t < a ? 0 : t < a + f ? (t - a) / f : t < b - f ? 1 : t < b ? (b - t) / f : 0;
+
+const Q_AT = 0.15, PUNCH_AT = 1.55, Q_END = 3.7;
+const OFFER_AT = 3.85, OFFER_END = 5.2;
+const FLY_AT = 5.15, STEP = 1.05;                   // 8 words → ends at 13.55
+const PRICE_AT = FLY_AT + T.words.length * STEP + .05, YEAR_AT = PRICE_AT + 1.6, PRICE_END = PRICE_AT + 3.9;
+const END_AT = PRICE_END + .1;
+const DUR = 20;
+window.DUR = DUR;
+
+function show(el, op, y = 0, s = 1) {
+  el.style.opacity = op;
+  el.style.transform = `translateY(calc(-50% + ${y}px)) scale(${s})`;
+}
+
+function render(t) {
+  t = clamp(t, 0, DUR);
+  // 1. the question, then the punch
+  const q1 = out(w(t, Q_AT, .55));
+  const q2 = win(t, Q_AT, Q_END, .3);
+  show(b1, Math.min(q1, q2), (1 - q1) * 40 - (t > PUNCH_AT ? out(w(t, PUNCH_AT, .35)) * 70 : 0));
+  const p = w(t, PUNCH_AT, .3);
+  punch.style.opacity = p;
+  punch.style.transform = `scale(${1.55 - .55 * out(p)})`;
+  // 2. "here at levelworks.org we offer"
+  const o = win(t, OFFER_AT, OFFER_END, .25);
+  show(b2, o, (1 - out(w(t, OFFER_AT, .4))) * 30);
+  // 3. the words, one at a time, coming at the viewer
+  const k = Math.floor((t - FLY_AT) / STEP);
+  if (t >= FLY_AT && k < T.words.length) {
+    const u = (t - FLY_AT - k * STEP) / STEP;            // 0..1 within this word
+    const [a, b] = T.words[k];
+    fly.innerHTML = `${a}${b ? `<small>${b}</small>` : ''}`;
+    let s, op, blur = 0, x = 0;
+    if (u < .22) { const e = out(u / .22); s = .12 + .88 * e; op = e; blur = (1 - e) * 6; }        // arrives from far
+    else if (u < .82) { s = 1 + (u - .22) * .06; op = 1; }                                            // holds, creeping closer
+    else { const e = inn((u - .82) / .18); s = 1.04 + e * 3.2; op = 1 - e; blur = e * 10; }           // flies past the camera
+    x = (k % 2 ? 1 : -1) * (s > 1.1 ? (s - 1) * 120 : 0);
+    fly.style.opacity = op;
+    fly.style.filter = blur ? `blur(${blur}px)` : 'none';
+    fly.style.transform = `translate(${x}px, -50%) scale(${s})`;
+  } else fly.style.opacity = 0;
+  // 4. the price
+  const pr = win(t, PRICE_AT, PRICE_END, .3);
+  const pe = out(w(t, PRICE_AT, .45));
+  show(b3, pr, 0, 1.25 - .25 * pe);
+  const ye = out(w(t, YEAR_AT, .45));
+  year.style.opacity = ye; year.style.transform = `translateY(${(1 - ye) * 26}px)`;
+  // 5. end card
+  const e = out(w(t, END_AT, .5));
+  show(b4, e, (1 - e) * 30);
+  veil.style.opacity = w(t, DUR - .35, .35);
+}
+window.render = render;
+render(0);
+</script>
+</body>
+</html>

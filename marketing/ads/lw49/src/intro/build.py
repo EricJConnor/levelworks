@@ -100,7 +100,24 @@ def final(story, size, lang, music=MUSIC, out=None):
     run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(out), '-frames:v', '1', str(out.with_suffix('.png'))])
     print('final', out.name, round(out.stat().st_size / 1e6, 2), 'MB')
 
+def plain(story, size, lang, music=MUSIC, dur=20):
+    """No intro: the base render with the music bed from the first frame (the second-run ad)."""
+    suf = '' if lang == 'en' else '_es'
+    base = BASE / f'lw49_{story}_{size}{suf}.mp4'
+    out = OUT / f'lw49_{story}_{size}{suf}.mp4'
+    gain = -16 - lufs(music)                 # no voice to sit under: full ad loudness, where Meta normalises to
+    run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(base), '-i', str(music),
+         '-filter_complex', f"[1:a]atrim=0:{dur},asetpts=PTS-STARTPTS,volume={gain:.1f}dB,afade=t=in:st=0:d=0.6,afade=t=out:st={dur-0.5}:d=0.5,aresample=48000[a]",
+         '-map', '0:v', '-map', '[a]', '-t', str(dur), '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
+         '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '128k', str(out)])
+    run([FF, '-y', '-hide_banner', '-loglevel', 'error', '-i', str(out), '-frames:v', '1', str(out.with_suffix('.png'))])
+    print('plain', out.name, round(out.stat().st_size / 1e6, 2), 'MB')
+
 if __name__ == '__main__':
+    if len(sys.argv) >= 2 and sys.argv[1] == 'plain':
+        for size in ('1x1', '9x16'):
+            for lang in ('en', 'es'): plain(sys.argv[2], size, lang)
+        raise SystemExit(0)
     if len(sys.argv) == 4: final(*sys.argv[1:4])
     else:
         for story in ('estimate', 'invoice', 'recurring'):

@@ -109,7 +109,7 @@ export default function AnnualPage() {
   else if (count && count.count >= 50) counterLine = t('an.left', { n: count.left });
   else if (count && count.count >= 25) counterLine = t('an.claimed', { n: count.count });
 
-  const title = lang === 'es' ? 'Un año de LevelWorks por $49' : 'A year of LevelWorks for $49';
+  const title = lang === 'es' ? 'Presupuestos y facturas por $5 al mes' : 'Estimates and invoices for $5 a month';
   const desc = t('an.sub');
   const url = lang === 'es' ? 'https://levelworks.org/es/annual' : 'https://levelworks.org/annual';
   const s = (n: string) => `/marketing/shots/${n}-${lang}.webp`;
@@ -129,10 +129,30 @@ export default function AnnualPage() {
           <h1 className="an-h1">{t('an.h1')}</h1>
           <p className="an-sub">{t('an.sub')}</p>
 
-          <button type="button" className="lw-btn pri lg wide an-cta" onClick={claim} disabled={busy}>
-            {busy ? t('an.ctaBusy') : soldOut ? t('an.ctaSold') : t('an.cta')}
-          </button>
-          <p className={`an-count${tick ? ' tick' : ''}`} aria-live="polite">{counterLine}</p>
+          <div className="an-plans" role="list">
+            <a className="an-plan" role="listitem" href={monthlyHref}>
+              <span className="an-plan-name">{t('an.p1')}</span>
+              <span className="an-plan-price">{t('an.p1price')}</span>
+              <span className="an-plan-note">{t('an.p1note')}</span>
+              <span className="lw-btn sec lg wide">{t('an.p1cta')}</span>
+            </a>
+            <a className="an-plan" role="listitem" href={monthlyHref}>
+              <span className="an-plan-name">{t('an.p2')}</span>
+              <span className="an-plan-price">$5<small>{t('an.p2per')}</small></span>
+              <span className="an-plan-note">{t('an.p2note')}</span>
+              <span className="lw-btn sec lg wide">{t('an.p2cta')}</span>
+            </a>
+            <div className="an-plan best" role="listitem">
+              <span className="an-plan-tag">{t('an.p3tag')}</span>
+              <span className="an-plan-name">{t('an.p3')}</span>
+              <span className="an-plan-price">$49<small>{t('an.p3per')}</small></span>
+              <span className="an-plan-note">{t('an.p3note')}</span>
+              <button type="button" className="lw-btn pri lg wide" onClick={claim} disabled={busy}>
+                {busy ? t('an.ctaBusy') : soldOut ? t('an.ctaSold') : t('an.p3cta')}
+              </button>
+              <span className={`an-count${tick ? ' tick' : ''}`} aria-live="polite">{counterLine}</span>
+            </div>
+          </div>
           {err && <p className="an-err" role="alert">{err}</p>}
           <p className="an-secure">{t('an.secure')}</p>
 
@@ -146,6 +166,18 @@ export default function AnnualPage() {
           <div className="an-feat">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z" /><path d="M14 3v5h5M10 12h6M10 16h6" /></svg>
             <div><b>{t('an.f1')}</b><span>{t('an.f1d')}</span></div>
+          </div>
+          <div className="an-feat">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" /><path d="M3 10h18M7 15h4" /></svg>
+            <div><b>{t('an.f4')}</b><span>{t('an.f4d')}</span></div>
+          </div>
+          <div className="an-feat">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" /></svg>
+            <div><b>{t('an.f5')}</b><span>{t('an.f5d')}</span></div>
+          </div>
+          <div className="an-feat">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><circle cx="12" cy="12" r="3.5" /><path d="M8 5l1.5-2h5L16 5" /></svg>
+            <div><b>{t('an.f6')}</b><span>{t('an.f6d')}</span></div>
           </div>
           <div className="an-feat">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18M7 15h4" /></svg>

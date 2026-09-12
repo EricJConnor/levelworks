@@ -402,6 +402,14 @@ evening was not lost; the LPV campaign was still at zero on Sep 12 morning and i
 The purchase-optimised campaign is the one running. Do not
 delete either campaign. Runs to Sep 16 6:30pm PT.
 
+**Second run live, Sep 12 ~2pm PT (Eric: "I love it").** The "ripped off" ad (`ripoff.html`, 24s,
+text and music, cut 2) is on the original campaign as two ads, one per ad set: EN `52548598910537`
+in `52547713777737`, ES `52548598938537` in `52547713784537`, each carrying feed 1:1 and Stories
+9:16 by placement. The six phone-story ads are PAUSED, not deleted. Primary text leads with the
+same line ("If you're paying more than $5 a month for estimates, you're getting ripped off"),
+headline "Estimates and invoices for $5 a month", link `/annual?...utm_content=rippedoff`. Next run:
+Eric on camera saying the opening line (he is away with family this weekend; ask for a 10s clip).
+
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also
 has an empty personal ad account `2227206028141508`, and Ads Manager opens on that one by default,

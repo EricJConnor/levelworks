@@ -20,6 +20,8 @@ Status is kept here as each box is actually run. "Pass" means it was run and see
 | `CRON_SECRET` | the random string given in chat |
 | `RESEND_API_KEY` | optional. With it, emails come from "Eric at LevelWorks <eric@levelworks.org>"; without it they go through the app's existing send-email function from noreply@levelworks.org |
 
+**Sep 12, 6pm PT: feed fix.** Every impression since launch had been Reels/Stories only (the square video's placement rule named no positions, so the feed was skipped). New ads with explicit feed positions: EN `52548679697337`, ES `52548679701337`; the 2pm pair is paused.
+
 **Sep 12, ~2pm PT: second run.** The 'ripped off' ad replaced the six phone-story ads on the original campaign: EN `52548598910537`, ES `52548598938537` (feed and Stories in each); the old six are paused. `/annual` now opens on the same question with the three choices (free trial, $5 a month, $49 a year).
 
 **Sep 11, 6:50am PT: moved to a new campaign `52548403713537` optimised for landing page views** (ad sets `52548403738937` EN / `52548403747337` ES, same ads by creative id, $136.46 remaining budget, through Sep 16 6:30pm PT); the original campaign is paused, not deleted. Reason: $63.54 in, 0 purchases, CPM ~$79 while bidding for purchases on a pixel with no purchase history.

@@ -410,6 +410,21 @@ same line ("If you're paying more than $5 a month for estimates, you're getting 
 headline "Estimates and invoices for $5 a month", link `/annual?...utm_content=rippedoff`. Next run:
 Eric on camera saying the opening line (he is away with family this weekend; ask for a 10s clip).
 
+**The feed was never served, and this is the biggest finding of the launch (Sep 12, 6pm PT).** Eric
+sent a screenshot of the Ads Manager app: "Ad Asset Feed Invalid Target Rule Count For Format: 0
+target rules for MOBILE_FEED_STANDARD, exactly 1 expected". The placement breakdown confirmed it:
+**every impression since Sep 9, on every ad, was Reels or Stories; zero in the Facebook or
+Instagram feed.** The square video's rule had no positions listed (meant as a catch-all) and Meta
+matched nothing to the feed, so it skipped the feed and bought only the most expensive placements
+(CPM ~$79). Fixed by giving the square rule explicit positions: facebook `feed, video_feeds,
+marketplace, search, instream_video`, instagram `stream, explore, explore_home, profile_feed,
+ig_search`, messenger `messenger_home`, audience_network `classic, rewarded_video`; the tall rule
+keeps `story, facebook_reels` / `story, reels` / messenger `story`. Live ads are now EN
+`52548679697337` and ES `52548679701337` (v2); the v1 pair is paused. **Every rule in an
+`asset_customization_rules` list must name positions; a rule without positions is not a
+catch-all.** Read the placement breakdown (`breakdowns=publisher_platform,platform_position`)
+before believing any CPM.
+
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also
 has an empty personal ad account `2227206028141508`, and Ads Manager opens on that one by default,

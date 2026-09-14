@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { linePricesShown, lineAmountShown } from '@/lib/linePrices';
 import { useParams } from 'react-router-dom';
 import { SignatureCanvas } from '@/components/SignatureCanvas';
 import { supabase } from '@/lib/supabase';
@@ -50,6 +51,7 @@ export const EstimateView: React.FC = () => {
   const subtotal = estimate.lineItems?.reduce((sum: number, item: any) => sum + item.total, 0) || 0;
   const tax = subtotal * ((estimate.taxRate || 0) / 100);
   const total = subtotal + tax;
+  const pricesShown = linePricesShown(estimate.lineItems);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -75,25 +77,25 @@ export const EstimateView: React.FC = () => {
           <thead className="bg-gray-100">
             <tr>
               <th className="p-3 text-left">Description</th>
-              <th className="p-3 text-right">Qty</th>
+              {pricesShown && <><th className="p-3 text-right">Qty</th>
               <th className="p-3 text-right">Rate</th>
-              <th className="p-3 text-right">Total</th>
+              <th className="p-3 text-right">Total</th></>}
             </tr>
           </thead>
           <tbody>
             {estimate.lineItems?.map((item: any, idx: number) => (
               <tr key={idx} className="border-t">
                 <td className="p-3 whitespace-pre-wrap">{item.description}</td>
-                <td className="p-3 text-right">{item.quantity}</td>
-                <td className="p-3 text-right">${item.rate.toFixed(2)}</td>
-                <td className="p-3 text-right font-semibold">${item.total.toFixed(2)}</td>
+                {pricesShown && (lineAmountShown(item, true)
+                  ? <><td className="p-3 text-right">{item.quantity}</td><td className="p-3 text-right">${Number(item.rate || 0).toFixed(2)}</td><td className="p-3 text-right font-semibold">${Number(item.total || 0).toFixed(2)}</td></>
+                  : <td className="p-3" colSpan={3} />)}
               </tr>
             ))}
           </tbody>
         </table>
 
         <div className="border-t pt-4 max-w-md ml-auto space-y-2 mb-8">
-          <div className="flex justify-between"><span>Subtotal:</span><span>${subtotal.toFixed(2)}</span></div>
+          {pricesShown && <div className="flex justify-between"><span>Subtotal:</span><span>${subtotal.toFixed(2)}</span></div>}
           <div className="flex justify-between"><span>Tax ({estimate.taxRate}%):</span><span>${tax.toFixed(2)}</span></div>
           <div className="flex justify-between text-xl font-bold border-t pt-2"><span>Total:</span><span className="text-blue-600">${total.toFixed(2)}</span></div>
         </div>

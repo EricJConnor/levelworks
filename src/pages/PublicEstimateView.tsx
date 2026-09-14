@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { linePricesShown, lineAmountShown } from '@/lib/linePrices';
 import { useParams } from 'react-router-dom';
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 import { Card } from '@/components/ui/card';
@@ -170,6 +171,7 @@ export default function PublicEstimateView() {
   };
 
   const lineItems = parseLineItems(estimate.line_items);
+  const pricesShown = linePricesShown(lineItems);
   const total = Number(estimate.total) || 0;
   const isSigned = !!estimate.signed_at;
 
@@ -215,7 +217,7 @@ export default function PublicEstimateView() {
               {lineItems.map((item: any, idx: number) => (
                 <div key={idx} className="p-3 border-b border-gray-200 last:border-0">
                   <p className="font-medium text-gray-800 whitespace-pre-wrap">{item.description}</p>
-                  <p className="text-right font-semibold">${Number(item.total || 0).toFixed(2)}</p>
+                  {lineAmountShown(item, pricesShown) && <p className="text-right font-semibold">${Number(item.total || 0).toFixed(2)}</p>}
                 </div>
               ))}
             </div>

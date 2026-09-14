@@ -12,6 +12,8 @@ export const estimates: Record<string, string> = {
   'est.totals': 'Totals',
   'est.itemCount': '{n} item',
   'est.itemsCount': '{n} items',
+  'est.showLinePrices': 'Show line prices',
+  'est.showLinePricesHint': 'Off: the client sees the descriptions and one total.',
   'est.taxRatePercent': 'Tax rate percent',
   'est.depositAmount': 'Deposit amount',
 

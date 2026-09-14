@@ -58,11 +58,29 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--navy);font-fam
 .mark{display:flex;justify-content:center;margin-bottom:40px}
 .mark svg{width:96px;height:96px}
 .veil{position:absolute;inset:0;background:var(--navy);opacity:0;pointer-events:none}
+/* the app in the background (Eric, Sep 14: 'a little plain', 'a phone creating estimates', and fill
+   the tall version's dead space). Real app screenshots in a phone body, dimmed, drifting, the screen
+   slowly scrolling and swapping estimate → invoice → recurring. Never brighter than the words. */
+.bgphone{position:absolute;left:50%;top:0;width:390px;height:844px;background:#000;border-radius:54px;padding:12px;
+  box-shadow:0 60px 120px -40px rgba(0,0,0,.9),0 0 0 2px rgba(255,255,255,.06);transform-origin:center center;z-index:1;will-change:transform,opacity}
+.bgphone .scr{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:#f5f7fb}
+.bgphone .scr img{position:absolute;left:0;top:0;width:100%;height:auto;opacity:0;will-change:transform,opacity}
+.bgphone .notch{position:absolute;left:50%;top:0;transform:translateX(-50%);width:120px;height:32px;background:#000;border-radius:0 0 20px 20px;z-index:2}
+.bgphone .dim{position:absolute;inset:0;border-radius:42px;background:rgba(11,27,51,.62)}
+.bgphone.b916 .dim{background:rgba(11,27,51,.38)}
+/* keeps the words on solid navy: a soft pool of ground behind the text zone */
+.textveil{position:absolute;left:0;right:0;top:0;bottom:0;z-index:2;pointer-events:none;
+  background:radial-gradient(ellipse 62% 34% at 50% 50%,rgba(11,27,51,.94),rgba(11,27,51,.55) 60%,rgba(11,27,51,0) 100%)}
+.s916 .textveil{background:radial-gradient(ellipse 70% 22% at 50% 47%,rgba(11,27,51,.94),rgba(11,27,51,.5) 60%,rgba(11,27,51,0) 100%)}
+.blk,.fly{z-index:3;text-shadow:0 2px 24px rgba(11,27,51,.9)}
+.url{z-index:60}
 </style>
 </head>
 <body>
 <div id="stage">
   <div class="glow"></div>
+  <div class="bgphone" id="bgphone"><div class="notch"></div><div class="scr"><img id="sh0" alt=""><img id="sh1" alt=""><img id="sh2" alt=""><div class="dim"></div></div></div>
+  <div class="textveil"></div>
   <div class="url">levelworks<b>.org</b></div>
   <div class="blk" id="b1"></div>
   <div class="blk" id="b2"></div>
@@ -107,6 +125,13 @@ b2.innerHTML = `<div class="offer">${T.offer}</div>`;
 b3.innerHTML = `<div class="price">$5<small>${T.per}</small></div><div class="year" id="year">${T.year}</div>`;
 b4.innerHTML = `<div class="mark">${MARK}</div><div class="site">levelworks<b>.org</b></div><div class="free">${T.free}</div>`;
 const punch = document.getElementById('punch'), year = document.getElementById('year');
+// the background phone: real app screens, one per third of the ad
+const bg = document.getElementById('bgphone');
+const shots = ['estimate', 'invoice', 'recurring'].map((n, i) => { const el = document.getElementById('sh' + i); el.src = `../../../../public/marketing/shots/${n}-${LANG}.webp`; return el; });
+if (SIZE === '9x16') bg.classList.add('b916');
+const BG = SIZE === '9x16'
+  ? { x: 0,   y: 1000, s: 1.05, rot: -5, drift: 60 }      // the lower half, where the frame was empty
+  : { x: 300, y: 300,  s: 0.78, rot: -9, drift: 40 };     // low right, cropped by the frame, behind the words
 
 // ---------------------------------------------------------------- timing
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
@@ -130,6 +155,20 @@ function show(el, op, y = 0, s = 1) {
 
 function render(t) {
   t = clamp(t, 0, DUR);
+  // 0. the phone in the background: eases in, drifts up a touch over the whole ad, screen scrolls,
+  //    estimate → invoice → recurring with a short crossfade at the thirds
+  const bi = out(w(t, 0.1, 1.2));
+  const drift = -BG.drift * (t / DUR);
+  bg.style.opacity = bi * (1 - w(t, DUR - .5, .5));
+  bg.style.transform = `translate(calc(-50% + ${BG.x}px), ${BG.y + 40 * (1 - bi) + drift}px) rotate(${BG.rot}deg) scale(${BG.s})`;
+  const seg = DUR / 3;
+  shots.forEach((el, i) => {
+    const a = i * seg, b = a + seg;
+    const op = i === 0 ? (t < b ? 1 - w(t, b - .6, .6) : 0) : win(t, a - .6, b, .6);
+    el.style.opacity = op;
+    const local = clamp((t - a) / seg);                     // the screen scrolls slowly while it shows
+    el.style.transform = `translateY(${-140 * local}px)`;
+  });
   // 1. the question, then the punch
   const q1 = out(w(t, Q_AT, .55));
   const q2 = win(t, Q_AT, Q_END, .3);

@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { sendInvoiceEmail } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { autoGrowTextarea } from '@/lib/utils';
-import { useT } from '@/i18n';
+import { useT, LanguageToggle } from '@/i18n';
 import { useTranslator } from './Translate';
 import { looksSpanish } from '@/lib/translate';
 
@@ -432,6 +432,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
           </div>
           <div className="lv-inline">
             <span className="eb-head-total lv-num lv-hide-mobile">{money(total)}</span>
+            <LanguageToggle />
             <button className="lv-icon-btn" onClick={handleClose} aria-label={t('a.close')}><X size={20} /></button>
           </div>
         </header>

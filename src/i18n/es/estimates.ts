@@ -112,7 +112,7 @@ export const estimates: Record<string, string> = {
   'tr.allCurrentBody': 'La copia del cliente ya coincide con lo que escribiste. Edita una línea si quieres cambiarla.',
   'tr.clientCopyReadOnly': 'Esto es lo que ve el cliente. Para cambiarlo, edita en “Tus palabras” y traduce otra vez.',
   'tr.toEnglish': 'Traducir al inglés',
-  'tr.toSpanish': 'Translate to Spanish',
+  'tr.toSpanish': 'Traducir al español',
   'tr.translating': 'Traduciendo…',
   'tr.title': 'Revisa la traducción',
   'tr.intro': 'Así queda el trabajo en inglés. Revísalo y aplícalo, o cancela y no cambia nada.',

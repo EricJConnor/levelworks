@@ -108,7 +108,7 @@ export const estimates: Record<string, string> = {
   'tr.allCurrentBody': 'The client copy already matches what you wrote. Edit a line first if you want to change it.',
   'tr.clientCopyReadOnly': 'This is what the client sees. To change it, edit under “Your words” and translate again.',
   'tr.toEnglish': 'Translate to English',
-  'tr.toSpanish': 'Traducir al español',
+  'tr.toSpanish': 'Translate to Spanish',
   'tr.translating': 'Translating…',
   'tr.title': 'Check the translation',
   'tr.intro': 'Here is the work in English. Look it over and apply it, or cancel and nothing changes.',

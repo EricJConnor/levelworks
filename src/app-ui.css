@@ -1111,3 +1111,16 @@ button.lv-row:hover, a.lv-row:hover { background: var(--lv-surface-2); }
 .lv-tour-card { position: absolute; width: min(360px, calc(100vw - 32px)); background: var(--lv-surface); border: 1px solid var(--lv-line); border-radius: var(--lv-r-lg); box-shadow: var(--lv-shadow-lg); padding: 16px 18px 14px; }
 .lv-tour-acts { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 14px; }
 .lv-tour-acts .quiet { margin-right: auto; }
+
+/* ---- Switch ---------------------------------------------------------- */
+.lv-switch { position: relative; flex-shrink: 0; width: 44px; height: 26px; padding: 0; border: 0; border-radius: 999px; background: var(--lv-line-2); cursor: pointer; transition: background var(--lv-t) var(--lv-ease); }
+.lv-switch.on { background: var(--lv-blue); }
+.lv-switch:disabled { opacity: .55; cursor: default; }
+.lv-switch-knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: var(--lv-shadow-sm); transition: transform var(--lv-t) var(--lv-ease); }
+.lv-switch.on .lv-switch-knob { transform: translateX(18px); }
+
+/* The line-prices switch in the totals rail: label and hint left, switch right. */
+.eb-sum-row.prices { align-items: flex-start; border-top: 1px solid var(--lv-line); margin-top: 4px; padding-top: 12px; }
+.eb-sum-row.prices .eb-prices-txt { display: flex; flex-direction: column; gap: 2px; }
+.eb-sum-row.prices .eb-prices-txt b { font-weight: 600; color: var(--lv-ink); }
+.eb-sum-row.prices .eb-prices-txt .lv-small { color: var(--lv-muted); }

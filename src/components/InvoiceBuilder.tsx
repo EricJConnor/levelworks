@@ -9,6 +9,8 @@ import { autoGrowTextarea } from '@/lib/utils';
 import { useT, LanguageToggle } from '@/i18n';
 import { useTranslator } from './Translate';
 import { looksSpanish } from '@/lib/translate';
+import { linePricesShown, lineAmountShown, rememberedLinePrices, rememberLinePrices } from '@/lib/linePrices';
+import { Switch } from './Switch';
 
 interface InvoiceBuilderProps {
   estimateId?: string;
@@ -30,6 +32,10 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   const [projectName, setProjectName] = useState(initialData?.projectName || '');
   const [lineItems, setLineItems] = useState(initialData?.lineItems || [{ description: '', quantity: 1, rate: 0 }]);
   const [taxRate, setTaxRate] = useState(initialData?.taxRate || 0);
+  // Prices per line on the client's copy, or only the total. Carried over from
+  // the estimate it came from; a fresh invoice opens the way he left the last.
+  const [showPrices, setShowPricesState] = useState<boolean>(initialData?.lineItems?.length ? linePricesShown(initialData.lineItems) : rememberedLinePrices());
+  const setShowPrices = (v: boolean) => { setShowPricesState(v); rememberLinePrices(v); };
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
   const [sending, setSending] = useState(false);
@@ -153,7 +159,8 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         description: safeString(item.description),
         quantity: safeNumber(item.quantity),
         rate: safeNumber(item.rate),
-        total: safeNumber(item.quantity) * safeNumber(item.rate)
+        total: safeNumber(item.quantity) * safeNumber(item.rate),
+        ...(showPrices ? {} : { hidePrice: true })
       }));
       
       console.log('[InvoiceBuilder] Converting estimate to invoice...');
@@ -233,7 +240,8 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         description: safeString(item.description),
         quantity: safeNumber(item.quantity),
         rate: safeNumber(item.rate),
-        total: safeNumber(item.quantity) * safeNumber(item.rate)
+        total: safeNumber(item.quantity) * safeNumber(item.rate),
+        ...(showPrices ? {} : { hidePrice: true })
       }));
       
       console.log('[InvoiceBuilder] Clean line items:', JSON.stringify(cleanLineItems));
@@ -360,6 +368,10 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         </span>
       </div>
       <div className="eb-sum-row total"><span>{t('m.total')}</span><span className="lv-num">{money(total)}</span></div>
+      <div className="eb-sum-row prices">
+        <span className="eb-prices-txt"><b>{t('est.showLinePrices')}</b><span className="lv-small">{t('est.showLinePricesHint')}</span></span>
+        <Switch on={showPrices} onChange={setShowPrices} label={t('est.showLinePrices')} />
+      </div>
     </div>
   );
 

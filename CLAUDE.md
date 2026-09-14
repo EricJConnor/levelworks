@@ -204,6 +204,28 @@ copy free of any one country's slang: "Manitas" (Spain) and "troca" (Mexican-Ame
 were both used on the landing page once and replaced with neutral wording. If a real
 Spanish-speaking contractor later flags a word, it is a one-line fix in one file.
 
+## Line prices on the client's copy (Sep 14 2026)
+
+The first real feedback from the member note: a contractor who quotes lump sum wanted to hide
+the per-line amounts and show one total, because the only way to do it was $0 on every line but
+one, and the document printed "$0.00" beside each. Two things now, both in `src/lib/linePrices.ts`:
+
+- **A line at $0 never prints an amount**, anywhere the client sees it. No setting; a rule.
+- **"Show line prices"**, a switch (`src/components/Switch.tsx`, `.lv-switch`) at the bottom of
+  the totals rail in both builders, default on, remembered in `localStorage` (`lw-line-prices`) so
+  the next estimate opens the way he left the last. Off: the client's copy shows descriptions,
+  then Total (tax, deposit and balance still show; subtotal and qty × rate do not). It carries
+  through the preview, `/view-estimate`, `/view-invoice`, `/estimate/:id` and the invoice made
+  from the estimate. The email only ever carried the total, so it needed nothing.
+
+**The setting lives on the document, not in a column:** it is stamped as `hidePrice: true` on
+every line item inside the existing `line_items` JSONB (`withLinePrices`), and read back as
+"prices hidden if any line says so" (`linePricesShown`). No migration, the public link reads it
+off the row, and converting to an invoice carries it for free. Every line-item whitelist has to
+carry it — `cleanLineItem` in DataContext, the builder's own `cleanLineItem`, and both mappers in
+InvoiceContext — or it vanishes on save, the same trap `sourceText` taught. The contractor always
+sees every price on his own side; only the client's copy changes.
+
 ## Texting a client (no Twilio)
 
 The estimate goes out from **the contractor's own phone**, not from a LevelWorks

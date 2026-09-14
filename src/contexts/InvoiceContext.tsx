@@ -68,6 +68,7 @@ const parseLineItems = (items: any): LineItem[] => {
     sourceText: item?.sourceText ? safeString(item.sourceText) : undefined,
     sourceLang: item?.sourceLang === 'es' || item?.sourceLang === 'en' ? item.sourceLang : undefined,
     sourceStale: item?.sourceStale === true ? true : undefined,
+    hidePrice: item?.hidePrice === true ? true : undefined,
   }));
 };
 
@@ -91,6 +92,7 @@ const formatLineItemsForDb = (items: any): object[] => {
       ...(item.sourceText ? { sourceText: safeString(item.sourceText) } : {}),
       ...(item.sourceLang ? { sourceLang: item.sourceLang } : {}),
       ...(item.sourceStale ? { sourceStale: true } : {}),
+      ...(item.hidePrice ? { hidePrice: true } : {}),
     };
   });
   

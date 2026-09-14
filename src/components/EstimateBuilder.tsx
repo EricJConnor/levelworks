@@ -10,6 +10,8 @@ import { autoGrowTextarea } from '@/lib/utils';
 import { useT, useLang, LanguageToggle } from '@/i18n';
 import { useTranslator } from './Translate';
 import { looksSpanish } from '@/lib/translate';
+import { linePricesShown, withLinePrices, lineAmountShown, rememberedLinePrices, rememberLinePrices } from '@/lib/linePrices';
+import { Switch } from './Switch';
 
 interface LineItem {
   id: string; description: string; quantity: number; rate: number; total: number; sectionTitle?: string;
@@ -43,7 +45,8 @@ const cleanLineItem = (item: any, index: number): LineItem | null => {
     quantity,
     rate,
     total: quantity * rate,
-    sectionTitle: item.sectionTitle || undefined
+    sectionTitle: item.sectionTitle || undefined,
+    hidePrice: item.hidePrice === true ? true : undefined
   };
 };
 
@@ -59,6 +62,10 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [lineItems, setLineItems] = useState<LineItem[]>(existingEstimate?.lineItems || [{ id: '1', description: '', quantity: 1, rate: 0, total: 0 }]);
   const [taxRate, setTaxRate] = useState(Number(existingEstimate?.taxRate) || 0);
   const [deposit, setDeposit] = useState(Number(existingEstimate?.deposit) || 0);
+  // Whether the client's copy prices every line or only the total. An existing
+  // estimate keeps its own setting; a new one opens the way he left the last.
+  const [showPrices, setShowPricesState] = useState<boolean>(existingEstimate ? linePricesShown(existingEstimate.lineItems) : rememberedLinePrices());
+  const setShowPrices = (v: boolean) => { setShowPricesState(v); rememberLinePrices(v); };
   const [showSendModal, setShowSendModal] = useState(false);
   const [savedEstimateData, setSavedEstimateData] = useState<any>(null);
   const [showPreview, setShowPreview] = useState(!!existingEstimate);
@@ -236,7 +243,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         clientEmail: safeString(clientEmail).trim(),
         clientPhone: safeString(clientPhone).trim(),
         projectName: safeString(projectName).trim(),
-        lineItems: validItems,
+        lineItems: withLinePrices(validItems, showPrices),
         taxRate: safeNumber(taxRate),
         deposit: safeNumber(deposit),
         total: safeNumber(total),
@@ -304,7 +311,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     setShowSendModal(true);
   };
 
-  const handleConvert = () => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems, taxRate, deposit });
+  const handleConvert = () => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems: withLinePrices(lineItems, showPrices), taxRate, deposit });
 
   const handleSendModalClose = () => { setShowSendModal(false); setSavedEstimateData(null); };
   const handleSendSuccess = () => { setShowSendModal(false); setSavedEstimateData(null); onClose(); };
@@ -475,6 +482,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     const previewTax = previewSubtotal * ((Number(previewData.taxRate) || 0) / 100);
     const previewTotal = previewSubtotal + previewTax;
     const previewDeposit = Number(previewData.deposit) || 0;
+    const previewPrices = linePricesShown(previewData.lineItems);
 
     return (
       <div className="lv-scrim eb-scrim">
@@ -521,15 +529,15 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                     <div>
                       {item.sectionTitle && <p className="eb-doc-sec">{item.sectionTitle}</p>}
                       <p className="eb-doc-desc">{item.description}</p>
-                      {Number(item.quantity) !== 1 && <p className="lv-small">{item.quantity} × {money(item.rate)}</p>}
+                      {previewPrices && Number(item.quantity) !== 1 && Number(item.rate) > 0 && <p className="lv-small">{item.quantity} × {money(item.rate)}</p>}
                     </div>
-                    <span className="lv-num eb-doc-amt">{money(item.total)}</span>
+                    {lineAmountShown(item, previewPrices) && <span className="lv-num eb-doc-amt">{money(item.total)}</span>}
                   </div>
                 ))}
               </div>
 
               <div className="eb-doc-sum">
-                <div className="row"><span>{t('m.subtotal')}</span><span className="lv-num">{money(previewSubtotal)}</span></div>
+                {previewPrices && <div className="row"><span>{t('m.subtotal')}</span><span className="lv-num">{money(previewSubtotal)}</span></div>}
                 {Number(previewData.taxRate) > 0 && <div className="row"><span>{t('est.taxPercent', { p: previewData.taxRate })}</span><span className="lv-num">{money(previewTax)}</span></div>}
                 <div className="row total"><span>{t('m.total')}</span><span className="lv-num">{money(previewTotal)}</span></div>
                 {previewDeposit > 0 && (
@@ -600,6 +608,10 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         <input type="number" inputMode="decimal" className="lv-input num eb-dep-in" value={deposit} onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} aria-label={t('est.depositAmount')} />
       </div>
       <div className="eb-sum-row balance"><span>{t('m.balanceDue')}</span><span className="lv-num">{money(balanceDue)}</span></div>
+      <div className="eb-sum-row prices">
+        <span className="eb-prices-txt"><b>{t('est.showLinePrices')}</b><span className="lv-small">{t('est.showLinePricesHint')}</span></span>
+        <Switch on={showPrices} onChange={setShowPrices} label={t('est.showLinePrices')} disabled={isReadOnly} />
+      </div>
     </div>
   );
 

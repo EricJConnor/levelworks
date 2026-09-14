@@ -16,6 +16,8 @@ export const estimates: Record<string, string> = {
   'est.totals': 'Totales',
   'est.itemCount': '{n} partida',
   'est.itemsCount': '{n} partidas',
+  'est.showLinePrices': 'Mostrar precios por partida',
+  'est.showLinePricesHint': 'Apagado: el cliente ve las descripciones y un solo total.',
   'est.taxRatePercent': 'Porcentaje de impuesto',
   'est.depositAmount': 'Monto del anticipo',
 

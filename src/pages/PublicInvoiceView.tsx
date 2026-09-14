@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { linePricesShown, lineAmountShown } from '@/lib/linePrices';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/card';
@@ -77,6 +78,7 @@ export default function PublicInvoiceView() {
   const taxRate = Number(invoice.tax_rate) || 0;
   const isPaid = invoice.status === 'paid';
   const lineItems = parseLineItems(invoice.line_items);
+  const pricesShown = linePricesShown(lineItems);
 
 
   // Calculate subtotal from line items
@@ -114,11 +116,11 @@ export default function PublicInvoiceView() {
             <div className="space-y-3 md:hidden">
               {lineItems.map((item: any, idx: number) => (
                 <div key={idx} className="bg-gray-50 p-3 rounded-lg">
-                  <p className="font-medium mb-2 whitespace-pre-wrap">{item.description}</p>
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <p className={`font-medium whitespace-pre-wrap${lineAmountShown(item, pricesShown) ? ' mb-2' : ''}`}>{item.description}</p>
+                  {lineAmountShown(item, pricesShown) && <div className="flex justify-between text-sm text-gray-600">
                     <span>{Number(item.quantity) || 0} x ${Number(item.rate || 0).toFixed(2)}</span>
                     <span className="font-semibold text-gray-900">${((Number(item.quantity) || 0) * (Number(item.rate) || 0)).toFixed(2)}</span>
-                  </div>
+                  </div>}
                 </div>
               ))}
             </div>
@@ -126,14 +128,14 @@ export default function PublicInvoiceView() {
             {/* Desktop table */}
             <div className="hidden md:block border rounded-lg overflow-hidden">
               <table className="w-full">
-                <thead className="bg-gray-50"><tr><th className="text-left p-3">{t('m.description')}</th><th className="text-right p-3">{t('m.qty')}</th><th className="text-right p-3">{t('m.rate')}</th><th className="text-right p-3">{t('m.amount')}</th></tr></thead>
+                <thead className="bg-gray-50"><tr><th className="text-left p-3">{t('m.description')}</th>{pricesShown && <><th className="text-right p-3">{t('m.qty')}</th><th className="text-right p-3">{t('m.rate')}</th><th className="text-right p-3">{t('m.amount')}</th></>}</tr></thead>
                 <tbody>
                   {lineItems.map((item: any, idx: number) => (
                     <tr key={idx} className="border-t">
                       <td className="p-3 whitespace-pre-wrap">{item.description}</td>
-                      <td className="p-3 text-right">{Number(item.quantity) || 0}</td>
-                      <td className="p-3 text-right">${Number(item.rate || 0).toFixed(2)}</td>
-                      <td className="p-3 text-right">${((Number(item.quantity) || 0) * (Number(item.rate) || 0)).toFixed(2)}</td>
+                      {pricesShown && (lineAmountShown(item, true)
+                        ? <><td className="p-3 text-right">{Number(item.quantity) || 0}</td><td className="p-3 text-right">${Number(item.rate || 0).toFixed(2)}</td><td className="p-3 text-right">${((Number(item.quantity) || 0) * (Number(item.rate) || 0)).toFixed(2)}</td></>
+                        : <td className="p-3" colSpan={3} />)}
                     </tr>
                   ))}
                 </tbody>
@@ -142,7 +144,7 @@ export default function PublicInvoiceView() {
 
             {/* Totals */}
             <div className="bg-blue-50 p-4 rounded-lg space-y-2">
-              <div className="flex justify-between text-sm"><span>{t('m.subtotal')}</span><span>${subtotal.toFixed(2)}</span></div>
+              {pricesShown && <div className="flex justify-between text-sm"><span>{t('m.subtotal')}</span><span>${subtotal.toFixed(2)}</span></div>}
               {taxRate > 0 && <div className="flex justify-between text-sm"><span>{t('m.tax')} ({taxRate}%)</span><span>${taxAmount.toFixed(2)}</span></div>}
               <div className="flex justify-between font-bold text-lg border-t pt-2"><span>{t('m.total')}</span><span>${total.toFixed(2)}</span></div>
               {amountPaid > 0 && <div className="flex justify-between text-green-600"><span>{t('s.paid')}</span><span>-${amountPaid.toFixed(2)}</span></div>}

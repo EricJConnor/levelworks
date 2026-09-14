@@ -460,6 +460,19 @@ skipped by hand next time: add them to `SKIP` in broadcast.js. Do not resend thi
 
 **Sep 14 2026: cut 3, and the money moved to a sign-up campaign (Eric: "run it the best way you think", "act as if this is your business").** The ripped-off ad now has the app running behind the words (an estimate, an invoice, recurring billing, dimmed under a veil, filling the tall version too); v3 ads on the old campaign are EN `52548965703337` / ES `52548965752537`, v2 paused. Then the read that decides everything: the June campaign bid for **sign-ups** (`COMPLETE_REGISTRATION`) and got 13 at ~$24 each on $315; the September one bid for **purchases** on a pixel with none and got 0 on $151. So the old campaign `52547713746537` is PAUSED (not deleted, ~$15 unspent) and the live one is **`52548965992137` LW-Signups-Sep2026-Broad**: OUTCOME_SALES, CBO **$12/day**, lowest cost, ad sets `52548966017337` EN (locales en) / `52548966037937` ES (locales es), both `OFFSITE_CONVERSIONS` on `COMPLETE_REGISTRATION`, US 25-60, Advantage+ audience, **no interest targeting** (the ad's first two seconds filter for contractors better than Meta's lists; audience estimates 167-197M / 34-40M), ads `52548966081137` / `52548966118937` reusing the v3 creatives by id (`1699073781182047` / `1104760702419012`, link utm_content=rippedoff3). Rules: **nothing touched for seven days** (every edit restarts learning), judge by cost per sign-up with the placement breakdown (under $10 working, over $20 change the ad not the budget), the $49 year closes on the page and in the app. Eric added $100 of prepaid funds and will top up; prepaid means delivery simply stops when it runs out. Next creative: Eric on camera for the first ten seconds. The Ads Manager "set up a pixel" card is about the optimised event having no history; it should clear now that the event is sign-ups. Retargeting (June + September clickers) is ~250 people, too small for Meta to deliver; revisit when it passes ~1,000. The `degrees_of_freedom_spec` must list every feature individually; `standard_enhancements` is rejected as deprecated.
 
+**Unsubscribe on every marketing email (Sep 14 2026, Eric: "make sure there is an unsubscribe
+button at the bottom of all of our email").** The member note had only "reply stop". Now every
+marketing mail carries a real link and the `List-Unsubscribe` / `List-Unsubscribe-Post` headers,
+which is what makes Gmail and Apple Mail show their own Unsubscribe button at the top. The link is
+`/api/unsubscribe?e=<base64url email>&t=<hmac>&l=<lang>` (`unsubscribeUrl` in `annual.js`, signed
+with `CRON_SECRET`), no login; it marks the contact `unsubscribed` in **both Resend audiences**,
+creating the contact if needed, and every sender reads that set before mailing:
+`recipients()` in broadcast.js, the nudges in cron-annual.js (`unsubscribedEmails()` in
+audience.js), and Resend itself for dashboard broadcasts. `layout({ unsubscribe: true })` prints
+the placeholder; `sendMail({ unsubscribe: lang })` fills it per recipient and adds the headers.
+Marketing = the note, nudge1/3/7, day30, trialOffer, blasts. **Transactional mail (login link,
+receipt, an estimate to a client) deliberately has no unsubscribe link**; do not add one.
+
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also
 has an empty personal ad account `2227206028141508`, and Ads Manager opens on that one by default,

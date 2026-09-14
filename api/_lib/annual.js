@@ -17,7 +17,7 @@
  *   SITE_URL                       optional, defaults to https://levelworks.org
  */
 import { createClient } from '@supabase/supabase-js';
-import { createHash } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 
 export const SUPABASE_URL = 'https://djrsmuafbbzxpbdibolq.supabase.co';
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqcnNtdWFmYmJ6eHBiZGlib2xxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5ODE1OTIsImV4cCI6MjA5MDU1NzU5Mn0.vIKq1NjFXX3w7Jj09AEU8F4KLxG9O6TA-bsDl7vFKlw';
@@ -140,12 +140,42 @@ const escapeHtml = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&l
  * Eric, with replies to his inbox); otherwise through the app's existing
  * send-email edge function, which already holds a Resend key.
  */
-export async function sendMail({ to, subject, html, text }) {
+/**
+ * A signed, per-recipient unsubscribe link. No login, no lookup: the address is in
+ * the URL and the signature proves the link came from us. Signed with CRON_SECRET
+ * (falling back to the service key) so it cannot be forged for someone else.
+ */
+const UNSUB_PLACEHOLDER = '{{{RESEND_UNSUBSCRIBE_URL}}}';
+function unsubKey() { return process.env.CRON_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || ''; }
+export function unsubscribeToken(email) {
+  return createHmac('sha256', unsubKey()).update(String(email).trim().toLowerCase()).digest('hex').slice(0, 32);
+}
+export function unsubscribeUrl(email, lang = 'en') {
+  const e = Buffer.from(String(email).trim().toLowerCase()).toString('base64url');
+  return `${SITE_URL}/api/unsubscribe?e=${e}&t=${unsubscribeToken(email)}&l=${lang === 'es' ? 'es' : 'en'}`;
+}
+
+/**
+ * Direct send (not a Resend broadcast). Pass `unsubscribe: 'en' | 'es'` on any
+ * marketing mail: the layout's unsubscribe placeholder becomes this recipient's
+ * own link and the List-Unsubscribe headers go on, which is what makes Gmail and
+ * Apple Mail show their own Unsubscribe button at the top. Transactional mail
+ * (a login link, a receipt) leaves it off.
+ */
+export async function sendMail({ to, subject, html, text, unsubscribe }) {
+  const headers = {};
+  if (unsubscribe) {
+    const url = unsubscribeUrl(to, unsubscribe);
+    html = String(html || '').split(UNSUB_PLACEHOLDER).join(url);
+    text = text ? String(text).split(UNSUB_PLACEHOLDER).join(url) : text;
+    headers['List-Unsubscribe'] = `<${url}>`;
+    headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+  }
   if (process.env.RESEND_API_KEY) {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: 'Eric at LevelWorks <eric@levelworks.org>', to: [to], reply_to: ERIC_REPLY_TO, subject, html, text }),
+      body: JSON.stringify({ from: 'Eric at LevelWorks <eric@levelworks.org>', to: [to], reply_to: ERIC_REPLY_TO, subject, html, text, headers }),
     });
     if (!r.ok) throw new Error('resend: ' + (await r.text()));
     return { via: 'resend' };
@@ -166,9 +196,10 @@ export function layout({ lang, lines, cta, ctaUrl, ps, image, unsubscribe }) {
   const img = image ? `<p style="margin:22px 0"><img src="${image}" alt="" width="360" style="width:100%;max-width:360px;border:1px solid #e6e9ef;border-radius:12px;display:block"></p>` : '';
   const body = lines.map(l => `<p style="margin:0 0 16px;font-size:16px;line-height:1.55;color:#0b1220">${l}</p>`).join('');
   const psHtml = ps ? `<p style="margin:26px 0 0;font-size:14px;line-height:1.5;color:#5b6472">${ps}</p>` : '';
-  // Broadcasts carry Resend's unsubscribe link; the placeholder is filled per recipient at send time.
+  // Every marketing mail carries an unsubscribe link. In a Resend broadcast the placeholder is
+  // filled by Resend per recipient; in a direct send, sendMail() fills it with the signed link.
   const unsub = unsubscribe
-    ? ` · <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color:#8a93a3">${lang === 'es' ? 'Cancelar suscripción' : 'Unsubscribe'}</a>`
+    ? `<br><a href="${typeof unsubscribe === 'string' ? unsubscribe : UNSUB_PLACEHOLDER}" style="color:#8a93a3;text-decoration:underline">${lang === 'es' ? 'Cancelar suscripción' : 'Unsubscribe'}</a>`
     : '';
   // No street address by Eric's choice (it is his home). His email stands in its place.
   const foot = (lang === 'es'

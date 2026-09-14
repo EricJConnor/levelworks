@@ -375,6 +375,17 @@ keeps `story, facebook_reels` / `story, reels` / messenger `story`. Live ads are
 catch-all.** Read the placement breakdown (`breakdowns=publisher_platform,platform_position`)
 before believing any CPM.
 
+**Member note sent, Sep 14 2026 ~4am PT (Eric: "looks great, send it").** A thank-you from Eric to
+every account: what the app does, "what would make you use it every day?", reply to answer, P.S.
+with the $49 year and a "reply stop" opt-out. 48 of 48 delivered (Eric's two addresses got the test
+copies first). It goes through **`POST /api/annual-broadcast`** with the CRON_SECRET bearer
+(`{"mode":"dry"|"test"|"send"}`), which runs on Vercel where `RESEND_API_KEY` lives, so it is from
+"Eric at LevelWorks" with replies to ejc1273@gmail.com. Copy and recipient logic in
+`api/_lib/broadcast.js`. **The `send-email` edge function only accepts fixed templates
+(`templateType`) and cannot carry a free-form message**; `sendMail`'s edge fallback would fail for
+any custom note, so the Vercel key is required for these. Anyone who replies "stop" must be
+skipped by hand next time: add them to `SKIP` in broadcast.js. Do not resend this note.
+
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also
 has an empty personal ad account `2227206028141508`, and Ads Manager opens on that one by default,

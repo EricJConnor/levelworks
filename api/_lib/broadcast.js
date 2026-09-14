@@ -5,6 +5,7 @@
  * send-email edge function only knows fixed templates and cannot carry a free-form note.
  */
 import { layout, sendMail, admin } from './annual.js';
+import { unsubscribedEmails } from './audience.js';
 
 export const ERIC = ['ejc1273@gmail.com', '7echome@gmail.com'];
 const SKIP = new Set(['demo.lw49@levelworks.org']);
@@ -19,7 +20,7 @@ const COPY = {
       'And if you already use it, tell me what job you did with it. That makes my week.',
     ],
     cta: 'Open LevelWorks', ctaUrl: 'https://levelworks.org/app',
-    ps: 'P.S. If you’d rather pay once and forget it: a full year is $49 right now at levelworks.org/annual. No pressure, the $5 a month plan is the same app. If you’d rather not hear from me, reply “stop” and I’ll take you off.',
+    ps: 'P.S. If you’d rather pay once and forget it: a full year is $49 right now at levelworks.org/annual. No pressure, the $5 a month plan is the same app. If you’d rather not hear from me, there’s an unsubscribe link at the bottom, or just reply “stop”.',
   },
   es: {
     subject: 'Gracias por registrarte en LevelWorks. Una pregunta',
@@ -30,7 +31,7 @@ const COPY = {
       'Y si ya la usas, cuéntame en qué trabajo. Eso me alegra la semana.',
     ],
     cta: 'Abrir LevelWorks', ctaUrl: 'https://levelworks.org/app',
-    ps: 'P.D. Si prefieres pagar una vez y olvidarte: un año completo cuesta $49 ahora en levelworks.org/es/annual. Sin presión, el plan de $5 al mes es la misma app. Si prefieres no recibir correos míos, responde “stop” y te quito de la lista.',
+    ps: 'P.D. Si prefieres pagar una vez y olvidarte: un año completo cuesta $49 ahora en levelworks.org/es/annual. Sin presión, el plan de $5 al mes es la misma app. Si prefieres no recibir correos míos, abajo hay un enlace para cancelar, o responde “stop”.',
   },
 };
 
@@ -45,14 +46,15 @@ export async function recipients({ excludeEric = false } = {}) {
   }
   const { data: profiles } = await a.from('profiles').select('id,lang');
   const plang = new Map((profiles || []).map(p => [p.id, p.lang]));
+  const out = await unsubscribedEmails();
   return users
-    .filter(u => u.email && !SKIP.has(u.email) && !u.email.endsWith('@levelworks.org') && !(excludeEric && ERIC.includes(u.email)))
+    .filter(u => u.email && !SKIP.has(u.email) && !out.has(u.email.toLowerCase()) && !u.email.endsWith('@levelworks.org') && !(excludeEric && ERIC.includes(u.email)))
     .map(u => ({ email: u.email, lang: (plang.get(u.id) || u.user_metadata?.lang || 'en') === 'es' ? 'es' : 'en' }));
 }
 
 export async function sendNote(to, lang) {
   const c = COPY[lang] || COPY.en;
-  const html = layout({ lang, lines: c.lines, cta: c.cta, ctaUrl: c.ctaUrl, ps: c.ps });
-  const text = c.lines.map(l => l.replace(/<[^>]+>/g, '')).join('\n\n') + `\n\n${c.cta}: ${c.ctaUrl}\n\n${c.ps.replace(/<[^>]+>/g, '')}\n\nEric`;
-  return sendMail({ to, subject: c.subject, html, text });
+  const html = layout({ lang, lines: c.lines, cta: c.cta, ctaUrl: c.ctaUrl, ps: c.ps, unsubscribe: true });
+  const text = c.lines.map(l => l.replace(/<[^>]+>/g, '')).join('\n\n') + `\n\n${c.cta}: ${c.ctaUrl}\n\n${c.ps.replace(/<[^>]+>/g, '')}\n\nEric\n\n${lang === 'es' ? 'Cancelar suscripción' : 'Unsubscribe'}: {{{RESEND_UNSUBSCRIBE_URL}}}`;
+  return sendMail({ to, subject: c.subject, html, text, unsubscribe: lang });
 }

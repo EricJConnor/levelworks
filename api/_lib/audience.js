@@ -95,3 +95,32 @@ export async function syncAudience({ dry = false } = {}) {
   }
   return report;
 }
+
+/** Every address that has unsubscribed in either audience. Marketing senders skip these. */
+export async function unsubscribedEmails() {
+  const out = new Set();
+  if (!process.env.RESEND_API_KEY) return out;
+  for (const lang of ['en', 'es']) {
+    const id = await audienceId(AUDIENCES[lang]);
+    const list = await resend(`/audiences/${id}/contacts`);
+    for (const c of list.data || []) if (c.unsubscribed) out.add(String(c.email || '').toLowerCase());
+  }
+  return out;
+}
+
+/**
+ * Records an unsubscribe in both audiences so it sticks for broadcasts and for direct
+ * sends alike. A contact Resend does not have yet is created already unsubscribed.
+ */
+export async function markUnsubscribed(email) {
+  const e = String(email || '').trim().toLowerCase();
+  if (!e) throw new Error('no email');
+  for (const lang of ['en', 'es']) {
+    const id = await audienceId(AUDIENCES[lang]);
+    try {
+      await resend(`/audiences/${id}/contacts/${encodeURIComponent(e)}`, { method: 'PATCH', body: JSON.stringify({ unsubscribed: true }) });
+    } catch {
+      await resend(`/audiences/${id}/contacts`, { method: 'POST', body: JSON.stringify({ email: e, unsubscribed: true }) });
+    }
+  }
+}

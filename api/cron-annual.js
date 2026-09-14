@@ -18,7 +18,7 @@
 import Stripe from 'stripe';
 import { admin, json, sendMail, missingEnv, normalizeLang } from './_lib/annual.js';
 import { EMAILS } from './_lib/emails.js';
-import { syncAudience } from './_lib/audience.js';
+import { syncAudience, unsubscribedEmails } from './_lib/audience.js';
 import { runBroadcast, BROADCASTS, ensureTracking } from './_lib/broadcasts.js';
 
 const DAY = 86400 * 1000;
@@ -58,6 +58,9 @@ export default async function handler(req, res) {
     .select('user_id, plan, plan_expires_at, activated_at, nudge_stage, lang, created_at')
     .in('user_id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000']);
   const byId = new Map((profiles || []).map(p => [p.user_id, p]));
+  // Anyone who unsubscribed gets no nudges either; the two audiences are the record of that.
+  let optedOut = new Set();
+  try { optedOut = await unsubscribedEmails(); } catch (e) { report.errors.push('unsubscribed: ' + e.message); }
   const { data: purchases } = await a.from('annual_purchases').select('user_id, created_at').is('refunded_at', null);
   const boughtAt = new Map((purchases || []).map(p => [p.user_id, new Date(p.created_at).getTime()]));
 
@@ -81,7 +84,7 @@ export default async function handler(req, res) {
   for (const u of users) {
     if (budget <= 0) break;
     const email = (u.email || '').toLowerCase();
-    if (!email || email.endsWith('@levelworks.org')) continue;
+    if (!email || email.endsWith('@levelworks.org') || optedOut.has(email)) continue;
     if (new Date(u.created_at).getTime() < LAUNCH) continue;
     const p = byId.get(u.id) || {};
     const lang = normalizeLang(p.lang || u.user_metadata?.lang);
@@ -102,7 +105,7 @@ export default async function handler(req, res) {
     const m = EMAILS[pick][lang]();
     if (!dry) {
       try {
-        await sendMail({ to: email, ...m });
+        await sendMail({ to: email, ...m, unsubscribe: lang });
         const write = byId.has(u.id)
           ? a.from('profiles').update({ nudge_stage: Math.max(next, stage) }).eq('user_id', u.id)
           : a.from('profiles').insert({ user_id: u.id, nudge_stage: next });

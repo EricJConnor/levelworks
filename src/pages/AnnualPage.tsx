@@ -23,7 +23,10 @@ const CAP = 500;
 function useHead({ title, desc, url, lang }: { title: string; desc: string; url: string; lang: string }) {
   useEffect(() => {
     const was = document.title;
+    const wasLang = document.documentElement.lang;
     document.title = title;
+    // The SPA shell says lang="en"; the Spanish page has to say so itself.
+    document.documentElement.lang = lang;
     const set = (sel: string, attr: string, val: string) => {
       let el = document.head.querySelector<HTMLElement>(sel);
       if (!el) { el = document.createElement(sel.startsWith('link') ? 'link' : 'meta'); const m = sel.match(/\[(\w+(?::\w+)?)="([^"]+)"\]/); if (m) el.setAttribute(m[1], m[2]); el.dataset.an = '1'; document.head.appendChild(el); }
@@ -37,7 +40,7 @@ function useHead({ title, desc, url, lang }: { title: string; desc: string; url:
     set('meta[property="og:image"]', 'content', 'https://levelworks.org/marketing/annual-og.png');
     set('meta[property="og:locale"]', 'content', lang === 'es' ? 'es_MX' : 'en_US');
     set('link[rel="canonical"]', 'href', url);
-    return () => { document.title = was; document.head.querySelectorAll('[data-an]').forEach(e => e.remove()); };
+    return () => { document.title = was; document.documentElement.lang = wasLang; document.head.querySelectorAll('[data-an]').forEach(e => e.remove()); };
   }, [title, desc, url, lang]);
 }
 

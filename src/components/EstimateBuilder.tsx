@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { X, Plus, Trash2, Users, Edit, ImageIcon, Send, FileText, Eye, Check, ChevronDown, Tag, Languages, Loader2 } from 'lucide-react';
 import { PhotoUpload } from './PhotoUpload';
 import { autoGrowTextarea } from '@/lib/utils';
-import { useT, useLang } from '@/i18n';
+import { useT, useLang, LanguageToggle } from '@/i18n';
 import { useTranslator } from './Translate';
 import { looksSpanish } from '@/lib/translate';
 
@@ -486,6 +486,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
             </div>
             <div className="lv-inline">
               <span className="lv-pill blue lv-hide-mobile">{t('est.whatClientSees')}</span>
+              <LanguageToggle />
               <button className="lv-icon-btn" onClick={onClose} aria-label={t('a.close')}><X size={20} /></button>
             </div>
           </header>
@@ -613,6 +614,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
           </div>
           <div className="lv-inline">
             <span className="eb-head-total lv-num lv-hide-mobile">{money(total)}</span>
+            <LanguageToggle />
             {isReadOnly && (
               <button className="lv-btn sec sm" onClick={() => setIsReadOnly(false)}><Edit size={15} /> {t('a.edit')}</button>
             )}

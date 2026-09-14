@@ -307,9 +307,15 @@ export const landing: Record<string, string> = {
   'lp.mockBrandNoBranding': 'Sin la marca de LevelWorks',
 
   // ---- /es/annual: la oferta de $49 al año
+  'an.go': 'Empieza gratis — sin tarjeta',
+  'an.goNote': '30 días, todas las funciones. Toma como un minuto.',
+  'an.haveAccount': '¿Ya tienes cuenta?',
+  'an.signIn': 'Iniciar sesión',
+  'an.afterH': 'Después de tus 30 días gratis',
+  'an.afterSub': 'Eliges entonces, no ahora. Nada se cobra en automático.',
   'an.label': 'App para contratistas · hecha por un contratista',
   'an.h1': '¿Pagas más de $5 al mes por hacer presupuestos?',
-  'an.sub': 'Presupuestos y facturas ilimitados, cobros con Stripe, tu logo, español e inglés, cobros recurrentes, fotos de avance. Elige cómo quieres pagar.',
+  'an.sub': 'Presupuestos y facturas ilimitados, cobros con Stripe, tu logo, español e inglés, cobros recurrentes, fotos de avance. Gratis los primeros 30 días.',
   'an.cta': 'Reclama tu año — $49',
   'an.ctaSold': 'Agotado — entra por $5 al mes',
   'an.ctaBusy': 'Abriendo el pago…',

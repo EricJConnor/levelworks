@@ -8,6 +8,7 @@
  * 4. Day 25 of a free trial: the $49 year, to people who are not annual and
  *    have no active monthly subscription in Stripe.
  *
+ * 4b. The feature tips (api/_lib/tips.js): the next one to anyone whose last was 40+ hours ago.
  * 5. Add every user to the Resend audiences (api/_lib/audience.js) for broadcasts.
  * 6. Draft each broadcast in Resend once, so Eric can send it from the dashboard.
  *
@@ -20,6 +21,7 @@ import { admin, json, sendMail, missingEnv, normalizeLang } from './_lib/annual.
 import { EMAILS } from './_lib/emails.js';
 import { syncAudience, unsubscribedEmails } from './_lib/audience.js';
 import { runBroadcast, BROADCASTS, ensureTracking } from './_lib/broadcasts.js';
+import { sendTips } from './_lib/tips.js';
 
 const DAY = 86400 * 1000;
 
@@ -116,6 +118,13 @@ export default async function handler(req, res) {
     report.sent.push({ email, pick, lang });
     budget--;
   }
+  // 4b. Feature tips, every other morning per member. Nobody who was nudged this run
+  // gets one too, and nobody who unsubscribed gets one at all.
+  try {
+    const skip = new Set([...optedOut, ...report.sent.map(x => x.email)]);
+    report.tips = await sendTips({ a, users, skip, dry, now, langOf: (u) => normalizeLang((byId.get(u.id) || {}).lang || u.user_metadata?.lang) });
+  } catch (e) { report.errors.push('tips: ' + e.message); }
+
   // 5. Resend audiences, so a broadcast from the Resend dashboard reaches everyone.
   try { report.audience = await syncAudience({ dry }); }
   catch (e) { report.errors.push('audience: ' + e.message); }

@@ -489,6 +489,38 @@ to `TIPS`, both languages, never reorder.** Test one to Eric with
 members. Eric wants to work later on "additional value for all of our subscribers" (not
 started).
 
+**Where everything stands at the end of Sep 14 2026 (read this first in a new session).**
+
+- **Live campaign:** `52548965992137` LW-Signups-Sep2026-Broad, $12/day, bidding for free-trial
+  sign-ups, cut-3 ads EN `52548966081137` / ES `52548966118937`. First day: ~$7, 78 reached, 5
+  clicks, Meta leaning Spanish (9 dollars in 10), feed and Reels splitting views. **Do not touch
+  until Sep 21.** Eric expects a proper two-day read on **Wednesday Sep 16 morning**: cost per
+  sign-up, placement mix, runway. Under $10 a sign-up is working; over $20, change the ad, not the
+  budget. Funds ~$130 after Eric's $100 top-up. Check-ins were scheduled inside the old session
+  (send_later) and will not reach a new one; schedule fresh.
+- **The ad landing page** (`/annual`, `/es/annual`) was reworked Sep 14 evening (Eric: "crazy
+  easy for people to sign up"): one ask, "Start free — no card needed", the sign-up form opens on
+  the page itself with **two fields** (email, password; name and confirm removed in
+  `AuthModal.tsx`, the welcome screen asks for the business), the $5 and $49 options under "After
+  your free 30 days", Eric's "Why $49?" note moved up. Baseline before the change: about one in
+  seven page loads signed up. Next lever if trials climb: "Continue with Google" (needs Eric to
+  create a Google OAuth client; not done).
+- **Line prices switch** shipped (see its section). **Eric still owes the customer a reply**: it
+  is in the app; ask them for a testimonial once they've used it.
+- **Feature tips** start Sep 15, 9am ET (see the tips note). Eric got tip 1 as a test copy
+  Sep 14 evening; no feedback yet.
+- **Unsubscribe** on every marketing mail (see its note). Anyone who replied "stop" to the Sep 14
+  member note must be added to `SKIP` in broadcast.js by hand; none seen yet.
+- **Discussed, not started (Eric: "just curious", do only when he asks):** upload a public-records
+  list of local licensed contractors to Meta as a custom audience + lookalike (cheap, no spam
+  risk); ten hand-sent contractor-to-contractor emails a day from Eric's own address (never
+  automated, never from levelworks.org in bulk); a tip email about the referral program already in
+  the app. **No cold email from the domain, ever, and no meetings for a $5 product.** Eric also
+  wants, "when I have time", to work on additional value for all subscribers (not started).
+- Eric may share social posts to get an opinion; read them (the twitter oembed / syndication
+  endpoints work through the proxy) and answer plainly. Next creative for the ads: ten seconds of
+  Eric on camera saying the ripped-off line.
+
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also
 has an empty personal ad account `2227206028141508`, and Ads Manager opens on that one by default,

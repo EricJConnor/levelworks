@@ -11,6 +11,7 @@
  * checkout metadata so a purchase can be traced back to its ad.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import AuthModal from '@/components/AuthModal';
 import { Mark } from '@/components/Mark';
 import { useT, useLang, LanguageToggle } from '@/i18n';
 import { trackEvent } from '@/lib/pixel';
@@ -85,6 +86,13 @@ export default function AnnualPage() {
 
   const soldOut = !!count?.soldOut;
   const monthlyHref = (lang === 'es' ? '/es' : '/') + '?signup=1';
+  // The free trial signs up right here, in a two-field form, instead of sending
+  // the visitor off to the homepage to find the button again.
+  const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState<'signup' | 'signin'>('signup');
+  const openSignUp = () => { setAuthMode('signup'); setShowAuth(true); };
+  const openSignIn = () => { setAuthMode('signin'); setShowAuth(true); };
+  const onAuth = (r?: { isNewUser?: boolean }) => { window.location.href = r?.isNewUser ? '/welcome' : '/app'; };
 
   const claim = useCallback(async () => {
     if (busy) return;
@@ -131,20 +139,34 @@ export default function AnnualPage() {
           <p className="an-label">{t('an.label')}</p>
           <h1 className="an-h1">{t('an.h1')}</h1>
           <p className="an-sub">{t('an.sub')}</p>
+          <div className="an-go">
+            <button type="button" className="lw-btn pri lg wide an-cta" onClick={openSignUp}>{t('an.go')}</button>
+            <p className="an-go-note">{t('an.goNote')}</p>
+            <p className="an-go-in">{t('an.haveAccount')} <button type="button" onClick={openSignIn}>{t('an.signIn')}</button></p>
+          </div>
 
+          <figure className="an-phone">
+            <img src={s('estimate')} width="390" height="844" alt={t('an.shot1')} fetchPriority="high" decoding="async" />
+          </figure>
+          <p className="an-story"><span>{t('an.story1')}</span> {t('an.story2')}</p>
+        </section>
+
+        <section className="an-why">
+          <h2 className="an-h2">{t('an.whyH')}</h2>
+          <p>{t('an.why')}</p>
+          <p className="an-sig">{t('an.whySig')}</p>
+        </section>
+
+        <section className="an-after" aria-labelledby="an-after-h">
+          <h2 className="an-h2" id="an-after-h">{t('an.afterH')}</h2>
+          <p className="an-after-sub">{t('an.afterSub')}</p>
           <div className="an-plans" role="list">
-            <a className="an-plan" role="listitem" href={monthlyHref}>
-              <span className="an-plan-name">{t('an.p1')}</span>
-              <span className="an-plan-price">{t('an.p1price')}</span>
-              <span className="an-plan-note">{t('an.p1note')}</span>
-              <span className="lw-btn sec lg wide">{t('an.p1cta')}</span>
-            </a>
-            <a className="an-plan" role="listitem" href={monthlyHref}>
+            <div className="an-plan" role="listitem">
               <span className="an-plan-name">{t('an.p2')}</span>
               <span className="an-plan-price">$5<small>{t('an.p2per')}</small></span>
               <span className="an-plan-note">{t('an.p2note')}</span>
-              <span className="lw-btn sec lg wide">{t('an.p2cta')}</span>
-            </a>
+              <button type="button" className="lw-btn sec lg wide" onClick={openSignUp}>{t('an.p2cta')}</button>
+            </div>
             <div className="an-plan best" role="listitem">
               <span className="an-plan-tag">{t('an.p3tag')}</span>
               <span className="an-plan-name">{t('an.p3')}</span>
@@ -158,11 +180,6 @@ export default function AnnualPage() {
           </div>
           {err && <p className="an-err" role="alert">{err}</p>}
           <p className="an-secure">{t('an.secure')}</p>
-
-          <figure className="an-phone">
-            <img src={s('estimate')} width="390" height="844" alt={t('an.shot1')} fetchPriority="high" decoding="async" />
-          </figure>
-          <p className="an-story"><span>{t('an.story1')}</span> {t('an.story2')}</p>
         </section>
 
         <section className="an-feats" aria-label="Features">
@@ -201,12 +218,6 @@ export default function AnnualPage() {
           </div>
         </section>
 
-        <section className="an-why">
-          <h2 className="an-h2">{t('an.whyH')}</h2>
-          <p>{t('an.why')}</p>
-          <p className="an-sig">{t('an.whySig')}</p>
-        </section>
-
         <section className="an-faq">
           <h2 className="an-h2">{t('an.faqH')}</h2>
           <dl>
@@ -217,11 +228,9 @@ export default function AnnualPage() {
         </section>
 
         <section className="an-bottom">
-          <button type="button" className="lw-btn pri lg wide an-cta" onClick={claim} disabled={busy}>
-            {busy ? t('an.ctaBusy') : soldOut ? t('an.ctaSold') : t('an.cta')}
-          </button>
-          <p className="an-count">{counterLine}</p>
-          <p className="an-trial">{t('an.trial')} <a href={monthlyHref}>{t('an.trialLink')}</a>{t('an.trialTail')}</p>
+          <button type="button" className="lw-btn pri lg wide an-cta" onClick={openSignUp}>{t('an.go')}</button>
+          <p className="an-go-note">{t('an.goNote')}</p>
+          <p className="an-trial"><button type="button" className="an-link" onClick={claim} disabled={busy}>{busy ? t('an.ctaBusy') : soldOut ? t('an.ctaSold') : t('an.cta')}</button> · {counterLine}</p>
         </section>
       </main>
 
@@ -230,6 +239,7 @@ export default function AnnualPage() {
         <a href="/privacy">{t('an.privacy')}</a>
         <a href={monthlyHref}>{t('an.monthly')}</a>
       </footer>
+      <AuthModal open={showAuth} onClose={() => setShowAuth(false)} onSuccess={onAuth} defaultMode={authMode} />
     </div>
   );
 }

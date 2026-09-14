@@ -18,8 +18,6 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
@@ -29,8 +27,6 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
   const resetForm = useCallback(() => {
     setEmail('');
     setPassword('');
-    setConfirmPassword('');
-    setFullName('');
     setIsForgotPassword(false);
   }, []);
 
@@ -62,20 +58,9 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
 
     try {
       if (isSignUp) {
-        if (password !== confirmPassword) {
-          toast({ title: t('e.somethingWrong'), description: t('mod.passwordsDoNotMatch'), variant: 'destructive' });
-          setLoading(false);
-          return;
-        }
-        const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password: password,
-          options: {
-            data: {
-              full_name: fullName.trim(),
-            }
-          }
-        });
+        // Two fields, on purpose: email and a password he can see. Name and company
+        // are asked on the welcome screen, where they are obviously for his estimates.
+        const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
         if (error) {
           console.error("Signup error:", error);
           throw error;
@@ -183,20 +168,6 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
               <p className="lv-sub">{getSub()}</p>
 
               <div>
-                {isSignUp && !isForgotPassword && (
-                  <label className="lv-field">
-                    <span className="lv-label">{t('mod.fullName')}</span>
-                    <input
-                      className="lv-input"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                      placeholder={t('mod.fullNamePlaceholder')}
-                      autoComplete="name"
-                      disabled={loading}
-                    />
-                  </label>
-                )}
 
                 <label className="lv-field">
                   <span className="lv-label">{t('m.email')}</span>
@@ -242,22 +213,6 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                   </label>
                 )}
 
-                {isSignUp && !isForgotPassword && (
-                  <label className="lv-field">
-                    <span className="lv-label">{t('mod.confirmPassword')}</span>
-                    <input
-                      className="lv-input"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      placeholder={t('mod.typeItOnceMore')}
-                      autoComplete="new-password"
-                      disabled={loading}
-                    />
-                  </label>
-                )}
               </div>
 
               {!isSignUp && !isForgotPassword && (

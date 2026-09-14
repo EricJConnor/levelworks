@@ -296,9 +296,15 @@ export const landing: Record<string, string> = {
   'lp.mockBrandNoBranding': 'No LevelWorks branding',
 
   // ---- /annual: the $49-a-year launch page
+  'an.go': 'Start free — no card needed',
+  'an.goNote': '30 days, every feature. Takes about a minute.',
+  'an.haveAccount': 'Already have an account?',
+  'an.signIn': 'Sign in',
+  'an.afterH': 'After your free 30 days',
+  'an.afterSub': 'Pick one then, not now. Nothing is charged automatically.',
   'an.label': 'Contractor app · built by a contractor',
   'an.h1': 'Paying more than $5 a month for estimates?',
-  'an.sub': 'Unlimited estimates and invoices, billing through Stripe, your logo, English and Spanish, recurring billing, photo updates. Pick how you want to pay.',
+  'an.sub': 'Unlimited estimates and invoices, billing through Stripe, your logo, English and Spanish, recurring billing, photo updates. Free for 30 days.',
   'an.cta': 'Claim your year — $49',
   'an.ctaSold': 'Sold out — join for $5/month',
   'an.ctaBusy': 'Opening checkout…',

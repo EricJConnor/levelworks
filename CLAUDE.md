@@ -473,6 +473,22 @@ the placeholder; `sendMail({ unsubscribe: lang })` fills it per recipient and ad
 Marketing = the note, nudge1/3/7, day30, trialOffer, blasts. **Transactional mail (login link,
 receipt, an estimate to a client) deliberately has no unsubscribe link**; do not add one.
 
+**The feature tips (Sep 14 2026, Eric: "an email every other morning with a very simple, but
+detailed instruction on how to use a particular feature").** `api/_lib/tips.js`: eight tips so
+far (first estimate, send and sign, invoice and card payment, one total, logo, photo updates,
+Spanish and translate, recurring billing), English and Spanish, numbered steps using the app's
+exact button labels (taken from the dictionaries, not from memory; two claims were corrected
+against the code before shipping: signing does **not** email the contractor, and recurring
+billing takes the card on the contractor's phone, not by a link to the client). Sent by the
+daily cron (step 4b): the next tip to anyone whose last was 40+ hours ago, so every other
+morning per member, everyone from tip 1 at their own pace, progress in auth
+`app_metadata.tip_stage` / `tip_at` (no migration). Skips unsubscribed members, anyone nudged
+in the same run, and `@levelworks.org`; stops at the end of the list. **Adding a tip: append
+to `TIPS`, both languages, never reorder.** Test one to Eric with
+`POST /api/annual-broadcast {"mode":"tiptest","n":3}`. First send: Sep 15 2026, 9am ET, ~50
+members. Eric wants to work later on "additional value for all of our subscribers" (not
+started).
+
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also
 has an empty personal ad account `2227206028141508`, and Ads Manager opens on that one by default,

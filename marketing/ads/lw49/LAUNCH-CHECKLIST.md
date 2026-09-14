@@ -56,3 +56,15 @@ Old campaign `Level-Works-Signups-Test1` paused Sep 9 at Eric's word. CREW promo
   view-by-token pages). Do not ship the launch ads without at least scheduling this.
 - The demo account `demo.lw49@levelworks.org` exists in production for screenshots. Remove with
   `node scripts/lw49-demo.mjs delete` when no longer needed.
+
+
+## Sep 14 2026: sign-up campaign (LIVE)
+
+- Old campaign `52547713746537` PAUSED with ~$15 unspent; LPV campaign `52548403713537` PAUSED. Neither deleted.
+- Live: campaign `52548965992137` LW-Signups-Sep2026-Broad, $12/day CBO, OUTCOME_SALES, lowest cost.
+  - Ad set `52548966017337` LW-EN-Broad-Signups (locales 6, 24), ad `52548966081137`.
+  - Ad set `52548966037937` LW-ES-Broad-Signups (locales 7, 23), ad `52548966118937`.
+  - Both optimise for COMPLETE_REGISTRATION on pixel 2017000758930909, US, 25-60, Advantage+ audience, no interests.
+  - Creatives: v3 ripped-off (app in background) EN `1699073781182047`, ES `1104760702419012`; videos EN 4602951780028052 / 1065901276037241, ES 1791597125186448 / 1453413429933308. Placement rules explicit (tall: story + reels; square: feeds, marketplace, search, in-stream, explore, messenger home, audience network).
+- v3 ads also exist on the old campaign (EN `52548965703337`, ES `52548965752537`), paused with it; v2 pair paused.
+- Do not touch for seven days. Read: cost per sign-up, placement breakdown, `/api/annual-count`.

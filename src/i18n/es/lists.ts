@@ -231,4 +231,8 @@ export const lists: Record<string, string> = {
   'rb.everyNMonths': '{amt} cada {n} meses',
   'lst.duplicated': 'Copiado',
   'lst.duplicatedBody': 'Mismas partidas y precios. Agrega el cliente y cambia lo que sea distinto.',
+  // tarjeta del panel cuando Stripe ya está conectado
+  'lst.cardPaymentsOn': 'Ya cobras con tarjeta',
+  'lst.cardPaymentsOnBody': 'Tus clientes pueden pagar cualquier factura en línea. Los depósitos llegan a tu banco a través de Stripe.',
+  'lst.openStripe': 'Abrir Stripe',
 };

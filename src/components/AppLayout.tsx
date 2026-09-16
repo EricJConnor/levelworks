@@ -14,6 +14,7 @@ import AuthModal from './AuthModal';
 import { useData, Estimate } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
+import { startStripeConnect } from '@/lib/stripeConnect';
 import { Menu, Bell, Loader2, User, Users, LogOut, ArrowLeft, Receipt, FileText, CheckCircle, HelpCircle, Plus, CreditCard, Home, StickyNote, Camera, ChevronRight } from 'lucide-react';
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
@@ -44,11 +45,7 @@ export const AppLayout: React.FC = () => {
   const t = useT();
   const mountedRef = useRef(true);
 
-  const handleConnectStripe = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    window.location.href = `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=ca_T3ss3sYTBR7iYQrEPRYmsQYyo8BI5XVA&scope=read_write&redirect_uri=https://levelworks.org/stripe-connect-callback&state=${user.id}`;
-  };
+  const handleConnectStripe = () => { startStripeConnect(); };
 
   useEffect(() => {
     mountedRef.current = true;
@@ -310,7 +307,21 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewEstimates, 
         </div>
       </div>
 
-      {!stripeConnected && (
+      {stripeConnected ? (
+        /* Green means money in: card payments are on and payouts go to his bank. */
+        <div className="lv-card lv-card-pad" style={{ marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', borderColor: '#bfe8cc', background: 'linear-gradient(180deg, #f3fbf6, #ffffff)' }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--lv-green-soft)', color: 'var(--lv-green)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+              <CheckCircle size={18} />
+            </div>
+            <div>
+              <p className="lv-h3">{t('lst.cardPaymentsOn')}</p>
+              <p className="lv-small" style={{ marginTop: 2 }}>{t('lst.cardPaymentsOnBody')}</p>
+            </div>
+          </div>
+          <a className="lv-btn quiet sm" href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer">{t('lst.openStripe')}</a>
+        </div>
+      ) : (
         <div className="lv-card lv-card-pad" style={{ marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', borderColor: '#cfe0ff', background: 'linear-gradient(180deg, #f7faff, #ffffff)' }}>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <div style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--lv-blue-soft)', color: 'var(--lv-blue)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>

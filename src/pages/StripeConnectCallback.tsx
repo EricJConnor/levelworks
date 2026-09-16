@@ -1,76 +1,101 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { useProfile } from '@/contexts/ProfileContext';
+import { useT } from '@/i18n';
+import { finishStripeConnect, startStripeConnect } from '@/lib/stripeConnect';
+import { Mark } from '@/components/Mark';
 
+/**
+ * Where Stripe sends the contractor after "Set up payments". Hands the code to
+ * /api/stripe-connect, which saves the account on his profile, then refreshes
+ * the profile so the dashboard already shows "card payments on" when he lands.
+ * Plain words on every failure, and a way back in.
+ */
 export default function StripeConnectCallback() {
   const navigate = useNavigate();
+  const t = useT();
+  const { refreshProfile } = useProfile();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('');
+  const [detail, setDetail] = useState('');
+  const [payoutsPending, setPayoutsPending] = useState(false);
+  const ran = useRef(false);
 
   useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
-        const state = params.get('state'); // userId
-        const error = params.get('error');
+    // React StrictMode runs effects twice in dev; the code is single-use.
+    if (ran.current) return;
+    ran.current = true;
 
-        if (error) throw new Error('Stripe connection was cancelled or failed.');
-        if (!code || !state) throw new Error('Missing required parameters.');
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code') || '';
+      const err = params.get('error') || '';
 
-        const { data, error: fnError } = await supabase.functions.invoke('connect-stripe-account', {
-          body: { action: 'exchange_code', userId: state, code }
-        });
-
-        if (fnError) throw new Error(fnError.message);
-        if (data?.error) throw new Error(data.error);
-
-        setStatus('success');
-        setMessage('Your payment account is connected! You can now accept card payments from clients.');
-        
-        setTimeout(() => navigate('/app'), 3000);
-      } catch (err: any) {
+      if (err) {
+        setDetail(err === 'access_denied' ? t('pg.sc.cancelled') : t('pg.sc.stripeError', { reason: params.get('error_description') || err }));
         setStatus('error');
-        setMessage(err.message || 'Something went wrong. Please try again.');
+        return;
       }
-    };
+      if (!code) {
+        setDetail(t('pg.sc.noCode'));
+        setStatus('error');
+        return;
+      }
 
-    handleCallback();
+      const r = await finishStripeConnect(code);
+      if (!r.ok) {
+        setDetail(
+          r.error === 'signed_out' ? t('pg.sc.signedOut')
+          : r.error === 'code_used' ? t('pg.sc.codeUsed')
+          : r.message || t('pg.sc.genericFail'),
+        );
+        setStatus('error');
+        return;
+      }
+
+      await refreshProfile();
+      setPayoutsPending(!r.chargesEnabled);
+      setStatus('success');
+      // Take the query string with us so a reload cannot resend the code.
+      window.history.replaceState(null, '', '/stripe-connect-callback');
+      setTimeout(() => navigate('/app', { replace: true }), 2500);
+    })();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">LEVEL<span className="text-blue-600">WORKS</span></h1>
+    <div className="lv-app" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div className="lv-card lv-card-pad" style={{ width: '100%', maxWidth: 440, textAlign: 'center' }}>
+        <div className="lv-inline" style={{ justifyContent: 'center', marginBottom: 18, color: 'var(--lv-ink)' }}>
+          <Mark size={22} /><span className="lv-h3">LevelWorks</span>
         </div>
+
         {status === 'loading' && (
-          <>
-            <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-            <p className="text-gray-600">Connecting your payment account...</p>
-          </>
+          <div className="lv-empty">
+            <Loader2 size={34} className="animate-spin" style={{ color: 'var(--lv-blue)' }} />
+            <h3>{t('pg.sc.connecting')}</h3>
+            <p>{t('pg.sc.connectingBody')}</p>
+          </div>
         )}
+
         {status === 'success' && (
-          <>
-            <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">You're all set!</h2>
-            <p className="text-gray-600 mb-4">{message}</p>
-            <p className="text-sm text-gray-400">Redirecting you back to the app...</p>
-          </>
+          <div className="lv-empty">
+            <CheckCircle size={40} style={{ color: 'var(--lv-green)' }} />
+            <h3>{t('pg.sc.doneTitle')}</h3>
+            <p>{payoutsPending ? t('pg.sc.doneBodyPending') : t('pg.sc.doneBody')}</p>
+            <button className="lv-btn pri" onClick={() => navigate('/app', { replace: true })}>{t('pg.sc.backToApp')}</button>
+          </div>
         )}
+
         {status === 'error' && (
-          <>
-            <XCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Connection Failed</h2>
-            <p className="text-gray-600 mb-6">{message}</p>
-            <button
-              onClick={() => navigate('/app')}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
-            >
-              Back to App
-            </button>
-          </>
+          <div className="lv-empty">
+            <AlertCircle size={40} style={{ color: 'var(--lv-red)' }} />
+            <h3>{t('pg.sc.failTitle')}</h3>
+            <p>{detail}</p>
+            <div className="lv-inline" style={{ justifyContent: 'center', gap: 10 }}>
+              <button className="lv-btn quiet" onClick={() => navigate('/app', { replace: true })}>{t('pg.sc.backToApp')}</button>
+              <button className="lv-btn pri" onClick={() => startStripeConnect()}>{t('a.retry')}</button>
+            </div>
+          </div>
         )}
       </div>
     </div>

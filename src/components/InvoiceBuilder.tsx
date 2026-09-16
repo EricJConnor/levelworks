@@ -12,6 +12,7 @@ import { looksSpanish } from '@/lib/translate';
 import { linePricesShown, lineAmountShown, rememberedLinePrices, rememberLinePrices } from '@/lib/linePrices';
 import { Switch } from './Switch';
 import { clientAddressOf } from '@/lib/clientAddress';
+import { SendInvoiceModal } from './SendInvoiceModal';
 
 interface InvoiceBuilderProps {
   estimateId?: string;
@@ -54,6 +55,15 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
 
   // Determine if this is a conversion from an estimate
   const isConversion = !!(estimateId || initialData);
+
+  /**
+   * The invoice made from an estimate, once saved, waiting for the send modal.
+   * Eric: "if i make an estimate into an invoice, it should convert and give
+   * me the option to send right away." Save closes; Send saves then opens
+   * this. Closing the modal closes the builder too: the invoice already
+   * exists, so a second press must never make a second one.
+   */
+  const [sendInvoice, setSendInvoice] = useState<any>(null);
 
   // The builder covers the whole screen; stop the page behind it scrolling.
   useEffect(() => {
@@ -131,11 +141,15 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
     return `INV-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
   };
 
-  // Handle conversion - just save the invoice without sending email
-  const handleConvert = async () => {
+  /**
+   * Conversion: save the invoice and hand back the saved row (with its view
+   * token) so the caller can close, or open the send modal on it. Returns
+   * null when validation or the save failed; the toast has already said why.
+   */
+  const saveConversion = async (): Promise<any | null> => {
     if (!clientName || !projectName || lineItems.length === 0) {
       toast({ title: t('inv.fillRequired'), variant: 'destructive' });
-      return;
+      return null;
     }
     setSending(true);
     try {
@@ -190,10 +204,23 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
       });
 
       console.log('[InvoiceBuilder] Invoice created with ID:', invoiceId);
-      toast({ title: t('inv.created'), description: t('inv.createdBody') });
 
-      onComplete?.();
-      onClose?.();
+      // The row carries the view token addInvoice made; the send modal needs it.
+      const { data: row } = await supabase.from('invoices').select('*').eq('id', invoiceId).single();
+      return {
+        id: invoiceId,
+        invoiceNumber,
+        clientName: safeString(clientName).trim(),
+        clientEmail: safeString(clientEmail).trim(),
+        clientPhone: safeString(clientPhone).trim(),
+        projectName: safeString(projectName).trim(),
+        total: safeNumber(total),
+        amountPaid: 0,
+        issueDate: row?.issue_date || new Date().toISOString(),
+        dueDate: row?.due_date || dueDate || null,
+        notes: row?.notes || null,
+        viewToken: row?.view_token || '',
+      };
     } catch (error: any) {
       console.error('Convert to invoice error:', error);
       let errorMessage = t('inv.couldNotCreate');
@@ -201,10 +228,29 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         errorMessage = error.message;
       }
       toast({ title: t('e.somethingWrong'), description: errorMessage, variant: 'destructive' });
+      return null;
     } finally { 
       setSending(false); 
     }
   };
+
+  /** Save and close; it can still go out from the Invoices list. */
+  const handleConvertAndClose = async () => {
+    const saved = await saveConversion();
+    if (!saved) return;
+    toast({ title: t('inv.created'), description: t('inv.createdBody') });
+    onComplete?.();
+    onClose?.();
+  };
+
+  /** Save, then send it right away. */
+  const handleConvertAndSend = async () => {
+    const saved = await saveConversion();
+    if (!saved) return;
+    setSendInvoice(saved);
+  };
+
+  const closeAfterSave = () => { setSendInvoice(null); onComplete?.(); onClose?.(); };
 
   // Handle sending a new invoice (not conversion)
   const handleSendInvoice = async () => {
@@ -330,12 +376,6 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
     }
   };
 
-  // Choose the appropriate handler based on mode
-  const handleSubmit = isConversion ? handleConvert : handleSendInvoice;
-  const buttonText = isConversion 
-    ? (sending ? t('inv.converting') : t('est.convertToInvoice')) 
-    : (sending ? t('a.sending') : t('inv.sendInvoice'));
-  const buttonIcon = isConversion ? <FileText size={16} /> : <Send size={16} />;
 
   const handleClose = () => { onClose?.(); onComplete?.(); };
 
@@ -579,14 +619,29 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         {/* --- the action bar: everything that finishes this invoice, together --- */}
         <footer className="eb-foot">
           <div className="lv-actions">
-            <button className="lv-btn quiet lv-hide-mobile" onClick={handleClose}>{t('a.cancel')}</button>
+            <button className="lv-btn quiet lv-hide-mobile" onClick={handleClose} disabled={sending}>{t('a.cancel')}</button>
             <div className="spacer" />
-            <button className="lv-btn pri span" onClick={handleSubmit} disabled={sending}>
-              {buttonIcon} {buttonText}
-            </button>
+            {isConversion ? (
+              <>
+                <button className="lv-btn dark" onClick={handleConvertAndClose} disabled={sending}>
+                  {sending ? t('a.saving') : t('a.save')}
+                </button>
+                <button className="lv-btn pri" onClick={handleConvertAndSend} disabled={sending}>
+                  <Send size={16} /> {sending ? t('a.saving') : t('est.sendToClient')}
+                </button>
+              </>
+            ) : (
+              <button className="lv-btn pri span" onClick={handleSendInvoice} disabled={sending}>
+                <Send size={16} /> {sending ? t('a.sending') : t('inv.sendInvoice')}
+              </button>
+            )}
           </div>
         </footer>
       </div>
+
+      {sendInvoice && (
+        <SendInvoiceModal invoice={sendInvoice} onClose={closeAfterSave} onSuccess={() => {}} />
+      )}
     </div>
   );
 };

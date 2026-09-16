@@ -321,4 +321,9 @@ export const modals: Record<string, string> = {
   'mod.smsBody': 'Hi {name}, here is your estimate for {project}: {url}',
   'mod.smsPreviewHint': 'This is what will be written. You can change it before you hit send.',
   'mod.smsNoNumberHint': 'No number saved for this client — Messages will open with the To field empty so you can pick them from your contacts.',
+  // sending an invoice right after it is made (SendInvoiceModal)
+  'mod.invoiceSmsBody': 'Hi {name}, here is your invoice for {project}: {url}',
+  'mod.invoiceDidNotGoOut': 'The invoice did not go out: {reason}. Check the email address and send it again.',
+  'mod.clientGetsLinkToPay': 'They get a link to open the invoice and pay it.',
+  'mod.sendLater': 'Send later',
 };

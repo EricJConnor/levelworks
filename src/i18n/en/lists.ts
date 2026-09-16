@@ -231,4 +231,8 @@ export const lists: Record<string, string> = {
   'rb.everyNMonths': '{amt} every {n} months',
   'lst.duplicated': 'Copied',
   'lst.duplicatedBody': 'Same lines and prices. Add the client and change what is different.',
+  // dashboard card once Stripe is connected
+  'lst.cardPaymentsOn': 'You take card payments',
+  'lst.cardPaymentsOnBody': 'Clients can pay any invoice online. Payouts go to your bank through Stripe.',
+  'lst.openStripe': 'Open Stripe',
 };

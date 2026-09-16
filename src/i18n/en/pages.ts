@@ -153,4 +153,18 @@ export const pages: Record<string, string> = {
   'pg.inv.payFailedBody': 'Your card was not charged. Check the details and try again.',
   'pg.inv.notSetUp': 'This business is not taking card payments yet. Contact them to pay another way.',
   'pg.inv.stripeNote': 'Card details go straight to Stripe and never touch this site.',
+  // /stripe-connect-callback — back from Stripe after Set up payments
+  'pg.sc.connecting': 'Connecting your Stripe account',
+  'pg.sc.connectingBody': 'One moment. Saving it to your business.',
+  'pg.sc.doneTitle': 'Card payments are on',
+  'pg.sc.doneBody': 'Clients can now pay your invoices online. Payouts go to the bank account you gave Stripe.',
+  'pg.sc.doneBodyPending': 'Your account is connected. Stripe is still finishing its checks; card payments switch on as soon as it does, usually within a day.',
+  'pg.sc.backToApp': 'Back to the app',
+  'pg.sc.failTitle': 'Stripe is not connected yet',
+  'pg.sc.cancelled': 'You left Stripe before it finished. Nothing was changed. Try again when you are ready.',
+  'pg.sc.stripeError': 'Stripe sent back an error: {reason}',
+  'pg.sc.noCode': 'Stripe did not send the code we need. Start again from Set up payments.',
+  'pg.sc.signedOut': 'You were signed out while Stripe was open. Sign in, then tap Set up payments again.',
+  'pg.sc.codeUsed': 'This page was already used once. Start again from Set up payments.',
+  'pg.sc.genericFail': 'We could not save your Stripe account. Try again, and if it happens twice let us know.',
 };

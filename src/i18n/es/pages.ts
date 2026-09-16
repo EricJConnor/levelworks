@@ -154,4 +154,18 @@ export const pages: Record<string, string> = {
   'pg.inv.payFailedBody': 'No se hizo ningún cargo a su tarjeta. Revise los datos e inténtelo de nuevo.',
   'pg.inv.notSetUp': 'Este negocio todavía no acepta pagos con tarjeta. Contáctelo para pagar de otra forma.',
   'pg.inv.stripeNote': 'Los datos de la tarjeta van directo a Stripe y nunca pasan por este sitio.',
+  // /stripe-connect-callback — de vuelta de Stripe tras Configurar los pagos
+  'pg.sc.connecting': 'Conectando tu cuenta de Stripe',
+  'pg.sc.connectingBody': 'Un momento. La estamos guardando en tu negocio.',
+  'pg.sc.doneTitle': 'Los pagos con tarjeta están activos',
+  'pg.sc.doneBody': 'Tus clientes ya pueden pagar tus facturas en línea. Los depósitos llegan a la cuenta bancaria que le diste a Stripe.',
+  'pg.sc.doneBodyPending': 'Tu cuenta está conectada. Stripe todavía está terminando sus verificaciones; los pagos con tarjeta se activan en cuanto termine, normalmente en un día.',
+  'pg.sc.backToApp': 'Volver a la app',
+  'pg.sc.failTitle': 'Stripe todavía no está conectado',
+  'pg.sc.cancelled': 'Saliste de Stripe antes de terminar. No se cambió nada. Inténtalo otra vez cuando quieras.',
+  'pg.sc.stripeError': 'Stripe devolvió un error: {reason}',
+  'pg.sc.noCode': 'Stripe no envió el código que necesitamos. Empieza de nuevo desde Configurar los pagos.',
+  'pg.sc.signedOut': 'Se cerró tu sesión mientras Stripe estaba abierto. Inicia sesión y vuelve a tocar Configurar los pagos.',
+  'pg.sc.codeUsed': 'Esta página ya se usó una vez. Empieza de nuevo desde Configurar los pagos.',
+  'pg.sc.genericFail': 'No pudimos guardar tu cuenta de Stripe. Inténtalo otra vez y, si pasa dos veces, avísanos.',
 };

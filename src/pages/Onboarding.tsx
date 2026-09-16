@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { startStripeConnect } from '@/lib/stripeConnect';
 import { useProfile } from '@/contexts/ProfileContext';
 import { useToast } from '@/hooks/use-toast';
 import { Mark } from '@/components/Mark';
@@ -99,9 +100,8 @@ export default function Onboarding() {
     setSaving(true);
     submittedRef.current = true;
     if (form.company_name.trim()) await saveProfile();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setSaving(false); navigate('/', { replace: true }); return; }
-    window.location.href = `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=ca_T3ss3sYTBR7iYQrEPRYmsQYyo8BI5XVA&scope=read_write&redirect_uri=https://levelworks.org/stripe-connect-callback&state=${user.id}`;
+    const started = await startStripeConnect();
+    if (!started) { setSaving(false); navigate('/', { replace: true }); }
   };
 
   const goToApp = async (createEstimate: boolean) => {

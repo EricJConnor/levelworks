@@ -255,6 +255,25 @@ Second round of feedback from the roofer who asked for the line-prices switch. T
   gets a plain "not taking card payments yet" line instead of a form. LevelWorks takes no fee.
   Not yet verified with a real card: needs a contractor with Stripe connected and a live invoice.
 
+## Send after converting, and the Stripe connection that never saved (Sep 16 2026)
+
+- **Convert to invoice now offers Send.** The converted invoice's action bar has Save (dark,
+  saves and closes) and Send to client (blue, saves then opens `SendInvoiceModal`, the invoice
+  twin of `SendEstimateModal`: email, text from his phone, copy link). Closing the modal closes
+  the builder, so a second press can never create a second invoice.
+- **Connecting Stripe ended on Stripe's success screen but the account id never reached the
+  profile**, so the dashboard kept offering Set up payments. The Supabase edge function
+  `connect-stripe-account` is no longer called. `api/stripe-connect.js` on Vercel does the
+  exchange: identifies the user by **session token, never by `state`**, refuses the platform's
+  own account, upserts `profiles.stripe_account_id`, reads it back before saying ok. The
+  authorize URL lives once in `src/lib/stripeConnect.ts`; the redirect URI
+  `https://levelworks.org/stripe-connect-callback` is registered with Stripe as written and the
+  bare domain 307s to www with the query intact. Once connected the dashboard card turns green
+  ("You take card payments", Open Stripe). Eric connected his own account this way, Sep 16.
+- **Stripe requires two-step login on every full account (since 2024)**, which is what Eric hit.
+  Contractors connect as Standard accounts today; switching new connections to **Express** would
+  make onboarding a short Stripe-hosted form with a text code. Discussed, not built.
+
 ## Texting a client (no Twilio)
 
 The estimate goes out from **the contractor's own phone**, not from a LevelWorks

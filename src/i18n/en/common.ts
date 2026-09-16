@@ -97,4 +97,5 @@ export const common: Record<string, string> = {
   'e.somethingWrong': 'Something went wrong',
   'e.tryAgain': 'Please try again.',
   'e.required': 'This field is required',
+  'a.duplicate': 'Duplicate',
 };

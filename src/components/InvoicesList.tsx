@@ -1,3 +1,4 @@
+import { clientAddressOf } from '@/lib/clientAddress';
 import React, { useState } from 'react';
 import { useInvoices } from '@/contexts/InvoiceContext';
 import { FileText, DollarSign, Calendar, Trash2, Link, Check, Send, X, Search, Plus, ChevronRight } from 'lucide-react';
@@ -304,6 +305,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                   <p className="lv-h3">{selectedInvoice.clientName}</p>
                   {selectedInvoice.clientEmail && <p className="lv-small" style={{ marginTop: 3 }}>{selectedInvoice.clientEmail}</p>}
                   {selectedInvoice.clientPhone && <p className="lv-small" style={{ marginTop: 2 }}>{selectedInvoice.clientPhone}</p>}
+                  {clientAddressOf(selectedInvoice.lineItems) && <p className="lv-small" style={{ marginTop: 2 }}>{clientAddressOf(selectedInvoice.lineItems)}</p>}
                 </div>
               </div>
 

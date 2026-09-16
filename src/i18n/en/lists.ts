@@ -229,4 +229,6 @@ export const lists: Record<string, string> = {
   'rb.perYr': '/yr',
   'rb.perMo': '/mo',
   'rb.everyNMonths': '{amt} every {n} months',
+  'lst.duplicated': 'Copied',
+  'lst.duplicatedBody': 'Same lines and prices. Add the client and change what is different.',
 };

@@ -1,3 +1,4 @@
+import { clientAddressOf } from '@/lib/clientAddress';
 import React, { useState, useEffect } from 'react';
 import { linePricesShown, lineAmountShown } from '@/lib/linePrices';
 import { useParams } from 'react-router-dom';
@@ -66,6 +67,7 @@ export const EstimateView: React.FC = () => {
             <h3 className="font-semibold text-gray-700 mb-2">Client Information</h3>
             <p className="text-lg font-semibold">{estimate.clientName}</p>
             {estimate.clientEmail && <p className="text-gray-600">{estimate.clientEmail}</p>}
+            {clientAddressOf(estimate.lineItems) && <p className="text-gray-600">{clientAddressOf(estimate.lineItems)}</p>}
           </div>
           <div>
             <h3 className="font-semibold text-gray-700 mb-2">Project</h3>

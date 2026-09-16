@@ -226,6 +226,35 @@ carry it — `cleanLineItem` in DataContext, the builder's own `cleanLineItem`, 
 InvoiceContext — or it vanishes on save, the same trap `sourceText` taught. The contractor always
 sees every price on his own side; only the client's copy changes.
 
+## Address, duplicate, and the card payment that never worked (Sep 16 2026)
+
+Second round of feedback from the roofer who asked for the line-prices switch. Three things:
+
+- **Client address on the document.** There is no address column on `estimates` or `invoices`
+  and no way to run a migration from here, so it rides inside `line_items` exactly like
+  `hidePrice`: `withClientAddress` / `clientAddressOf` in `src/lib/clientAddress.ts`, stamped on
+  every line, read from the first line that has one. Every line-item whitelist carries
+  `clientAddress` (DataContext, both InvoiceContext mappers, both builders' cleaners). It prints
+  under the client on the preview, `/view-estimate`, `/view-invoice`, `/estimate/:id` and the
+  invoice detail, converts to the invoice for free, and prefills from the client record.
+- **Duplicate** on every estimate row (`handleDuplicate` in EstimatesList): opens the builder
+  editable with the same lines, prices, tax and deposit, **no id, client, link or status**, so
+  saving creates a new estimate. `EstimateBuilder` takes `duplicate` to skip the read-only
+  preview it normally opens existing estimates in. Templates were considered and held: duplicate
+  is what a roofer would use a template for.
+- **Card payments on a public invoice were broken for everyone.** `InvoicePaymentForm` called a
+  Supabase edge function `create-invoice-payment` that was never deployed (404), so every "Pay
+  now" failed. Replaced by **`api/invoice-payment.js`** on Vercel (needs only the existing
+  `STRIPE_SECRET_KEY` and `SUPABASE_SERVICE_ROLE_KEY`). Two actions: `create` makes a
+  PaymentIntent **on the contractor's connected account** (`stripeAccount`, like recurring
+  billing) for the amount the row says is due; `confirm` re-reads the intent from Stripe, marks
+  the invoice paid / partially_paid and appends to `payment_history`, then stamps
+  `metadata.recorded` on the intent so a retry never double-counts. The public page loads
+  Stripe.js scoped to that account (`getStripePromiseForAccount`), because a connected-account
+  secret cannot be confirmed with the platform instance. A contractor with no Stripe connected
+  gets a plain "not taking card payments yet" line instead of a form. LevelWorks takes no fee.
+  Not yet verified with a real card: needs a contractor with Stripe connected and a live invoice.
+
 ## Texting a client (no Twilio)
 
 The estimate goes out from **the contractor's own phone**, not from a LevelWorks

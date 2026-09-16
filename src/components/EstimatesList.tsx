@@ -3,7 +3,7 @@ import { useData, Estimate } from '@/contexts/DataContext';
 import { useInvoices } from '@/contexts/InvoiceContext';
 import { SendEstimateModal } from './SendEstimateModal';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, ImageIcon, ChevronDown, ChevronUp, Pencil, Eye, Copy, Check, Plus, Search, Send, Receipt, Trash2 } from 'lucide-react';
+import { FileText, ImageIcon, ChevronDown, ChevronUp, Pencil, Eye, Copy, Check, Plus, Search, Send, Receipt, Trash2, Files } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { PhotoUpload } from './PhotoUpload';
 import { PhotoGallery } from './PhotoGallery';
@@ -69,6 +69,7 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
   const [query, setQuery] = useState('');
   const [resendEstimate, setResendEstimate] = useState<Estimate | null>(null);
   const [editEstimate, setEditEstimate] = useState<Estimate | null>(null);
+  const [duplicateOf, setDuplicateOf] = useState<Estimate | null>(null);
   const [newEstimate, setNewEstimate] = useState(false);
   const [expandedEstimate, setExpandedEstimate] = useState<string | null>(null);
   const [estimatePhotos, setEstimatePhotos] = useState<Record<string, Photo[]>>({});
@@ -147,6 +148,29 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
   // Open the estimate in the builder
   const handleViewEstimate = (estimate: Estimate) => {
     setEditEstimate(estimate);
+  };
+
+  // Open a new, editable estimate carrying this one's lines, prices, tax and
+  // deposit. No id (so saving creates, never overwrites), no client, no link,
+  // no status: a roofer's next job is the same work at a different house.
+  const handleDuplicate = (estimate: Estimate) => {
+    const stamp = Date.now();
+    setDuplicateOf({
+      ...estimate,
+      id: '',
+      viewToken: undefined,
+      status: 'draft',
+      clientName: '',
+      clientEmail: '',
+      clientPhone: '',
+      createdAt: '',
+      sentAt: undefined, readAt: undefined, signedAt: undefined, signedByName: undefined, signedByEmail: undefined,
+      lineItems: estimate.lineItems.map((li, i) => {
+        const { clientAddress, ...rest } = li;
+        return { ...rest, id: `${stamp}-${i}` };
+      }),
+    });
+    toast({ title: t('lst.duplicated'), description: t('lst.duplicatedBody') });
   };
 
   // Copy estimate link to clipboard
@@ -268,6 +292,9 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
                 <button className="lv-btn sec sm" onClick={() => setEditEstimate(estimate)}>
                   <Pencil size={14} /> {t('a.edit')}
                 </button>
+                <button className="lv-btn sec sm" onClick={() => handleDuplicate(estimate)}>
+                  <Files size={14} /> {t('a.duplicate')}
+                </button>
                 {(estimate.status === 'sent' || estimate.status === 'draft') && (
                   <button className="lv-btn pri sm" onClick={() => setResendEstimate(estimate)}>
                     <Send size={14} /> {estimate.status === 'draft' ? t('a.send') : t('a.resend')}
@@ -310,6 +337,7 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
 
       {resendEstimate && <SendEstimateModal estimate={resendEstimate} onClose={() => setResendEstimate(null)} onSuccess={() => setResendEstimate(null)} />}
       {editEstimate && <EstimateBuilder existingEstimate={editEstimate} onClose={() => setEditEstimate(null)} />}
+      {duplicateOf && <EstimateBuilder existingEstimate={duplicateOf} duplicate onClose={() => setDuplicateOf(null)} />}
       {newEstimate && <EstimateBuilder onClose={() => setNewEstimate(false)} />}
     </div>
   );

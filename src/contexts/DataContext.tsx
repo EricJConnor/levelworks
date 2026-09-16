@@ -22,6 +22,8 @@ export interface LineItem {
   sourceText?: string; sourceLang?: 'en' | 'es'; sourceStale?: boolean;
   /** The client's copy shows no price on this line (set on every line when the estimate is lump sum). */
   hidePrice?: boolean;
+  /** The client's address, stamped on every line (see src/lib/clientAddress.ts). */
+  clientAddress?: string;
 }
 export interface Estimate { 
   id: string; clientName: string; clientEmail: string; clientPhone?: string; projectName: string; 
@@ -108,6 +110,7 @@ const cleanLineItem = (item: any, index: number): object | null => {
     sourceLang: item.sourceLang === 'es' || item.sourceLang === 'en' ? item.sourceLang : undefined,
     sourceStale: item.sourceStale === true ? true : undefined,
     hidePrice: item.hidePrice === true ? true : undefined,
+    clientAddress: item.clientAddress ? String(item.clientAddress) : undefined,
   };
 };
 

@@ -122,4 +122,5 @@ export const estimates: Record<string, string> = {
   'tr.failed': 'Could not translate',
   'tr.applied': 'Translation applied',
   'tr.appliedBody': 'Check the amounts before you send.',
+  'est.addressPlaceholder': '123 Main St, City, State',
 };

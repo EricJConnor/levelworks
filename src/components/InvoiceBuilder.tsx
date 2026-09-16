@@ -11,6 +11,7 @@ import { useTranslator } from './Translate';
 import { looksSpanish } from '@/lib/translate';
 import { linePricesShown, lineAmountShown, rememberedLinePrices, rememberLinePrices } from '@/lib/linePrices';
 import { Switch } from './Switch';
+import { clientAddressOf } from '@/lib/clientAddress';
 
 interface InvoiceBuilderProps {
   estimateId?: string;
@@ -29,6 +30,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   const [clientName, setClientName] = useState(initialData?.clientName || '');
   const [clientEmail, setClientEmail] = useState(initialData?.clientEmail || '');
   const [clientPhone, setClientPhone] = useState(initialData?.clientPhone || '');
+  const [clientAddress, setClientAddress] = useState<string>(initialData?.clientAddress || clientAddressOf(initialData?.lineItems));
   const [projectName, setProjectName] = useState(initialData?.projectName || '');
   const [lineItems, setLineItems] = useState(initialData?.lineItems || [{ description: '', quantity: 1, rate: 0 }]);
   const [taxRate, setTaxRate] = useState(initialData?.taxRate || 0);
@@ -160,7 +162,8 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         quantity: safeNumber(item.quantity),
         rate: safeNumber(item.rate),
         total: safeNumber(item.quantity) * safeNumber(item.rate),
-        ...(showPrices ? {} : { hidePrice: true })
+        ...(showPrices ? {} : { hidePrice: true }),
+        ...(clientAddress.trim() ? { clientAddress: clientAddress.trim() } : {})
       }));
       
       console.log('[InvoiceBuilder] Converting estimate to invoice...');
@@ -215,7 +218,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
       const exists = clients.some((c: any) => c.name.toLowerCase() === trimmedName.toLowerCase());
       if (!exists) {
         try {
-          await addClient({ name: trimmedName, email: clientEmail.trim(), phone: clientPhone.trim(), address: '', totalJobs: 0, totalValue: 0 });
+          await addClient({ name: trimmedName, email: clientEmail.trim(), phone: clientPhone.trim(), address: clientAddress.trim(), totalJobs: 0, totalValue: 0 });
         } catch (e) { console.log('[InvoiceBuilder] Client save skipped:', e); }
       }
       // Helper to safely convert to number (handles NaN)
@@ -241,7 +244,8 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         quantity: safeNumber(item.quantity),
         rate: safeNumber(item.rate),
         total: safeNumber(item.quantity) * safeNumber(item.rate),
-        ...(showPrices ? {} : { hidePrice: true })
+        ...(showPrices ? {} : { hidePrice: true }),
+        ...(clientAddress.trim() ? { clientAddress: clientAddress.trim() } : {})
       }));
       
       console.log('[InvoiceBuilder] Clean line items:', JSON.stringify(cleanLineItems));
@@ -472,7 +476,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
                     {showClientSuggest && filteredClients.length > 0 && (
                       <div className="lv-pop">
                         {filteredClients.map((c: any) => (
-                          <button key={c.id} type="button" onMouseDown={(e) => { e.preventDefault(); setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientSuggest(false); }}>
+                          <button key={c.id} type="button" onMouseDown={(e) => { e.preventDefault(); setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); if (c.address) setClientAddress(c.address); setShowClientSuggest(false); }}>
                             {c.name}{c.email && <small>{c.email}</small>}
                           </button>
                         ))}
@@ -487,6 +491,10 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
                   <label className="lv-field">
                     <span className="lv-label">{t('m.phone')}</span>
                     <input className="lv-input" type="tel" inputMode="tel" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder={t('est.phonePlaceholder')} />
+                  </label>
+                  <label className="lv-field eb-span">
+                    <span className="lv-label">{t('m.address')}</span>
+                    <input className="lv-input" type="text" autoComplete="street-address" value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} placeholder={t('est.addressPlaceholder')} />
                   </label>
                   <label className="lv-field eb-rel eb-span">
                     <span className="lv-label">{t('m.project')} *</span>

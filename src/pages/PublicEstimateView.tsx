@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { clientAddressOf } from '@/lib/clientAddress';
 import { linePricesShown, lineAmountShown } from '@/lib/linePrices';
 import { useParams } from 'react-router-dom';
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
@@ -207,6 +208,7 @@ export default function PublicEstimateView() {
               <p className="font-semibold text-gray-900">{estimate.client_name}</p>
               {estimate.client_email && <p className="text-sm text-gray-500">{estimate.client_email}</p>}
               {estimate.client_phone && <p className="text-sm text-gray-500">{estimate.client_phone}</p>}
+              {clientAddressOf(estimate.line_items) && <p className="text-sm text-gray-500">{clientAddressOf(estimate.line_items)}</p>}
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { linePricesShown, lineAmountShown } from '@/lib/linePrices';
+import { clientAddressOf } from '@/lib/clientAddress';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useT } from '@/i18n';
 import { Loader2, CheckCircle, CreditCard } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
-import { getStripePromise } from '@/lib/stripe';
+import { getStripePromiseForAccount } from '@/lib/stripe';
 import { InvoicePaymentForm } from '@/components/InvoicePaymentForm';
 
 export default function PublicInvoiceView() {
@@ -18,14 +19,41 @@ export default function PublicInvoiceView() {
   const [invoice, setInvoice] = useState<any>(null);
   const [branding, setBranding] = useState<{ company_name?: string; profile_photo_url?: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showPayment, setShowPayment] = useState(false);
+  // Payment happens on the contractor's own Stripe account: the intent is
+  // created server-side (/api/invoice-payment) and Stripe.js is loaded scoped
+  // to that account before the card form mounts.
+  const [payment, setPayment] = useState<{ clientSecret: string; paymentIntentId: string; amount: number } | null>(null);
   const [stripe, setStripe] = useState<any>(null);
+  const [preparing, setPreparing] = useState(false);
+  const [payBlocked, setPayBlocked] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  useEffect(() => {
-    loadInvoice();
-    getStripePromise().then(setStripe);
-  }, [token]);
+  useEffect(() => { loadInvoice(); }, [token]);
+
+  const startPayment = async () => {
+    if (!invoice) return;
+    setPreparing(true);
+    setPayBlocked(null);
+    try {
+      const r = await fetch('/api/invoice-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', invoiceId: invoice.id, viewToken: token, customerName: invoice.client_name, customerEmail: invoice.client_email }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.status === 409 && data?.error === 'not_set_up') { setPayBlocked(t('pg.inv.notSetUp')); return; }
+      if (r.status === 409 && data?.error === 'already_paid') { setPaymentSuccess(true); loadInvoice(); return; }
+      if (!r.ok || !data?.clientSecret) throw new Error(data?.message || t('pg.inv.payFailedBody'));
+      const s = await getStripePromiseForAccount(data.stripeAccountId);
+      if (!s) throw new Error(t('pg.inv.payFailedBody'));
+      setStripe(s);
+      setPayment({ clientSecret: data.clientSecret, paymentIntentId: data.paymentIntentId, amount: Number(data.amount) || 0 });
+    } catch (e: any) {
+      toast({ title: t('pg.inv.payFailed'), description: e?.message || t('pg.inv.payFailedBody'), variant: 'destructive' });
+    } finally {
+      setPreparing(false);
+    }
+  };
 
   const loadInvoice = async () => {
     try {
@@ -50,7 +78,7 @@ export default function PublicInvoiceView() {
 
   const handlePaymentSuccess = () => {
     setPaymentSuccess(true);
-    setShowPayment(false);
+    setPayment(null);
     loadInvoice();
   };
 
@@ -108,7 +136,7 @@ export default function PublicInvoiceView() {
 
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><p className="text-sm text-gray-500">{t('pg.inv.billTo')}</p><p className="font-semibold">{invoice.client_name}</p><p className="text-sm">{invoice.client_email}</p></div>
+              <div><p className="text-sm text-gray-500">{t('pg.inv.billTo')}</p><p className="font-semibold">{invoice.client_name}</p><p className="text-sm">{invoice.client_email}</p>{clientAddressOf(lineItems) && <p className="text-sm">{clientAddressOf(lineItems)}</p>}</div>
               <div><p className="text-sm text-gray-500">{t('m.project')}</p><p className="font-semibold">{invoice.project_name}</p></div>
             </div>
 
@@ -161,17 +189,20 @@ export default function PublicInvoiceView() {
                 <p className="text-green-800 font-semibold text-lg">{t('pg.inv.paidTitle')}</p>
                 <p className="text-sm text-green-600">{t('pg.inv.thankYou')}</p>
               </div>
-            ) : showPayment && stripe ? (
+            ) : payment && stripe ? (
               <div className="border-t pt-6">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2"><CreditCard className="w-5 h-5" /> {t('pg.inv.payInvoice')}</h3>
                 <Elements stripe={stripe}>
-                  <InvoicePaymentForm invoiceId={invoice.id} viewToken={token || ''} amount={amountDue} clientName={invoice.client_name} clientEmail={invoice.client_email} onSuccess={handlePaymentSuccess} />
+                  <InvoicePaymentForm invoiceId={invoice.id} viewToken={token || ''} clientSecret={payment.clientSecret} paymentIntentId={payment.paymentIntentId} amount={payment.amount} clientName={invoice.client_name} clientEmail={invoice.client_email} onSuccess={handlePaymentSuccess} />
                 </Elements>
               </div>
+            ) : payBlocked ? (
+              <div className="bg-gray-50 border p-5 rounded-lg text-center"><p className="text-sm text-gray-700">{payBlocked}</p></div>
             ) : (
              <>
-              <Button onClick={() => setShowPayment(true)} className="w-full bg-green-600 hover:bg-green-700 py-5 md:py-6 text-base md:text-lg">
-                <CreditCard className="w-5 h-5 mr-2" /> {t('pg.inv.payNow', { amount: `$${amountDue.toFixed(2)}` })}
+              <Button onClick={startPayment} disabled={preparing} className="w-full bg-green-600 hover:bg-green-700 py-5 md:py-6 text-base md:text-lg">
+                {preparing ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <CreditCard className="w-5 h-5 mr-2" />}
+                {preparing ? t('pg.inv.preparing') : t('pg.inv.payNow', { amount: `$${amountDue.toFixed(2)}` })}
               </Button>
               <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '13px', marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 🔒 {t('pg.inv.secure')}

@@ -12,13 +12,20 @@ import { useTranslator } from './Translate';
 import { looksSpanish } from '@/lib/translate';
 import { linePricesShown, withLinePrices, lineAmountShown, rememberedLinePrices, rememberLinePrices } from '@/lib/linePrices';
 import { Switch } from './Switch';
+import { clientAddressOf, withClientAddress } from '@/lib/clientAddress';
 
 interface LineItem {
   id: string; description: string; quantity: number; rate: number; total: number; sectionTitle?: string;
   /** What he typed before translating — see DataContext's LineItem. */
   sourceText?: string; sourceLang?: 'en' | 'es'; sourceStale?: boolean;
+  hidePrice?: boolean; clientAddress?: string;
 }
-interface Props { onClose: () => void; onConvertToInvoice?: (data: any) => void; existingEstimate?: any; }
+/**
+ * `duplicate` opens the builder editable with another estimate's lines, prices,
+ * tax and deposit but no id, client, status or link — so saving creates a new
+ * estimate rather than overwriting the one it was copied from.
+ */
+interface Props { onClose: () => void; onConvertToInvoice?: (data: any) => void; existingEstimate?: any; duplicate?: boolean; }
 
 const safeNumber = (val: any): number => {
   if (val === null || val === undefined || val === '') return 0;
@@ -46,11 +53,12 @@ const cleanLineItem = (item: any, index: number): LineItem | null => {
     rate,
     total: quantity * rate,
     sectionTitle: item.sectionTitle || undefined,
-    hidePrice: item.hidePrice === true ? true : undefined
+    hidePrice: item.hidePrice === true ? true : undefined,
+    clientAddress: item.clientAddress || undefined
   };
 };
 
-export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, existingEstimate }) => {
+export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, existingEstimate, duplicate = false }) => {
   const { addEstimate, updateEstimate, refreshEstimates, addClient, clients, estimates } = useData();
   const { profile } = useProfile();
   const t = useT();
@@ -58,6 +66,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [clientName, setClientName] = useState(existingEstimate?.clientName || '');
   const [clientEmail, setClientEmail] = useState(existingEstimate?.clientEmail || '');
   const [clientPhone, setClientPhone] = useState(existingEstimate?.clientPhone || '');
+  const [clientAddress, setClientAddress] = useState(clientAddressOf(existingEstimate?.lineItems));
   const [projectName, setProjectName] = useState(existingEstimate?.projectName || '');
   const [lineItems, setLineItems] = useState<LineItem[]>(existingEstimate?.lineItems || [{ id: '1', description: '', quantity: 1, rate: 0, total: 0 }]);
   const [taxRate, setTaxRate] = useState(Number(existingEstimate?.taxRate) || 0);
@@ -68,10 +77,10 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const setShowPrices = (v: boolean) => { setShowPricesState(v); rememberLinePrices(v); };
   const [showSendModal, setShowSendModal] = useState(false);
   const [savedEstimateData, setSavedEstimateData] = useState<any>(null);
-  const [showPreview, setShowPreview] = useState(!!existingEstimate);
+  const [showPreview, setShowPreview] = useState(!!existingEstimate && !duplicate);
   const [previewData, setPreviewData] = useState<any>(existingEstimate || null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isReadOnly, setIsReadOnly] = useState(!!existingEstimate);
+  const [isReadOnly, setIsReadOnly] = useState(!!existingEstimate && !duplicate);
   const [showClientPicker, setShowClientPicker] = useState(false);
   const [showClientSuggest, setShowClientSuggest] = useState(false);
   const [showProjectSuggest, setShowProjectSuggest] = useState(false);
@@ -243,7 +252,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
         clientEmail: safeString(clientEmail).trim(),
         clientPhone: safeString(clientPhone).trim(),
         projectName: safeString(projectName).trim(),
-        lineItems: withLinePrices(validItems, showPrices),
+        lineItems: withClientAddress(withLinePrices(validItems, showPrices), clientAddress),
         taxRate: safeNumber(taxRate),
         deposit: safeNumber(deposit),
         total: safeNumber(total),
@@ -266,7 +275,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
           const exists = clients.some(c => c.name.toLowerCase() === clientName.trim().toLowerCase());
           if (!exists) {
             try {
-              await addClient({ name: clientName.trim(), email: clientEmail.trim(), phone: clientPhone.trim(), address: '', totalJobs: 0, totalValue: 0 });
+              await addClient({ name: clientName.trim(), email: clientEmail.trim(), phone: clientPhone.trim(), address: clientAddress.trim(), totalJobs: 0, totalValue: 0 });
             } catch (e) { console.log('[EstimateBuilder] Client save skipped:', e); }
           }
         }
@@ -311,7 +320,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     setShowSendModal(true);
   };
 
-  const handleConvert = () => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, projectName, lineItems: withLinePrices(lineItems, showPrices), taxRate, deposit });
+  const handleConvert = () => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, clientAddress, projectName, lineItems: withClientAddress(withLinePrices(lineItems, showPrices), clientAddress), taxRate, deposit });
 
   const handleSendModalClose = () => { setShowSendModal(false); setSavedEstimateData(null); };
   const handleSendSuccess = () => { setShowSendModal(false); setSavedEstimateData(null); onClose(); };
@@ -521,6 +530,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                 <p className="eb-doc-name">{previewData.clientName}</p>
                 {previewData.clientEmail && <p className="lv-small">{previewData.clientEmail}</p>}
                 {previewData.clientPhone && <p className="lv-small">{previewData.clientPhone}</p>}
+                {clientAddressOf(previewData.lineItems) && <p className="lv-small">{clientAddressOf(previewData.lineItems)}</p>}
               </div>
 
               <div className="eb-doc-items">
@@ -621,7 +631,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
 
         <header className="eb-head-bar">
           <div className="eb-head-l">
-            <span className="lv-eyebrow">{isReadOnly ? t('m.estimate') : existingEstimate ? t('est.editingEstimate') : t('nav.newEstimate')}</span>
+            <span className="lv-eyebrow">{isReadOnly ? t('m.estimate') : existingEstimate && !duplicate ? t('est.editingEstimate') : t('nav.newEstimate')}</span>
             <h2 className="lv-h2">{projectName?.trim() || (clientName?.trim() ? clientName : t('est.untitled'))}</h2>
           </div>
           <div className="lv-inline">
@@ -650,7 +660,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                       <div className="lv-pop eb-client-pop">
                         <div className="lv-pop-head"><span className="lv-eyebrow">{t('est.chooseClient')}</span></div>
                         {clients.map((c) => (
-                          <button key={c.id} type="button" onClick={() => { setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientPicker(false); }}>
+                          <button key={c.id} type="button" onClick={() => { setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); if (c.address) setClientAddress(c.address); setShowClientPicker(false); }}>
                             {c.name}
                             {(c.email || c.phone) && <small>{[c.email, c.phone].filter(Boolean).join(' · ')}</small>}
                           </button>
@@ -676,7 +686,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                     {showClientSuggest && filteredClients.length > 0 && (
                       <div className="lv-pop">
                         {filteredClients.map((c) => (
-                          <button key={c.id} type="button" onMouseDown={(e) => { e.preventDefault(); setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); setShowClientSuggest(false); }}>
+                          <button key={c.id} type="button" onMouseDown={(e) => { e.preventDefault(); setClientName(c.name); setClientEmail(c.email || ''); setClientPhone(c.phone || ''); if (c.address) setClientAddress(c.address); setShowClientSuggest(false); }}>
                             {c.name}{c.email && <small>{c.email}</small>}
                           </button>
                         ))}
@@ -690,6 +700,10 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
                   <label className="lv-field">
                     <span className="lv-label">{t('m.phone')}</span>
                     <input className="lv-input" type="tel" inputMode="tel" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} placeholder={t('est.phonePlaceholder')} disabled={isReadOnly} />
+                  </label>
+                  <label className="lv-field eb-span">
+                    <span className="lv-label">{t('m.address')}</span>
+                    <input className="lv-input" type="text" autoComplete="street-address" value={clientAddress} onChange={(e) => setClientAddress(e.target.value)} placeholder={t('est.addressPlaceholder')} disabled={isReadOnly} />
                   </label>
                   <label className="lv-field eb-rel eb-span">
                     <span className="lv-label">{t('m.project')} *</span>

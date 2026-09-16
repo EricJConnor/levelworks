@@ -110,4 +110,5 @@ export const common: Record<string, string> = {
   'e.somethingWrong': 'Algo salió mal',
   'e.tryAgain': 'Inténtalo de nuevo.',
   'e.required': 'Este campo es obligatorio',
+  'a.duplicate': 'Duplicar',
 };

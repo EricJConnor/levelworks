@@ -126,4 +126,5 @@ export const estimates: Record<string, string> = {
   'tr.failed': 'No se pudo traducir',
   'tr.applied': 'Traducción aplicada',
   'tr.appliedBody': 'Revisa los montos antes de enviar.',
+  'est.addressPlaceholder': 'Calle Principal 123, Ciudad, Estado',
 };

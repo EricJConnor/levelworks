@@ -274,6 +274,16 @@ Second round of feedback from the roofer who asked for the line-prices switch. T
   Contractors connect as Standard accounts today; switching new connections to **Express** would
   make onboarding a short Stripe-hosted form with a text code. Discussed, not built.
 
+**Scheduled notes from Eric (Sep 16 2026).** `api/_lib/notes.js`: a one-off email to every
+member with a `sendAt`; the daily cron (step 4a) sends any due note once per member, recorded in
+auth `app_metadata.notes_sent`, and skips their tip that morning. English and Spanish by the
+member's language, unsubscribe link and headers on every one. Preview without sending:
+`/api/note-preview?which=stripeTutorial&lang=es`. First note: **stripeTutorial**, the card-payments
+walkthrough (Eric's own Stripe run: basic info, last four of SSN or EIN, pick the bank, choose the
+account, Connect; it failed once for him and the note says so), three screenshots in
+`public/email/` rendered from the app's own CSS and strings, $49 P.S. Sends Sep 17 2026, 9am ET.
+Adding a note: one entry in `NOTES`, both languages, a future `sendAt`.
+
 ## Texting a client (no Twilio)
 
 The estimate goes out from **the contractor's own phone**, not from a LevelWorks

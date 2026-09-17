@@ -590,6 +590,16 @@ to `TIPS`, both languages, never reorder.** Test one to Eric with
 members. Eric wants to work later on "additional value for all of our subscribers" (not
 started).
 
+**Sep 17 2026: Spanish paused, English runs alone (Eric: "just pause the spanish, i can't waste any
+money", then "let it run as is").** The read that forced it: in the old campaign (Sep 9-13) English
+spent $91 for 28 clicks and 2 attributed sign-ups, Spanish $60 for 16 clicks and 1. In the new CBO
+campaign Meta gave English **$1.75 in four days** and Spanish $47 for 20 clicks and 0 sign-ups: shared
+budget chased the cheaper Spanish Reels views and starved the set that converted. Eric spotted it
+("when the english ads got scaled down so did the action"). Ad set `52548966037937` (ES) is PAUSED;
+`52548966017337` (EN) runs alone on the full $12/day. Member count 54, unchanged since Sep 15. Monday
+Sep 21 read is scheduled in this session. **Lesson: never put the two languages under one shared
+budget again**; if Spanish comes back it gets its own campaign with its own budget.
+
 **Where everything stands at the end of Sep 14 2026 (read this first in a new session).**
 
 - **Live campaign:** `52548965992137` LW-Signups-Sep2026-Broad, $12/day, bidding for free-trial

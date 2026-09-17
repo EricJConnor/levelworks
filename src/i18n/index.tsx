@@ -122,6 +122,17 @@ export function useT() {
 }
 
 /**
+ * A translator pinned to one language, for showing both side by side on the
+ * same screen (the landing page's English/Spanish section). Same fallback rule.
+ */
+export function translateIn(lang: Lang) {
+  return (key: string, vars?: Record<string, string | number>) => {
+    const raw = DICTS[lang][key] ?? en[key] ?? key;
+    return vars ? raw.replace(/\{(\w+)\}/g, (m, n) => (n in vars ? String(vars[n]) : m)) : raw;
+  };
+}
+
+/**
  * The flags.
  *
  * Drawn as SVG rather than emoji on purpose: flag emoji do not render as flags
@@ -129,7 +140,7 @@ export function useT() {
  * user would see "US" where a Mac user sees a flag. These are simplified to
  * read at 20px: the stars and the eagle are invisible at this size anyway.
  */
-const FlagUS: React.FC = () => (
+export const FlagUS: React.FC = () => (
   <svg viewBox="0 0 20 14" aria-hidden="true">
     <rect width="20" height="14" fill="#b22234" />
     {[1, 3, 5, 7, 9, 11].map((y) => (
@@ -139,7 +150,7 @@ const FlagUS: React.FC = () => (
   </svg>
 );
 
-const FlagMX: React.FC = () => (
+export const FlagMX: React.FC = () => (
   <svg viewBox="0 0 20 14" aria-hidden="true">
     <rect width="20" height="14" fill="#fff" />
     <rect width="6.67" height="14" fill="#006847" />

@@ -122,6 +122,7 @@
 .lw-float.signed .ic { background: var(--blue-soft); color: var(--blue); }
 .lw-float.viewed { right: 8px; bottom: 46px; }
 .lw-float.viewed .ic { background: var(--amber-soft); color: var(--amber); }
+.lw-float.lang .ic { background: #e8f7ee; color: #16a34a; }
 @media (prefers-reduced-motion: no-preference) {
   .lw-phone { animation: lw-bob 7s ease-in-out infinite; }
   .lw-float.paid { animation: lw-bob 6s ease-in-out infinite .6s; }
@@ -173,12 +174,17 @@
 
 /* proof strip */
 .lw-proof { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #fff; }
-.lw-proof .lw-wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
+.lw-proof .lw-wrap { display: grid; grid-template-columns: repeat(5, 1fr); }
 .lw-proof .it { padding: 22px 18px; display: flex; gap: 12px; align-items: flex-start; border-left: 1px solid var(--line); }
 .lw-proof .it:first-child { border-left: 0; padding-left: 0; }
 .lw-proof .it svg { color: var(--blue); flex-shrink: 0; margin-top: 2px; }
 .lw-proof .it b { display: block; font-size: 14.5px; font-weight: 600; color: var(--ink); }
 .lw-proof .it span { display: block; font-size: 13px; color: var(--mute); margin-top: 2px; line-height: 1.4; }
+@media (max-width: 1100px) {
+  .lw-proof .lw-wrap { grid-template-columns: repeat(3, 1fr); }
+  .lw-proof .it { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); }
+  .lw-proof .it:nth-child(-n+3) { border-top: 0; }
+}
 @media (max-width: 880px) {
   .lw-proof .lw-wrap { grid-template-columns: 1fr 1fr; }
   .lw-proof .it { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); }
@@ -306,7 +312,7 @@
 .lw-checks li svg { flex-shrink: 0; margin-top: 3px; color: var(--green); }
 .lw-note { margin-top: 18px; font-size: 13.5px; color: var(--mute); display: flex; gap: 8px; align-items: center; }
 @media (max-width: 880px) {
-  .lw-split { grid-template-columns: 1fr; gap: 32px; }
+  .lw-split { grid-template-columns: minmax(0, 1fr); gap: 32px; }
   .lw-split.flip .copy { order: 0; }
   .lw-split + .lw-split { margin-top: 72px; }
 }
@@ -512,3 +518,39 @@
   .lw-guide-shell .lw-logo span { display: none; }
   .lw-guide-shell .lw-hdr .lw-wrap { gap: 10px; }
 }
+
+/* English and Spanish (Sep 17 2026): the chip in the hero, the section, the two phones, the translate review */
+.lw-chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.lw-lang-chip { display: inline-flex; align-items: center; gap: 7px; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink); box-shadow: var(--shadow); cursor: pointer; transition: border-color .18s var(--ease), transform .18s var(--ease); }
+.lw-lang-chip:hover { border-color: var(--blue); transform: translateY(-1px); }
+.lw-lang-chip i { font-style: normal; color: var(--mute); }
+.lw .lv-flag { display: inline-flex; width: 20px; height: 14px; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px rgba(11,18,32,.08); flex-shrink: 0; }
+.lw .lv-flag svg { width: 100%; height: 100%; display: block; }
+.lw-lang { background: linear-gradient(180deg, #fff, #f5f7fb); }
+.lw-twophones { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; justify-items: center; align-items: start; }
+.lw-twophones .ph { display: grid; gap: 10px; justify-items: center; }
+.lw-phone-lbl { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--ink-2); background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; text-align: center; max-width: 100%; }
+.lw-lang .lw-note { margin-top: 16px; }
+@media (max-width: 1100px) and (min-width: 881px) { .lw-twophones .lw-mini-phone { width: 220px; } }
+/* Under 560px two 250px phones would not fit, and a grid track grows to fit its content, which
+   pushed the whole split wider than the screen and clipped the headline. So each phone gets a
+   172px box and is scaled down inside it; the negative margins keep the scaled phone centred. */
+.lw-twophones { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 560px) {
+  .lw-twophones { gap: 8px; }
+  .lw-twophones .ph { width: 172px; }
+  .lw-twophones .lw-mini-phone { transform: scale(.688); transform-origin: top center; margin: 0 -39px -153px; }
+  .lw-phone-lbl { font-size: 11.5px; padding: 4px 9px; line-height: 1.25; }
+}
+/* The translate review is the tallest mock; under 980px it drops the sub-lines and sits at the top of the pane. */
+@media (max-width: 980px) {
+  .lw-tabpane .pane:has(.lw-tr) { align-items: start; }
+  .lw-tr .row .l small { display: none; }
+  .lw-tr .row, .lw-tr-cols { grid-template-columns: 1fr 1fr 60px; }
+  .lw-tr .hd, .lw-tr .row { padding: 11px 14px; }
+}
+.lw-tr .hd b { display: inline-flex; align-items: center; gap: 7px; }
+.lw-tr-cols { display: grid; grid-template-columns: 1fr 1fr 64px; gap: 12px; padding: 8px 16px; font-size: 11px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--mute); background: var(--soft); border-bottom: 1px solid var(--line); }
+.lw-tr .row { display: grid; grid-template-columns: 1fr 1fr 64px; align-items: start; }
+.lw-tr .row .l.tr b { color: var(--blue-2); }
+.lw-tr .row.lock { display: flex; gap: 7px; align-items: center; color: var(--mute); font-size: 12px; background: var(--soft); }

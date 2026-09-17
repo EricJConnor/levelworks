@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import {
   Menu, X, Check, FileText, PenTool, CreditCard, Repeat, Camera, Users, ChevronDown, ChevronRight,
-  ShieldCheck, Lock, Bell, Eye, Hammer, BadgeDollarSign, Image as ImageIcon, Sparkles,
+  ShieldCheck, Lock, Bell, Hammer, BadgeDollarSign, Image as ImageIcon, Sparkles, Languages,
 } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { useT, LanguageToggle } from '@/i18n';
+import { useT, useLang, translateIn, LanguageToggle, FlagUS, FlagMX } from '@/i18n';
+import type { Lang } from '@/i18n';
 import './landing.css';
 
 /* ------------------------------------------------------------------ */
@@ -39,8 +40,10 @@ const SigPath = () => (
   <path d="M4 30 C 14 4, 22 4, 26 22 S 38 40, 46 16 S 60 2, 66 20 S 78 36, 88 12 S 104 4, 116 24" stroke="#0b1220" strokeWidth="2" strokeLinecap="round" fill="none" />
 );
 
-function EstimateDoc({ signed = false }: { signed?: boolean }) {
-  const t = useT();
+function EstimateDoc({ signed = false, lang }: { signed?: boolean; lang?: Lang }) {
+  const tPage = useT();
+  // Pinned to one language when two documents sit side by side.
+  const t = lang ? translateIn(lang) : tPage;
   return (
     <div className="lw-doc">
       <div className="brand">
@@ -115,6 +118,52 @@ function SignMock() {
         <div><div className="t" style={{ fontSize: 12.5 }}>{t('lp.floatSigned')}</div><div className="s" style={{ fontSize: 11 }}>{t('lp.mockSignPush')}</div></div>
       </div>
     </PhoneShell>
+  );
+}
+
+/* The translate review: his words on the left of each row, the client's copy under them. */
+function TranslateMock() {
+  const t = useT();
+  const { lang } = useLang();
+  const other: Lang = lang === 'es' ? 'en' : 'es';
+  const mine = translateIn(lang);
+  const theirs = translateIn(other);
+  const rows = ['lp.mockItem1', 'lp.mockItem2', 'lp.mockItem3'];
+  const prices = ['$650.00', '$3,400.00', '$800.00'];
+  return (
+    <div className="lw-card front lw-tr">
+      <div className="hd"><b><Languages size={15} /> {t('lp.trTitle')}</b><span className="pill blue">{t('lp.trReview')}</span></div>
+      <div className="lw-tr-cols"><span>{t('lp.trOriginal')}</span><span>{t('lp.trTranslation')}</span></div>
+      {rows.map((k, i) => (
+        <div className="row" key={k}>
+          <div className="l"><b>{mine(k)}</b><small>{mine(k + 'Sub')}</small></div>
+          <div className="l tr"><b>{theirs(k)}</b><small>{theirs(k + 'Sub')}</small></div>
+          <div className="r">{prices[i]}</div>
+        </div>
+      ))}
+      <div className="row lock"><Lock size={13} /> {t('lp.trLocked')}</div>
+      <div className="ft"><div className="btn sec">{t('lp.trCancel')}</div><div className="btn">{t('lp.trApply')}</div></div>
+    </div>
+  );
+}
+
+/* The same estimate twice: the page's language on the left, the other on the right. */
+function TwoPhones() {
+  const t = useT();
+  const { lang } = useLang();
+  const other: Lang = lang === 'es' ? 'en' : 'es';
+  const Flag = (l: Lang) => (l === 'es' ? <FlagMX /> : <FlagUS />);
+  return (
+    <div className="lw-twophones">
+      <div className="ph">
+        <div className="lw-phone-lbl"><span className="lv-flag">{Flag(lang)}</span> {t('lp.langPhoneA')}</div>
+        <PhoneShell mini><EstimateDoc lang={lang} /></PhoneShell>
+      </div>
+      <div className="ph">
+        <div className="lw-phone-lbl"><span className="lv-flag">{Flag(other)}</span> {t('lp.langPhoneB')}</div>
+        <PhoneShell mini><EstimateDoc lang={other} /></PhoneShell>
+      </div>
+    </div>
   );
 }
 
@@ -201,7 +250,7 @@ function BrandMock() {
 /* ------------------------------------------------------------------ */
 /* Page                                                                  */
 /* ------------------------------------------------------------------ */
-type TabId = 'estimates' | 'sign' | 'invoices' | 'recurring' | 'photos' | 'clients';
+type TabId = 'estimates' | 'sign' | 'invoices' | 'recurring' | 'photos' | 'clients' | 'lang';
 
 const TABS = (t: (k: string) => string) => ([
   { id: 'estimates' as TabId, icon: FileText, title: t('lp.tabEstimates'), blurb: t('lp.tabEstimatesBlurb') },
@@ -210,6 +259,7 @@ const TABS = (t: (k: string) => string) => ([
   { id: 'recurring' as TabId, icon: Repeat, title: t('lp.tabRecurring'), blurb: t('lp.tabRecurringBlurb') },
   { id: 'photos' as TabId, icon: Camera, title: t('lp.tabPhotos'), blurb: t('lp.tabPhotosBlurb') },
   { id: 'clients' as TabId, icon: Users, title: t('lp.tabClients'), blurb: t('lp.tabClientsBlurb') },
+  { id: 'lang' as TabId, icon: Languages, title: t('lp.tabLang'), blurb: t('lp.tabLangBlurb') },
 ]);
 
 const FAQS = (t: (k: string) => string) => ([
@@ -334,7 +384,12 @@ export default function LandingPage() {
       <section className="lw-hero">
         <div className="lw-wrap">
           <div className="lw-hero-copy">
-            <div className="lw-price-chip"><b>{t('lp.priceChipAmount')}</b> {t('lp.priceChipText')}</div>
+            <div className="lw-chips">
+              <div className="lw-price-chip"><b>{t('lp.priceChipAmount')}</b> {t('lp.priceChipText')}</div>
+              <button type="button" className="lw-lang-chip" onClick={() => scrollTo('spanish')} aria-label={t('lp.langChipAria')}>
+                <span className="lv-flag"><FlagUS /></span> English <i>·</i> <span className="lv-flag"><FlagMX /></span> Español
+              </button>
+            </div>
             <h1 className="lw-h1">{t('lp.heroTitle')}</h1>
             <p className="lw-lead">
               {t('lp.heroLead')}
@@ -347,6 +402,7 @@ export default function LandingPage() {
               <span><Check size={15} /> {t('lp.heroFine1')}</span>
               <span><Check size={15} /> {t('lp.heroFine2')}</span>
               <span><Check size={15} /> {t('lp.heroFine3')}</span>
+              <span><Check size={15} /> {t('lp.heroFine4')}</span>
             </div>
           </div>
 
@@ -360,9 +416,9 @@ export default function LandingPage() {
               <div className="ic"><PenTool size={18} /></div>
               <div><div className="t">{t('lp.floatSigned')}</div><div className="s">{t('lp.floatSignedSub')}</div></div>
             </div>
-            <div className="lw-float viewed">
-              <div className="ic"><Eye size={18} /></div>
-              <div><div className="t">{t('lp.floatViewed')}</div><div className="s">{t('lp.floatViewedSub')}</div></div>
+            <div className="lw-float viewed lang">
+              <div className="ic"><Languages size={18} /></div>
+              <div><div className="t">{t('lp.floatLang')}</div><div className="s">{t('lp.floatLangSub')}</div></div>
             </div>
           </div>
         </div>
@@ -375,6 +431,7 @@ export default function LandingPage() {
           <div className="it"><ShieldCheck size={20} /><div><b>{t('lp.proof2')}</b><span>{t('lp.proof2Sub')}</span></div></div>
           <div className="it"><FileText size={20} /><div><b>{t('lp.proof3')}</b><span>{t('lp.proof3Sub')}</span></div></div>
           <div className="it"><ImageIcon size={20} /><div><b>{t('lp.proof4')}</b><span>{t('lp.proof4Sub')}</span></div></div>
+          <div className="it"><Languages size={20} /><div><b>{t('lp.proof5')}</b><span>{t('lp.proof5Sub')}</span></div></div>
         </div>
       </section>
 
@@ -411,8 +468,30 @@ export default function LandingPage() {
                 <div className={`pane ${tab === 'recurring' ? 'on' : ''}`}><RecurringMock /></div>
                 <div className={`pane ${tab === 'photos' ? 'on' : ''}`}><PhotosMock /></div>
                 <div className={`pane ${tab === 'clients' ? 'on' : ''}`}><ClientsMock /></div>
+                <div className={`pane ${tab === 'lang' ? 'on' : ''}`}><TranslateMock /></div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- English and Spanish ---------------- */}
+      <section id="spanish" className="lw-sec lw-lang">
+        <div className="lw-wrap">
+          <div className="lw-split">
+            <div className="copy lw-rv">
+              <span className="lw-eyebrow">{t('lp.langEyebrow')}</span>
+              <h2 className="lw-h2">{t('lp.langTitle')}</h2>
+              <p className="lw-lead">{t('lp.langLead')}</p>
+              <ul className="lw-checks">
+                <li><Check size={17} /> {t('lp.langCheck1')}</li>
+                <li><Check size={17} /> {t('lp.langCheck2')}</li>
+                <li><Check size={17} /> {t('lp.langCheck3')}</li>
+                <li><Check size={17} /> {t('lp.langCheck4')}</li>
+              </ul>
+              <p className="lw-note"><Languages size={14} /> {t('lp.langNote')}</p>
+            </div>
+            <div className="art lw-rv"><TwoPhones /></div>
           </div>
         </div>
       </section>

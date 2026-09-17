@@ -284,6 +284,22 @@ account, Connect; it failed once for him and the note says so), three screenshot
 `public/email/` rendered from the app's own CSS and strings, $49 P.S. Sends Sep 17 2026, 9am ET.
 Adding a note: one entry in `NOTES`, both languages, a future `sendAt`.
 
+## English and Spanish on the landing page (Sep 17 2026)
+
+Eric: the Spanish work was never shown off; "it should be one of the first things you see, on
+laptop or on the phone, at the top, maybe in english AND spanish". Now, on both `/` and `/es`:
+a bilingual **English · Español** chip with the two SVG flags beside the price chip in the hero
+(scrolls to `#spanish`), a fourth hero fine-print item, the third hero float is **"Sent in
+Spanish / Written in English, translated in one tap"** (was "Viewed"; flipped on `/es`), a fifth
+proof-strip item, a seventh feature tab (**`TranslateMock`**, the side-by-side review with prices
+locked), and a full section `#spanish` between features and payments: copy left, **`TwoPhones`**
+right, the same estimate in the page's language and the other (`EstimateDoc` takes `lang`;
+`translateIn(lang)` in `src/i18n` pins a translator; `FlagUS`/`FlagMX` are exported). The pitch on
+the English page is the English-speaking contractor with Spanish-speaking clients; on `/es` it is
+flipped. No competitor claims. Under 560px the two phones are scaled inside 172px boxes because a
+grid track grows to fit its content and clipped the headline; the translate card drops its
+sub-lines under 980px. Checked at 390 and 1366 in both languages, no horizontal scroll.
+
 ## Where everything stands at the end of Sep 16 2026 (read this first in a new session)
 
 Eric has **applied for funding** and expects the reviewers to look at the product and the list

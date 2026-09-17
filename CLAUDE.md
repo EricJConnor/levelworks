@@ -284,6 +284,33 @@ account, Connect; it failed once for him and the note says so), three screenshot
 `public/email/` rendered from the app's own CSS and strings, $49 P.S. Sends Sep 17 2026, 9am ET.
 Adding a note: one entry in `NOTES`, both languages, a future `sendAt`.
 
+## Where everything stands at the end of Sep 16 2026 (read this first in a new session)
+
+Eric has **applied for funding** and expects the reviewers to look at the product and the list
+closely. Treat every visible detail as something a stranger with money will judge.
+
+- **Shipped today, all live and verified on the site:** Send to client after converting an
+  estimate to an invoice (`SendInvoiceModal`); the Stripe connection saved through
+  `api/stripe-connect.js` on Vercel with the green "You take card payments" card (Eric's own
+  account is connected); the scheduled-notes system with the Stripe tutorial going out
+  **Sep 17, 9am ET** to every member. Check the Vercel log line `cron-annual {...}` for
+  `notes.sent` that morning; a `notes.errors` entry names any address that failed.
+- **Eric's concern about Stripe onboarding:** contractors connect as Standard accounts, so Stripe
+  makes them create a full account with two-step login and identity checks. Eric: "its really
+  gonna make people leave". The fix is **Stripe Express** for new connections (short Stripe-hosted
+  form, text code, no dashboard): a new route creates the Express account and account link, the
+  callback changes, existing connected contractors stay as they are. Discussed twice, agreed in
+  principle, **not built**. It is the next thing he is likely to ask for.
+- **Not yet proven with real money:** a card payment on a public invoice
+  (`api/invoice-payment.js`). Suggested to Eric: send himself a test invoice, pay a dollar with a
+  real card, refund it in Stripe. He has not done it. A funder may ask.
+- **Next note** is one entry in `NOTES` (`api/_lib/notes.js`) with a future `sendAt`; the cron
+  does the rest. Preview at `/api/note-preview?which=<key>&lang=en|es`. Eric never needs a secret.
+- **Ads:** the Wednesday Sep 16 read of campaign `52548965992137` was not done in this session;
+  nothing touched. Rules unchanged: leave it until Sep 21, judge by cost per sign-up.
+- Row-level security on `estimates` / `invoices` / `clients` is still not enforcing (see the LW49
+  section). With funding due diligence coming, this moves up the list.
+
 ## Texting a client (no Twilio)
 
 The estimate goes out from **the contractor's own phone**, not from a LevelWorks

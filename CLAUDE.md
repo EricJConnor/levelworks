@@ -327,6 +327,33 @@ closely. Treat every visible detail as something a stranger with money will judg
 - Row-level security on `estimates` / `invoices` / `clients` is still not enforcing (see the LW49
   section). With funding due diligence coming, this moves up the list.
 
+## Estimate and invoice emails from the contractor, by name (Sep 18 2026)
+
+The roofer's third round: the invoice email never said who sent it, "which makes it a challenge
+to get them to click the link". The old path was the `send-email` edge function's fixed
+`invoice_sent` / `estimate_sent` templates, which were never even given the company name.
+**`api/send-document.js`** on Vercel (Resend) replaces both: sender **"<Company> via LevelWorks"
+`<documents@levelworks.org>`**, subject "<Company> sent you an invoice for <project> ($x due)" /
+"... an estimate for <project> ($x)", `reply_to` the contractor's business email (else his login
+email), body = his company block (logo, phone, address), the amount and due date, one button to
+`/view-invoice` or `/view-estimate`, in the contractor's language (`profiles.lang`). Auth by
+session token; the row must be his; `to` from the send screen is allowed (he corrects addresses
+there) and is written back to the row; `sent_at` is stamped and a draft estimate becomes `sent`.
+Transactional, so no unsubscribe link, on purpose. `sendEstimateEmail` / `sendInvoiceEmail` in
+`src/lib/edgeFunctions.ts` call it (signatures unchanged), and `SendEstimateModal` no longer
+invokes the edge function directly. Verified live Sep 18 with the demo account's invoice and
+estimate sent to Eric's Gmail (demo rows restored afterwards). The public invoice now closes on
+**"Thank you for your business."** (`pg.pub.thanksInvoice`); the estimate keeps "thanks for
+considering us". Still on the edge function: job updates and the fixed app mail.
+
+**Next from the same customer, agreed with Eric for later Sep 18: ACH.** Stripe bank debit
+(`us_bank_account`, 0.8% capped at $5) on `api/invoice-payment.js`: per-invoice choice of card,
+bank, or both, bank-only allowed; Financial Connections for instant verification; the invoice
+shows "payment pending" until it settles (~4 business days, webhook needed); the platform has to
+enable the payment method once in the Stripe dashboard. **Later still: an AI phone-answering
+add-on**, which the roofer already paid for elsewhere and lost; a separate paid product ($30-50
+a month), prototype on a test number when Eric says go.
+
 ## Texting a client (no Twilio)
 
 The estimate goes out from **the contractor's own phone**, not from a LevelWorks

@@ -181,7 +181,7 @@ export default function PublicInvoiceView() {
 
             {invoice.notes && <div className="bg-gray-50 p-4 rounded-lg"><p className="text-sm text-gray-600">{invoice.notes}</p></div>}
 
-            <p className="text-sm text-gray-500 text-center italic">{t('pg.pub.thanks')}</p>
+            <p className="text-sm text-gray-500 text-center italic">{t('pg.pub.thanksInvoice')}</p>
 
             {isPaid || paymentSuccess ? (
               <div className="bg-green-50 border border-green-200 p-6 rounded-lg text-center">

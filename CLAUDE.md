@@ -332,8 +332,8 @@ closely. Treat every visible detail as something a stranger with money will judg
 The roofer's third round: the invoice email never said who sent it, "which makes it a challenge
 to get them to click the link". The old path was the `send-email` edge function's fixed
 `invoice_sent` / `estimate_sent` templates, which were never even given the company name.
-**`api/send-document.js`** on Vercel (Resend) replaces both: sender **"<Company> via LevelWorks"
-`<documents@levelworks.org>`**, subject "<Company> sent you an invoice for <project> ($x due)" /
+**`api/send-document.js`** on Vercel (Resend) replaces both: sender **"<Company>" `<documents@levelworks.org>`** (was "via LevelWorks"; Eric,
+Sep 18: "the less we use our name, and the more we use theirs the better"), subject "<Company> sent you an invoice for <project> ($x due)" /
 "... an estimate for <project> ($x)", `reply_to` the contractor's business email (else his login
 email), body = his company block (logo, phone, address), the amount and due date, one button to
 `/view-invoice` or `/view-estimate`, in the contractor's language (`profiles.lang`). Auth by

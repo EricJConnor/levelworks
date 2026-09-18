@@ -101,7 +101,9 @@ export default async function handler(req, res) {
   const clientName = (doc.client_name || '').trim() || (lang === 'es' ? 'estimado cliente' : 'there');
   const subject = T[lang][type].subject(company, project, amount, number);
   const text = `${T[lang].hi(clientName)}\n\n${T[lang][type].lead(company, project, number)}\n${T[lang][type].total}: ${amount}${dueLine ? ' · ' + dueLine : ''}\n\n${T[lang][type].btn}: ${url}\n\n${T[lang].reply(company)}\n\n${T[lang].foot}`;
-  const fromName = `${company} via LevelWorks`.replace(/[\r\n"<>]/g, '');
+  // The sender is the contractor, full stop (Eric: "the less we use our name, and the more we use
+  // theirs, the better"). LevelWorks appears once, small, in the footer.
+  const fromName = company.replace(/[\r\n"<>]/g, '');
 
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',

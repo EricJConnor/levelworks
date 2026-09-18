@@ -6,6 +6,7 @@ import { toast } from '@/components/ui/use-toast';
 import { X, Mail, MessageSquare, Loader2, AlertCircle, CheckCircle, Copy, Check, ChevronRight, Send } from 'lucide-react';
 import { useT } from '@/i18n';
 import { canOpenMessagesApp, openMessagesApp } from '@/lib/smsLink';
+import { sendEstimateEmail } from '@/lib/edgeFunctions';
 
 interface Props {
   estimateData?: any;
@@ -138,15 +139,11 @@ export const SendEstimateModal: React.FC<Props> = ({ estimateData, estimate, onC
     setSendStatus('sending');
     setErrorMessage(null);
 
-    const contractorName = profile?.full_name || profile?.company_name || 'Your Contractor';
-
     try {
-      const { data: result, error } = await supabase.functions.invoke('send-email', {
-        body: {
-          to: clientEmail.trim(),
-          templateType: 'estimate_sent',
-          data: { clientName, projectName, amount: totalAmount.toFixed(2), estimateUrl, contractorName }
-        }
+      // Goes out from "<Company> via LevelWorks" with the company in the subject (api/send-document).
+      const { data: result, error } = await sendEstimateEmail({
+        estimateId: estimateId || '', clientEmail: clientEmail.trim(), viewToken,
+        estimateData: { clientName, projectName, total: totalAmount },
       });
 
       if (!isMountedRef.current) return;

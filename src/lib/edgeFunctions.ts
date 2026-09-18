@@ -64,6 +64,29 @@ export async function invokeEdgeFunction<T = any>(
   }
 }
 
+/**
+ * Estimate and invoice emails go through /api/send-document on Vercel, which
+ * sends from "<Company> via LevelWorks" with the company name in the subject
+ * and replies to the contractor. The old edge-function template was never
+ * given the company name, so clients got a nameless "you have a new invoice".
+ */
+async function sendDocument(type: 'estimate' | 'invoice', id: string, to?: string): Promise<EdgeFunctionResult> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return { data: null, error: new Error('Please sign in again and resend.') };
+    const r = await fetch('/api/send-document', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ type, id, to: safeString(to).trim() || undefined }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) return { data: d, error: new Error(d?.message || d?.error || 'The email did not go out.') };
+    return { data: d, error: null };
+  } catch (e: any) {
+    return { data: null, error: new Error(e?.message || 'The email did not go out.') };
+  }
+}
+
 export async function sendEstimateEmail(params: {
   estimateId: string;
   clientEmail: string;
@@ -74,28 +97,8 @@ export async function sendEstimateEmail(params: {
   contractorPhone?: string;
   message?: string;
 }): Promise<EdgeFunctionResult> {
-  const baseUrl = window.location.origin;
-  const estimateUrl = `${baseUrl}/estimate/${safeString(params.viewToken)}`;
-  
-  console.log('[sendEstimateEmail] Preparing to send:', {
-    to: params.clientEmail,
-    estimateUrl
-  });
-  
-  // Call send-email directly with the estimate template
-  return invokeEdgeFunction('send-email', {
-    to: safeString(params.clientEmail).trim(),
-    templateType: 'estimate_sent',
-    data: {
-      clientName: safeString(params.estimateData?.clientName || 'Valued Customer'),
-      projectName: safeString(params.estimateData?.projectName || 'Project'),
-      amount: safeNumber(params.estimateData?.total).toFixed(2),
-      estimateUrl: estimateUrl,
-      contractorName: safeString(params.contractorName || 'Your Contractor')
-    }
-  });
+  return sendDocument('estimate', params.estimateId, params.clientEmail);
 }
-
 
 export async function sendInvoiceEmail(params: {
   invoiceId: string;
@@ -115,27 +118,5 @@ export async function sendInvoiceEmail(params: {
   };
   userId?: string;
 }): Promise<EdgeFunctionResult> {
-  const baseUrl = window.location.origin;
-  const invoiceUrl = params.invoiceData?.viewToken 
-    ? `${baseUrl}/view-invoice/${safeString(params.invoiceData.viewToken)}`
-    : '';
-  
-  console.log('[sendInvoiceEmail] Preparing to send:', {
-    to: params.clientEmail,
-    invoiceUrl
-  });
-  
-  // Call send-email directly with the invoice template
-  return invokeEdgeFunction('send-email', {
-    to: safeString(params.clientEmail).trim(),
-    templateType: 'invoice_sent',
-    data: {
-      clientName: safeString(params.invoiceData?.clientName || 'Client'),
-      projectName: safeString(params.invoiceData?.projectName || 'Project'),
-      amount: safeNumber(params.invoiceData?.amountDue).toFixed(2),
-      invoiceNumber: safeString(params.invoiceData?.invoiceNumber),
-      invoiceUrl: invoiceUrl,
-      dueDate: params.invoiceData?.dueDate || ''
-    }
-  });
+  return sendDocument('invoice', params.invoiceId, params.clientEmail);
 }

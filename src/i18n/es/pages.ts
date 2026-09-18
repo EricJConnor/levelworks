@@ -86,6 +86,7 @@ export const pages: Record<string, string> = {
   // ---- Shared by the public (client-facing) views ----
   'pg.pub.logoAlt': 'Logotipo',
   'pg.pub.poweredBy': 'Hecho con levelworks.org',
+  'pg.pub.thanksInvoice': 'Gracias por su preferencia.',
   'pg.pub.thanks': 'Agradecemos la oportunidad de trabajar con usted. Gracias por considerarnos.',
   'pg.pub.unexpected': 'Ocurrió un error inesperado',
   'pg.pub.noLink': 'No se recibió ningún enlace',

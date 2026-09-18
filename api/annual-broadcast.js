@@ -5,6 +5,7 @@
  *   test → the English and Spanish versions to Eric only
  *   send → everyone except Eric (he already has the test copy)
  *   tiptest (+ "n": 1) → feature tip n, English and Spanish, to Eric only
+ *   one (+ "to", "lang") → the member note to one address, for someone added to the list late
  * Runs on Vercel so the mail goes out through RESEND_API_KEY as "Eric at LevelWorks".
  */
 import { json, readBody, missingEnv } from './_lib/annual.js';
@@ -24,6 +25,11 @@ export default async function handler(req, res) {
   try { body = JSON.parse((await readBody(req)).toString('utf8') || '{}'); } catch { /* fallthrough */ }
   const mode = body.mode || 'dry';
 
+  if (mode === 'one') {
+    const to = String(body.to || '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return json(res, 400, { error: 'bad_to' });
+    return json(res, 200, { mode, to, ...(await sendNote(to, body.lang === 'es' ? 'es' : 'en')) });
+  }
   if (mode === 'tiptest') {
     const n = Math.min(Math.max(Number(body.n) || 1, 1), TIPS.length);
     const out = [];

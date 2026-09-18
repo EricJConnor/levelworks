@@ -90,6 +90,7 @@ export default async function handler(req, res) {
     if (budget <= 0) break;
     const email = (u.email || '').toLowerCase();
     if (!email || email.endsWith('@levelworks.org') || optedOut.has(email)) continue;
+    if (u.app_metadata?.observer) continue;   // on the list to read along, not a contractor to nudge
     if (new Date(u.created_at).getTime() < LAUNCH) continue;
     const p = byId.get(u.id) || {};
     const lang = normalizeLang(p.lang || u.user_metadata?.lang);

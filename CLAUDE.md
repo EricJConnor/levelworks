@@ -659,6 +659,18 @@ budget again**; if Spanish comes back it gets its own campaign with its own budg
   endpoints work through the proxy) and answer plainly. Next creative for the ads: ten seconds of
   Eric on camera saying the ripped-off line.
 
+**Observers on the list (Sep 18 2026).** Eric asked to add `info@broadstreetangels.com` (the
+funding application) to the email list and "send them one each day to catch them up". They are an
+auth user with `app_metadata.observer: true` (created with the service key, email confirmed, no
+password, no welcome mail), so every sender that walks `auth.users` includes them: the scheduled
+notes send any due note on the next run, the tips walk from tip 1 **one a day** while an observer is
+behind the members (`CATCHUP_HOURS` in tips.js), then every other day like everyone; the audience
+sync puts them in the Resend audience for dashboard broadcasts. **Observers never get nudges**
+(cron-annual skips them) and are not contractors: exclude `app_metadata.observer` from any member
+count. The Sep 14 member note was sent to them by hand via `POST /api/annual-broadcast
+{"mode":"one","to":"…","lang":"en"}`. Catch-up order for them: member note (Sep 18), Stripe
+tutorial (Sep 19 9am), tip 1 (Sep 20), tip 2 (Sep 21), then level with everyone.
+
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also
 has an empty personal ad account `2227206028141508`, and Ads Manager opens on that one by default,

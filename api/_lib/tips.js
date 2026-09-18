@@ -15,6 +15,9 @@ import { layout, sendMail, SITE_URL } from './annual.js';
 
 const APP = `${SITE_URL}/app`;
 const GAP_HOURS = 40;
+// An observer (app_metadata.observer, e.g. a funder Eric added to the list) who joined late
+// catches up one tip a day until level with the members, then rides the normal cadence.
+const CATCHUP_HOURS = 20;
 
 export const TIPS = [
   {
@@ -192,6 +195,7 @@ export function tipMail(n, lang) {
  */
 export async function sendTips({ a, users, langOf, skip, dry = false, now = Date.now(), budget = 200 }) {
   const report = { sent: [], done: 0, errors: [] };
+  const crowd = Math.max(0, ...users.filter(u => !(u.app_metadata || {}).observer).map(u => Number((u.app_metadata || {}).tip_stage) || 0));
   for (const u of users) {
     if (budget <= 0) break;
     const email = String(u.email || '').trim().toLowerCase();
@@ -199,7 +203,8 @@ export async function sendTips({ a, users, langOf, skip, dry = false, now = Date
     const meta = u.app_metadata || {};
     const stage = Number(meta.tip_stage) || 0;
     if (stage >= TIPS.length) { report.done++; continue; }
-    if (meta.tip_at && now - new Date(meta.tip_at).getTime() < GAP_HOURS * 3600 * 1000) continue;
+    const gap = meta.observer && stage < crowd ? CATCHUP_HOURS : GAP_HOURS;
+    if (meta.tip_at && now - new Date(meta.tip_at).getTime() < gap * 3600 * 1000) continue;
     const n = stage + 1; const lang = langOf(u);
     const m = tipMail(n, lang);
     if (!dry) {

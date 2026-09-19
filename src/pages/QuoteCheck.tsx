@@ -16,6 +16,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { trackEvent } from '@/lib/pixel';
 import '@/pages/landing.css';
 import './quotecheck.css';
 
@@ -38,11 +39,11 @@ type Result = {
 };
 
 const VERDICT: Record<string, string> = {
-  fair: 'This quote is fair',
-  high: 'This quote is high',
-  very_high: 'This quote is well above the going rate',
-  low: 'This quote is low, and that is worth a look',
-  unclear: 'This quote leaves too much unsaid',
+  fair: 'This estimate is fair',
+  high: 'This estimate is high',
+  very_high: 'This estimate is well above the going rate',
+  low: 'This estimate is low, and that is worth a look',
+  unclear: 'This estimate leaves too much unsaid',
 };
 const STATUS: Record<Line['status'], string> = { fair: 'fair', watch: 'watch', high: 'high', missing_detail: 'missing detail' };
 const money = (n?: number) => (n && n > 0 ? '$' + Math.round(n).toLocaleString('en-US') : '');
@@ -112,7 +113,7 @@ function Top() {
   return (
     <div className="qc-top">
       <Link to="/quote-check" className="qc-brand"><i>{Ic.tag}</i>Quote Check</Link>
-      <span className="qc-price"><b>{PRICE}</b> · one quote, priced for your area</span>
+      <span className="qc-price"><b>{PRICE}</b> · one estimate, priced for your area</span>
     </div>
   );
 }
@@ -215,10 +216,45 @@ const SAMPLE: Result = {
   confidence: 'high',
 };
 
+/** "Estimate coming? Save this page." One field; the link and five red flags land in their inbox. */
+function SaveCard() {
+  const [email, setEmail] = useState('');
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [msg, setMsg] = useState('');
+  async function save() {
+    if (!/.+@.+\..+/.test(email)) { setState('error'); setMsg('Enter the email you want the link sent to.'); return; }
+    setState('sending'); setMsg('');
+    try {
+      const r = await fetch('/api/quotecheck-save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, utm: readUtm() }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.message || 'Could not send the link right now.');
+      trackEvent('Subscribe', { content_name: 'quotecheck_save' });
+      setState('sent');
+    } catch (e) { setState('error'); setMsg((e as Error).message); }
+  }
+  return (
+    <section className="qc-save">
+      <div className="qc-save-text">
+        <b>Estimate coming next week?</b>
+        <span>Save this page. We'll email you the link and the five red flags to watch for, so it's in your inbox the day the estimate lands.</span>
+      </div>
+      {state === 'sent' ? (
+        <p className="qc-save-ok">Sent. Check your inbox for the link.</p>
+      ) : (
+        <div className="qc-save-form">
+          <input type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} onKeyDown={e => e.key === 'Enter' && save()} />
+          <button type="button" className="lw-btn sec" onClick={save} disabled={state === 'sending'}>{state === 'sending' ? 'Sending' : 'Save the page'}</button>
+        </div>
+      )}
+      {state === 'error' && msg && <p className="qc-err">{msg}</p>}
+    </section>
+  );
+}
+
 type Stage = 'idle' | 'reading' | 'teaser' | 'paying';
 
 export default function QuoteCheck() {
-  useHead('Quote Check: is your contractor\'s quote fair for your area? Find out before you sign', 'A contractor\'s report on your quote, priced for your ZIP: what the job should cost, every line judged, what could justify the price, what\'s missing, and exactly what to say. $79, back in minutes.', '/quote-check');
+  useHead('Quote Check: is your contractor\'s estimate fair for your area? Find out before you sign', 'A contractor\'s report on your estimate, priced for your ZIP: what the job should cost, every line judged, what could justify the price, what\'s missing, and exactly what to say. $79, back in minutes.', '/quote-check');
   const location = useLocation();
   const [file, setFile] = useState<Awaited<ReturnType<typeof prepareFile>> | null>(null);
   const [zip, setZip] = useState('');
@@ -252,7 +288,7 @@ export default function QuoteCheck() {
   }, []);
 
   async function submit() {
-    if (!file) { setErr('Add a photo or PDF of the quote first.'); inputRef.current?.click(); return; }
+    if (!file) { setErr('Add a photo or PDF of the estimate first.'); inputRef.current?.click(); return; }
     setErr(''); setStage('reading'); setStep(0);
     const timers = [setTimeout(() => setStep(1), 6000), setTimeout(() => setStep(2), 20000)];
     try {
@@ -261,8 +297,9 @@ export default function QuoteCheck() {
         body: JSON.stringify({ file: { base64: file.base64, mediaType: file.mediaType, name: file.name }, zip, about, notes, email }),
       });
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(j.message || 'Could not read the quote right now. Try again in a minute.');
+      if (!r.ok) throw new Error(j.message || 'Could not read the estimate right now. Try again in a minute.');
       setId(j.id); setTeaser(j.teaser); setStage('teaser');
+      if (j.teaser?.readable) trackEvent('Lead', { content_name: 'quotecheck_upload', content_category: j.teaser.trade || '' }, j.id);
       setTimeout(() => cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     } catch (e) {
       setErr((e as Error).message); setStage('idle');
@@ -276,6 +313,7 @@ export default function QuoteCheck() {
       const r = await fetch('/api/quotecheck-checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, email, utm: readUtm() }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.url) throw new Error(j.message || 'Could not open checkout. Try again.');
+      trackEvent('InitiateCheckout', { content_name: 'quotecheck', value: 79, currency: 'USD' }, id);
       window.location.href = j.url;
     } catch (e) { setErr((e as Error).message); setStage('teaser'); }
   }
@@ -289,8 +327,8 @@ export default function QuoteCheck() {
       <main>
         <section className="qc-hero">
           <div className="qc-label">Before you sign</div>
-          <h1 className="qc-h1">Is your contractor's quote fair for your area? Find out tonight.</h1>
-          <p className="qc-sub">Upload the quote. It gets priced for your ZIP the way a contractor bids it, <b>materials, labor and margin</b>, then judged line by line: what's fair, what's overpriced, what's missing, and exactly what to say. {PRICE}. Back in minutes.</p>
+          <h1 className="qc-h1">Is your contractor's estimate fair for your area? Find out tonight.</h1>
+          <p className="qc-sub">Upload the estimate. It gets priced for your ZIP the way a contractor bids it, <b>materials, labor and margin</b>, then judged line by line: what's fair, what's overpriced, what's missing, and exactly what to say. {PRICE}. Back in minutes.</p>
 
           <div className="qc-card" ref={cardRef}>
             {stage === 'idle' && (
@@ -300,7 +338,7 @@ export default function QuoteCheck() {
                     onDragOver={e => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
                     onDrop={e => { e.preventDefault(); setOver(false); pick(e.dataTransfer.files?.[0]); }}>
                     {Ic.up}
-                    <b>Upload the quote</b>
+                    <b>Upload the estimate</b>
                     <span>Take a photo of it, or add the PDF. One page or many.</span>
                     <input ref={inputRef} type="file" accept="image/*,application/pdf" onChange={e => pick(e.target.files?.[0])} />
                   </label>
@@ -326,7 +364,7 @@ export default function QuoteCheck() {
             {stage === 'reading' && (
               <>
                 <div className="qc-steps">
-                  {['Reading every line of the quote', `Checking prices${zip ? ' for ' + zip : ' for your area'}`, 'Writing your report'].map((s, i) => (
+                  {['Reading every line of the estimate', `Checking prices${zip ? ' for ' + zip : ' for your area'}`, 'Writing your report'].map((s, i) => (
                     <div key={s} className={'qc-step' + (i < step ? ' done' : i === step ? ' on' : '')}><i />{s}</div>
                   ))}
                 </div>
@@ -342,7 +380,7 @@ export default function QuoteCheck() {
                   <p className="qc-job"><b>{teaser.trade}</b> · {teaser.jobSummary}{teaser.totalQuoted ? <> · quoted <b>{money(teaser.totalQuoted)}</b></> : null}</p>
                   <div className="qc-counts">
                     <div className="qc-count"><b>{teaser.counts?.flags ?? 0}</b><span>{(teaser.counts?.flags ?? 0) === 1 ? 'line' : 'lines'} flagged high or vague for your area</span></div>
-                    <div className="qc-count"><b>{teaser.counts?.missing ?? 0}</b><span>things a proper quote should include and this one doesn't</span></div>
+                    <div className="qc-count"><b>{teaser.counts?.missing ?? 0}</b><span>things a proper estimate should include and this one doesn't</span></div>
                     <div className="qc-count"><b>{teaser.counts?.redFlags ?? 0}</b><span>red flags in the terms</span></div>
                     <div className="qc-count"><b>{teaser.counts?.questions ?? 0}</b><span>questions to ask before you sign</span></div>
                   </div>
@@ -359,13 +397,13 @@ export default function QuoteCheck() {
                     <input id="qc-email" type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
                   </div>
                   <button type="button" className="lw-btn pri qc-cta" onClick={pay} disabled={stage === 'paying'}>{stage === 'paying' ? 'Opening secure checkout' : `Unlock the full report · ${PRICE}`}</button>
-                  <div className="qc-guarantee">{Ic.shield}<span><b>If it doesn't tell you something you didn't know, reply to the email and you get the {PRICE} back.</b> Paid through Stripe. Your quote is never shared with the contractor or anyone else.</span></div>
+                  <div className="qc-guarantee">{Ic.shield}<span><b>If it doesn't tell you something you didn't know, reply to the email and you get the {PRICE} back.</b> Paid through Stripe. Your estimate is never shared with the contractor or anyone else.</span></div>
                 </>
               ) : (
                 <>
                   <div className="qc-verdict">We couldn't read that one</div>
                   <div className="qc-verdict-h unclear">Try a clearer photo</div>
-                  <p className="qc-job">{teaser.reason || 'The upload did not look like a contractor quote, or the text was too small to read.'} Nothing was charged.</p>
+                  <p className="qc-job">{teaser.reason || 'The upload did not look like a contractor estimate, or the text was too small to read.'} Nothing was charged.</p>
                   <button type="button" className="lw-btn pri qc-cta" onClick={() => { setFile(null); setTeaser(null); setStage('idle'); }}>Upload again</button>
                 </>
               )
@@ -375,15 +413,17 @@ export default function QuoteCheck() {
         </section>
 
         <section className="qc-sec">
-          <h2 className="qc-h2">An overpriced quote costs thousands. Finding out costs {PRICE}.</h2>
-          <p>Most homeowners sign the first quote they trust, because they have no way to know what the work should cost where they live. The contractor knows. Now you do too.</p>
+          <h2 className="qc-h2">An overpriced estimate costs thousands. Finding out costs {PRICE}.</h2>
+          <p>Most homeowners sign the first estimate they trust, because they have no way to know what the work should cost where they live. The contractor knows. Now you do too.</p>
           <div className="qc-stakes">
             <div className="qc-stake"><span>Typical overcharge on a roof replacement</span><b>$2,000 to $6,000</b></div>
             <div className="qc-stake"><span>Typical overcharge on a kitchen remodel</span><b>$4,000 to $12,000</b></div>
-            <div className="qc-stake"><span>A vague quote that grows once the walls are open</span><b>10% to 30%</b></div>
-            <div className="qc-stake us"><span>A contractor's report on your quote, tonight</span><b>{PRICE}</b></div>
+            <div className="qc-stake"><span>A vague estimate that grows once the walls are open</span><b>10% to 30%</b></div>
+            <div className="qc-stake us"><span>A contractor's report on your estimate, tonight</span><b>{PRICE}</b></div>
           </div>
         </section>
+
+        <SaveCard />
 
         <section className="qc-sec">
           <h2 className="qc-h2">Priced for your ZIP, not a national average</h2>
@@ -407,15 +447,15 @@ export default function QuoteCheck() {
         <section className="qc-sec">
           <h2 className="qc-h2">How it works</h2>
           <ol className="qc-how">
-            <li><div><b>Check your quote in</b><span>A photo from your phone is fine. PDF works too. Add your ZIP so the prices match your area. You get a ticket number.</span></div></li>
-            <li><div><b>See the verdict, free</b><span>In about a minute you see whether the quote is fair, high or vague for your area, and how many lines got flagged.</span></div></li>
+            <li><div><b>Check your estimate in</b><span>A photo from your phone is fine. PDF works too. Add your ZIP so the prices match your area. You get a ticket number.</span></div></li>
+            <li><div><b>See the verdict, free</b><span>In about a minute you see whether the estimate is fair, high or vague for your area, and how many lines got flagged.</span></div></li>
             <li><div><b>Unlock the full report for {PRICE}</b><span>On screen and in your email, so you have it open at the kitchen table when the contractor calls back.</span></div></li>
           </ol>
         </section>
 
         <section className="qc-sec">
           <h2 className="qc-h2">What the report looks like</h2>
-          <p>This is a real report layout with sample numbers, section for section. Yours is written for your quote, your ZIP and your job.</p>
+          <p>This is a real report layout with sample numbers, section for section. Yours is written for your estimate, your ZIP and your job.</p>
           <div className="qc-sample">
             <div className="qc-sample-tag">SAMPLE REPORT · ROOF REPLACEMENT · TACOMA, WA · QUOTED $18,400</div>
             <div className="qc-sample-body qc-result">
@@ -426,30 +466,30 @@ export default function QuoteCheck() {
 
         <section className="qc-eric">
           <h2 className="qc-h2">Why a contractor built this</h2>
-          <p>I've written more quotes than I can count. I know where the padding goes, what a vague line really means, and which terms should make you walk. Homeowners never had anyone on their side of the table. Now you do. Upload the quote, and if the report doesn't earn its {PRICE}, reply and I'll refund it.</p>
+          <p>I've written more estimates than I can count. I know where the padding goes, what a vague line really means, and which terms should make you walk. Homeowners never had anyone on their side of the table. Now you do. Upload the estimate, and if the report doesn't earn its {PRICE}, reply and I'll refund it.</p>
           <div className="sig">Eric Connor, contractor, builder of Quote Check and LevelWorks</div>
         </section>
 
         <section className="qc-sec qc-faq">
           <h2 className="qc-h2">Questions</h2>
           <dl>
-            <dt>Is a person reading my quote, or software?</dt>
-            <dd>Software, built and trained by a working contractor on the exact things he checks: labor and material rates for your area, what a proper quote for your trade includes, and the terms that go wrong. It reads your quote the way he would, in about a minute. Reply to the report email and a person answers.</dd>
+            <dt>Is a person reading my estimate, or software?</dt>
+            <dd>Software, built and trained by a working contractor on the exact things he checks: labor and material rates for your area, what a proper quote for your trade includes, and the terms that go wrong. It reads your estimate the way he would, in about a minute. Reply to the report email and a person answers.</dd>
             <dt>How accurate is the price range?</dt>
             <dd>It's a range, not a magic number. Prices move with access, roof pitch, what's behind the wall, and how busy the contractor is. That's why every report also lists what could justify a higher price on your job and what usually explains a lower one. The range tells you whether you're in the neighborhood for your area or nowhere near it, which is the thing you can't tell today.</dd>
             <dt>Will the contractor know?</dt>
-            <dd>No. Your quote isn't shared with anyone. The script is written so you can ask for what you need without accusing anyone of anything.</dd>
-            <dt>What if the quote is fair?</dt>
+            <dd>No. Your estimate isn't shared with anyone. The script is written so you can ask for what you need without accusing anyone of anything.</dd>
+            <dt>What if the estimate is fair?</dt>
             <dd>Then you sign it tonight with a clear head instead of losing a week getting two more bids. That's worth {PRICE} too.</dd>
-            <dt>What kinds of quotes?</dt>
-            <dd>Roofing, siding, windows, HVAC, plumbing, electrical, kitchens, bathrooms, additions, decks, concrete, painting, flooring, fencing, landscaping. Any written quote from a contractor or home-services company in the US.</dd>
-            <dt>What if it can't read my quote?</dt>
+            <dt>What kinds of estimates?</dt>
+            <dd>Roofing, siding, windows, HVAC, plumbing, electrical, kitchens, bathrooms, additions, decks, concrete, painting, flooring, fencing, landscaping. Any written estimate or quote from a contractor or home-services company in the US.</dd>
+            <dt>What if it can't read my estimate?</dt>
             <dd>You see that before you pay, and you pay nothing. Try a clearer photo or the PDF.</dd>
           </dl>
         </section>
 
         <section className="qc-bottom">
-          <h2 className="qc-h2">Don't sign tonight. Sign tomorrow, knowing.</h2>
+          <h2 className="qc-h2">Don't sign that estimate tonight. Sign tomorrow, knowing.</h2>
           <button type="button" className="lw-btn pri qc-cta" onClick={goUpload}>Check my quote</button>
           <p className="qc-fine">See the verdict free. {PRICE} for the full report. Refund if it doesn't earn it.</p>
         </section>
@@ -481,6 +521,7 @@ export function QuoteCheckResult() {
           return;
         }
         if (!r.ok) throw new Error(j.message || 'Could not load the report.');
+        if (sid) trackEvent('Purchase', { content_name: 'quotecheck', value: 79, currency: 'USD' }, sid);
         setState({ loading: false, err: '', data: j });
       } catch (e) { setState({ loading: false, err: (e as Error).message }); }
     };
@@ -505,7 +546,7 @@ export function QuoteCheckResult() {
             <p className="qc-mailed">{d.emailed ? `A copy is in your inbox at ${d.email}.` : 'A copy is on its way to your email.'} Reply to it if something in the quote was misread, or if the report didn't earn its {PRICE}.</p>
             <div className="qc-print">
               <button type="button" className="lw-btn sec" onClick={() => window.print()}>Print or save as PDF</button>
-              <Link to="/quote-check" className="lw-btn sec">Check another quote</Link>
+              <Link to="/quote-check" className="lw-btn sec">Check another estimate</Link>
             </div>
             <p className="qc-fine" style={{ textAlign: 'left', marginTop: 22 }}>This report is a professional read of the document you sent, based on typical costs for your area. It is not an inspection of the property. Prices vary with access, materials and the contractor's workload.</p>
           </>

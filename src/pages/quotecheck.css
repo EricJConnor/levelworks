@@ -180,3 +180,14 @@
 .qc-sample-body.qc-result .lead { font-size: 16px; }
 .qc-sample-body.qc-result h2 { font-size: 18px; margin-top: 24px; }
 .qc-sample-body.qc-result p, .qc-sample-body.qc-result li { font-size: 15px; }
+
+/* save this page: for the estimate that arrives next week */
+.qc-save { margin-top: 40px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--soft); display: grid; gap: 14px; }
+.qc-save-text b { display: block; font-size: 18px; font-weight: 700; letter-spacing: -.01em; color: var(--ink); }
+.qc-save-text span { display: block; margin-top: 4px; font-size: 15px; line-height: 1.45; color: var(--mute); }
+.qc-save-form { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.qc-save-form input { width: 100%; font: inherit; font-size: 16px; padding: 12px 13px; border: 1px solid #d5dae3; border-radius: 10px; background: #fff; color: var(--ink); }
+.qc-save-form input:focus { outline: 2px solid var(--blue); outline-offset: 0; border-color: var(--blue); }
+.qc-save-form .lw-btn { white-space: nowrap; }
+.qc-save-ok { font-size: 15px; font-weight: 600; color: #15803d; }
+@media (max-width: 480px) { .qc-save-form { grid-template-columns: 1fr; } }

@@ -114,6 +114,7 @@ function Top() {
     <div className="qc-top">
       <Link to="/quote-check" className="qc-brand"><i>{Ic.tag}</i>Quote Check</Link>
       <span className="qc-price"><b>{PRICE}</b> · one estimate, priced for your area</span>
+      <Ticket mini />
     </div>
   );
 }
@@ -125,6 +126,38 @@ function Foot() {
       <Link to="/terms">Terms</Link>
       <Link to="/privacy">Privacy</Link>
     </footer>
+  );
+}
+
+/**
+ * The claim ticket: a coat-check tag turning slowly in 3D. Eric, Sep 19: "a 3d
+ * coat check ticket spinning in the top right corner with blueprints, just to
+ * make this look a little more official". Pure CSS; stops under
+ * prefers-reduced-motion. `mini` is the phone version in the header.
+ */
+function Ticket({ mini = false }: { mini?: boolean }) {
+  return (
+    <div className={'qc-ticket' + (mini ? ' mini' : '')} aria-hidden="true">
+      <svg className="qc-string" viewBox="0 0 60 40"><path d="M30 40 C 30 22, 22 18, 30 0" /></svg>
+      <div className="qc-ticket-spin">
+        <div className="face front">
+          <i className="hole" />
+          <div className="t-brand"><i>{Ic.tag}</i>Quote Check</div>
+          <div className="t-label">Claim ticket</div>
+          <div className="t-num">No. 4F2A9C</div>
+          <div className="t-line">Hand it in.<br />Get it back checked.</div>
+          <div className="t-stub">Priced for your ZIP</div>
+        </div>
+        <div className="face back">
+          <i className="hole" />
+          <div className="t-brand"><i>{Ic.tag}</i>Quote Check</div>
+          <div className="t-label">Contractor's report</div>
+          <div className="t-num">$79</div>
+          <div className="t-line">Verdict free.<br />Full report $79.</div>
+          <div className="t-stub">Refund if it doesn't earn it</div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -324,8 +357,9 @@ export default function QuoteCheck() {
   return (
     <div className="lw qc">
       <Top />
-      <main>
+      <main className="qc-sheet">
         <section className="qc-hero">
+          <Ticket />
           <div className="qc-label">Before you sign</div>
           <h1 className="qc-h1">Is your contractor's estimate fair for your area? Find out tonight.</h1>
           <p className="qc-sub">Upload the estimate. It gets priced for your ZIP the way a contractor bids it, <b>materials, labor and margin</b>, then judged line by line: what's fair, what's overpriced, what's missing, and exactly what to say. {PRICE}. Back in minutes.</p>
@@ -531,7 +565,7 @@ export function QuoteCheckResult() {
   return (
     <div className="lw qc">
       <Top />
-      <main className="qc-result">
+      <main className="qc-result qc-sheet">
         {state.loading && <p className="qc-wait">Opening your report…</p>}
         {state.err && !state.loading && (
           <>

@@ -191,3 +191,48 @@
 .qc-save-form .lw-btn { white-space: nowrap; }
 .qc-save-ok { font-size: 15px; font-weight: 600; color: #15803d; }
 @media (max-width: 480px) { .qc-save-form { grid-template-columns: 1fr; } }
+
+/* ---- the claim ticket (3D, CSS only) ---- */
+.qc-ticket { position: absolute; right: 0; top: 18px; width: 176px; height: 236px; perspective: 900px; }
+.qc-string { position: absolute; left: 50%; top: -34px; width: 60px; height: 40px; transform: translateX(-50%); fill: none; stroke: #9aa7bb; stroke-width: 1.5; }
+.qc-ticket-spin { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; animation: qc-turn 14s linear infinite; }
+.qc-ticket .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: #fff; border: 1px solid #cfd8e6; border-radius: 16px; padding: 14px 14px 12px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 1px 0 #fff inset, 0 24px 40px -18px rgba(11,18,32,.35), 0 2px 6px rgba(11,18,32,.08); background-image: repeating-linear-gradient(0deg, transparent 0 22px, #f1f4f9 22px 23px); }
+.qc-ticket .face.back { transform: rotateY(180deg); }
+.qc-ticket .hole { width: 14px; height: 14px; border-radius: 50%; background: #eef3fb; border: 1px solid #cfd8e6; box-shadow: inset 0 1px 2px rgba(11,18,32,.15); margin-bottom: 10px; }
+.qc-ticket .t-brand { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--ink); letter-spacing: -.01em; }
+.qc-ticket .t-brand i { width: 18px; height: 18px; border-radius: 5px; background: var(--blue); display: inline-flex; align-items: center; justify-content: center; }
+.qc-ticket .t-brand svg { width: 11px; height: 11px; stroke: #fff; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.qc-ticket .t-label { margin-top: 14px; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--blue); }
+.qc-ticket .t-num { margin-top: 6px; font-size: 24px; white-space: nowrap; font-weight: 800; letter-spacing: -.03em; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1; }
+.qc-ticket .t-line { margin-top: 12px; font-size: 13px; line-height: 1.35; color: var(--ink-2); font-weight: 500; }
+.qc-ticket .t-stub { margin-top: auto; padding-top: 10px; border-top: 1px dashed #cfd8e6; width: 100%; font-size: 9.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+@keyframes qc-turn { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+@media (prefers-reduced-motion: reduce) { .qc-ticket-spin { animation: none; transform: rotateY(-18deg); } }
+
+/* phone: the ticket is a small turning tag in the header, the page stays as it was */
+.qc-ticket.mini { position: relative; top: 0; right: 0; width: 34px; height: 46px; perspective: 300px; margin-right: 2px; }
+.qc-ticket.mini .qc-string { top: -12px; width: 18px; height: 12px; }
+.qc-ticket.mini .face { border-radius: 7px; padding: 5px 4px 4px; background-image: none; box-shadow: 0 8px 14px -8px rgba(11,18,32,.4), 0 1px 3px rgba(11,18,32,.08); }
+.qc-ticket.mini .hole { width: 6px; height: 6px; margin-bottom: 3px; }
+.qc-ticket.mini .t-brand { font-size: 0; gap: 0; }
+.qc-ticket.mini .t-brand i { width: 14px; height: 14px; border-radius: 4px; }
+.qc-ticket.mini .t-brand svg { width: 9px; height: 9px; }
+.qc-ticket.mini .t-label, .qc-ticket.mini .t-line, .qc-ticket.mini .t-stub { display: none; }
+.qc-ticket.mini .t-num { display: none; }
+.qc-ticket.mini .face { justify-content: center; }
+.qc-hero { position: relative; }
+@media (max-width: 759px) { .qc-hero .qc-ticket:not(.mini) { display: none; } }
+
+/* laptop: a bordered sheet on blueprint paper, so the page has edges */
+@media (min-width: 760px) {
+  .qc { background-color: #eef3fb; background-image: linear-gradient(#dfe8f6 1px, transparent 1px), linear-gradient(90deg, #dfe8f6 1px, transparent 1px), linear-gradient(#c9d7ee 1px, transparent 1px), linear-gradient(90deg, #c9d7ee 1px, transparent 1px); background-size: 24px 24px, 24px 24px, 120px 120px, 120px 120px; background-position: -1px -1px; }
+  .qc-top { max-width: 900px; padding: 18px 8px; }
+  .qc-top .qc-ticket.mini { display: none; }
+  .qc main.qc-sheet { max-width: 900px; background: #fff; border: 1px solid #cfd8e6; border-radius: 22px; box-shadow: 0 2px 4px rgba(11,18,32,.04), 0 30px 60px -30px rgba(11,18,32,.25); padding: 12px 56px 56px; margin-bottom: 48px; }
+  .qc-hero { padding-right: 230px; padding-top: 34px; }
+  .qc-hero .qc-card { margin-right: -230px; }
+  .qc-hero .qc-save { margin-right: -230px; }
+  .qc-ticket { top: 44px; right: 8px; }
+  .qc-foot { max-width: 900px; margin: 0 auto; border-top: 0; }
+  .qc-result.qc-sheet { padding-top: 34px; }
+}

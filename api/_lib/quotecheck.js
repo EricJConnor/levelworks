@@ -153,7 +153,7 @@ Rules:
 - If the upload is not a construction or home-services quote, or is unreadable, set readable=false and say why in one sentence.
 - Write for a nervous homeowner, not a contractor. Explain a trade word the first time you use it.
 - Never use the words "padded" or "padding". Say "above the going rate", "overpriced", or "high for the area".
-- Call the document a report, not a review.
+- Call the document a report, not a review. Call what the contractor sent an estimate, which is what homeowners call it; "quote" and "bid" are fine when the document itself uses them.
 - Sentence case. No exclamation marks.`;
 
 /**
@@ -203,8 +203,8 @@ export function teaserOf(review) {
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const money = n => (Number(n) > 0 ? '$' + Math.round(Number(n)).toLocaleString('en-US') : '');
 export const VERDICT_WORDS = {
-  fair: 'This quote is fair', high: 'This quote is high', very_high: 'This quote is well above the going rate',
-  low: 'This quote is low, and that is worth a look', unclear: 'This quote leaves too much unsaid',
+  fair: 'This estimate is fair', high: 'This estimate is high', very_high: 'This estimate is well above the going rate',
+  low: 'This estimate is low, and that is worth a look', unclear: 'This estimate leaves too much unsaid',
 };
 
 /** The review as an email, plain HTML, one column. */

@@ -182,7 +182,7 @@
 .qc-sample-body.qc-result p, .qc-sample-body.qc-result li { font-size: 15px; }
 
 /* save this page: for the estimate that arrives next week */
-.qc-save { margin-top: 40px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--soft); display: grid; gap: 14px; }
+.qc-save { margin-top: 14px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--soft); display: grid; gap: 14px; }
 .qc-save-text b { display: block; font-size: 18px; font-weight: 700; letter-spacing: -.01em; color: var(--ink); }
 .qc-save-text span { display: block; margin-top: 4px; font-size: 15px; line-height: 1.45; color: var(--mute); }
 .qc-save-form { display: grid; grid-template-columns: 1fr auto; gap: 8px; }

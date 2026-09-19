@@ -87,6 +87,10 @@
     {
       "path": "/api/cron-annual",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron-quotecheck",
+      "schedule": "0 14 * * *"
     }
   ]
 }

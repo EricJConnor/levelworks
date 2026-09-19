@@ -162,7 +162,7 @@ export function unsubscribeUrl(email, lang = 'en') {
  * Apple Mail show their own Unsubscribe button at the top. Transactional mail
  * (a login link, a receipt) leaves it off.
  */
-export async function sendMail({ to, subject, html, text, unsubscribe }) {
+export async function sendMail({ to, subject, html, text, unsubscribe, from }) {
   const headers = {};
   if (unsubscribe) {
     const url = unsubscribeUrl(to, unsubscribe);
@@ -175,7 +175,7 @@ export async function sendMail({ to, subject, html, text, unsubscribe }) {
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: 'Eric at LevelWorks <eric@levelworks.org>', to: [to], reply_to: ERIC_REPLY_TO, subject, html, text, headers }),
+      body: JSON.stringify({ from: from || 'Eric at LevelWorks <eric@levelworks.org>', to: [to], reply_to: ERIC_REPLY_TO, subject, html, text, headers }),
     });
     if (!r.ok) throw new Error('resend: ' + (await r.text()));
     return { via: 'resend' };

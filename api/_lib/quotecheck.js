@@ -75,6 +75,20 @@ const OUT_SCHEMA = {
       },
       required: ['low', 'high', 'basis'], additionalProperties: false,
     },
+    costBreakdown: {
+      type: 'object',
+      description: 'what the job costs to deliver, built up from scratch, independent of what the quote says',
+      properties: {
+        materials: { type: 'object', properties: { low: { type: 'number' }, high: { type: 'number' }, note: { type: 'string', description: 'the main materials and current pricing assumed' } }, required: ['low', 'high', 'note'], additionalProperties: false },
+        labor: { type: 'object', properties: { low: { type: 'number' }, high: { type: 'number' }, note: { type: 'string', description: 'crew size, days, and the regional rate assumed' } }, required: ['low', 'high', 'note'], additionalProperties: false },
+        otherCosts: { type: 'object', properties: { low: { type: 'number' }, high: { type: 'number' }, note: { type: 'string', description: 'permits, disposal, equipment, subs' } }, required: ['low', 'high', 'note'], additionalProperties: false },
+        industryMarginPercent: { type: 'object', properties: { low: { type: 'number' }, high: { type: 'number' }, note: { type: 'string', description: 'the normal overhead-and-profit margin for this trade, as a percent of price' } }, required: ['low', 'high', 'note'], additionalProperties: false },
+        impliedMarginPercent: { type: 'number', description: 'the margin this quote implies: (quoted total minus mid-point costs) divided by quoted total, as a percent; 0 if no total' },
+        impliedMarginNote: { type: 'string', description: 'one sentence comparing the implied margin to the industry range' },
+      },
+      required: ['materials', 'labor', 'otherCosts', 'industryMarginPercent', 'impliedMarginPercent', 'impliedMarginNote'],
+      additionalProperties: false,
+    },
     lines: {
       type: 'array',
       description: 'every line or section of the quote, in order',
@@ -96,7 +110,7 @@ const OUT_SCHEMA = {
     bottomLine: { type: 'string', description: 'sign it, negotiate it, or walk, and why, in 2-3 sentences' },
     confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
   },
-  required: ['readable', 'unreadableReason', 'trade', 'contractorName', 'jobSummary', 'totalQuoted', 'verdict', 'headline', 'fairRange', 'lines', 'missing', 'redFlags', 'questions', 'sayThis', 'bottomLine', 'confidence'],
+  required: ['readable', 'unreadableReason', 'trade', 'contractorName', 'jobSummary', 'totalQuoted', 'verdict', 'headline', 'fairRange', 'costBreakdown', 'lines', 'missing', 'redFlags', 'questions', 'sayThis', 'bottomLine', 'confidence'],
   additionalProperties: false,
 };
 
@@ -107,7 +121,7 @@ The homeowner has paid for a straight answer. Write the way an honest contractor
 What you do:
 1. Read every line of the quote. If the quote is a lump sum, say so and judge the total against the scope.
 2. Judge each line against what this work normally costs in the homeowner's area right now (use the ZIP for regional labor and material rates; say what region you assumed). "fair" = within the normal range. "watch" = on the high side or vague. "high" = clearly padded. "missing_detail" = you cannot judge it because the quote does not say enough.
-3. Build a fair range for the whole job from the scope as written, and say how you got there.
+3. Cost the job from scratch, the way you would to bid it yourself: current material prices for the spec (name the main materials and the price basis), labor as crew size times days times the regional rate, other costs (permits, disposal, equipment, subs). Then apply the normal overhead-and-profit margin for this trade (roofing, HVAC and remodeling typically run 20 to 35 percent of price; handyman and painting less; specialty trades more) to get the fair price range. Work out the margin this quote implies: quoted total minus your mid-point costs, divided by the quoted total. A contractor deserves a real margin; say whether this one is normal, thin, or fat.
 4. List what a proper quote for this job should include and this one does not (permits, disposal, materials spec, warranty, start and finish dates, payment schedule, change-order terms, licence and insurance).
 5. Red flags: more than a third down, cash discounts, no licence number, "materials TBD", pressure to sign today, no written warranty.
 6. Give them the exact questions to ask and a short script they can say or text to the contractor.
@@ -190,6 +204,12 @@ export function reviewEmail(id, review) {
   ${p(`<b>${esc(r.trade)}</b> · ${esc(r.jobSummary)}${r.totalQuoted ? ` · quoted <b>${money(r.totalQuoted)}</b>` : ''}`)}
   ${h('What this job should cost')}
   ${p(`<b>${money(r.fairRange.low)} to ${money(r.fairRange.high)}</b>. ${esc(r.fairRange.basis)}`)}
+  ${h('How that number is built')}
+  <table style="width:100%;border-collapse:collapse;font-size:15px">
+    ${[['Materials', r.costBreakdown.materials], ['Labor', r.costBreakdown.labor], ['Permits, disposal, other', r.costBreakdown.otherCosts]].map(([k, v]) => `<tr><td style="padding:8px 0;border-top:1px solid #e6e9ef">${k}<div style="font-size:13px;color:#5b6472">${esc(v.note)}</div></td><td style="padding:8px 0 8px 12px;border-top:1px solid #e6e9ef;text-align:right;white-space:nowrap;vertical-align:top">${money(v.low)} to ${money(v.high)}</td></tr>`).join('')}
+    <tr><td style="padding:8px 0;border-top:1px solid #e6e9ef">Normal overhead and profit for ${esc(r.trade.toLowerCase())}<div style="font-size:13px;color:#5b6472">${esc(r.costBreakdown.industryMarginPercent.note)}</div></td><td style="padding:8px 0 8px 12px;border-top:1px solid #e6e9ef;text-align:right;white-space:nowrap;vertical-align:top">${r.costBreakdown.industryMarginPercent.low}% to ${r.costBreakdown.industryMarginPercent.high}%</td></tr>
+    ${r.totalQuoted ? `<tr><td style="padding:8px 0;border-top:2px solid #0b1220"><b>Margin this quote implies</b><div style="font-size:13px;color:#5b6472">${esc(r.costBreakdown.impliedMarginNote)}</div></td><td style="padding:8px 0 8px 12px;border-top:2px solid #0b1220;text-align:right;white-space:nowrap;vertical-align:top"><b>${Math.round(r.costBreakdown.impliedMarginPercent)}%</b></td></tr>` : ''}
+  </table>
   ${h('Line by line')}
   <table style="width:100%;border-collapse:collapse">${lines}</table>
   ${r.missing.length ? h('What is missing from this quote') + `<ul style="padding-left:20px;font-size:15px;line-height:1.5">${li(r.missing)}</ul>` : ''}
@@ -207,6 +227,12 @@ export function reviewEmail(id, review) {
     'Quote Check', VERDICT_WORDS[r.verdict] || '', r.headline, '',
     `${r.trade} - ${r.jobSummary}${r.totalQuoted ? ` - quoted ${money(r.totalQuoted)}` : ''}`, '',
     `What this job should cost: ${money(r.fairRange.low)} to ${money(r.fairRange.high)}. ${r.fairRange.basis}`, '',
+    'How that number is built:',
+    `- Materials: ${money(r.costBreakdown.materials.low)} to ${money(r.costBreakdown.materials.high)}. ${r.costBreakdown.materials.note}`,
+    `- Labor: ${money(r.costBreakdown.labor.low)} to ${money(r.costBreakdown.labor.high)}. ${r.costBreakdown.labor.note}`,
+    `- Permits, disposal, other: ${money(r.costBreakdown.otherCosts.low)} to ${money(r.costBreakdown.otherCosts.high)}. ${r.costBreakdown.otherCosts.note}`,
+    `- Normal overhead and profit: ${r.costBreakdown.industryMarginPercent.low}% to ${r.costBreakdown.industryMarginPercent.high}%. ${r.costBreakdown.industryMarginPercent.note}`,
+    ...(r.totalQuoted ? [`- Margin this quote implies: ${Math.round(r.costBreakdown.impliedMarginPercent)}%. ${r.costBreakdown.impliedMarginNote}`] : []), '',
     'Line by line:', ...r.lines.map(l => `- ${l.item} (${l.quoted}) [${l.status}]: ${l.note}`), '',
     ...(r.missing.length ? ['Missing from this quote:', ...r.missing.map(x => `- ${x}`), ''] : []),
     ...(r.redFlags.length ? ['Red flags:', ...r.redFlags.map(x => `- ${x}`), ''] : []),

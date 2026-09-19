@@ -160,3 +160,23 @@
 @media print {
   .qc-top, .qc-foot, .qc-print, .qc-mailed { display: none; }
 }
+
+/* the area box: the one thing they cannot get anywhere else, so it is highlighted */
+.qc-area { margin-top: 18px; border: 1px solid #bfd3ff; background: #eef4ff; border-radius: 14px; overflow: hidden; }
+.qc-area-tag { display: flex; align-items: center; gap: 8px; padding: 10px 14px; font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--blue); border-bottom: 1px solid #bfd3ff; }
+.qc-area-tag svg { width: 16px; height: 16px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.qc-area-body { padding: 6px 14px 12px; }
+.qc-area-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 8px 0; border-bottom: 1px solid #d5e2ff; align-items: baseline; }
+.qc-area-row:last-of-type { border-bottom: 0; }
+.qc-area-row span { font-size: 14px; color: var(--mute); }
+.qc-area-row b { font-size: 15px; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+.qc-area-body > p { margin: 8px 0 0 !important; font-size: 14px !important; line-height: 1.5; color: var(--ink-2) !important; }
+.qc-result h2 small { display: inline-block; margin-left: 8px; font-size: 13px; font-weight: 600; color: var(--blue); letter-spacing: 0; }
+.qc-two { display: grid; gap: 0 24px; }
+@media (min-width: 720px) { .qc-two { grid-template-columns: 1fr 1fr; } }
+.qc-sample-body.qc-result { padding-top: 16px; }
+.qc-sample-body.qc-result h1 { font-size: clamp(24px, 6vw, 30px); margin-top: 6px; letter-spacing: -.03em; line-height: 1.1; }
+.qc-sample-body.qc-result h1.high, .qc-sample-body.qc-result h1.very_high { color: #b91c1c; }
+.qc-sample-body.qc-result .lead { font-size: 16px; }
+.qc-sample-body.qc-result h2 { font-size: 18px; margin-top: 24px; }
+.qc-sample-body.qc-result p, .qc-sample-body.qc-result li { font-size: 15px; }

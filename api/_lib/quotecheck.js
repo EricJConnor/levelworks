@@ -75,6 +75,22 @@ const OUT_SCHEMA = {
       },
       required: ['low', 'high', 'basis'], additionalProperties: false,
     },
+    area: {
+      type: 'object',
+      description: 'how the homeowner\'s area prices this work, compared to the national average',
+      properties: {
+        name: { type: 'string', description: 'the metro or region assumed from the ZIP, e.g. "Tacoma / Puyallup, WA"' },
+        comparedToNational: { type: 'string', description: 'one short phrase, e.g. "about 15% above the national average"' },
+        laborRate: { type: 'string', description: 'the loaded hourly or per-unit labor rate assumed for this trade in this area' },
+        typicalLow: { type: 'number', description: 'what this job typically runs in this area, low end' },
+        typicalHigh: { type: 'number', description: 'what this job typically runs in this area, high end' },
+        note: { type: 'string', description: 'one or two sentences on what drives prices in this area: labor market, permits, weather season, material availability' },
+      },
+      required: ['name', 'comparedToNational', 'laborRate', 'typicalLow', 'typicalHigh', 'note'],
+      additionalProperties: false,
+    },
+    whyHigher: { type: 'array', items: { type: 'string' }, description: 'legitimate reasons this quote could deserve to be higher than average: steep roof, two layers, access, premium materials, licensed and insured, busy season, a reputable firm with real warranty. Specific to this quote and job, 2 to 5 items' },
+    whyLower: { type: 'array', items: { type: 'string' }, description: 'what usually explains a lower than average price, and what to check: thinner materials, no permit, uninsured labor, subcontracted crew, slow season, a new company building a book. Specific to this quote and job, 2 to 5 items' },
     costBreakdown: {
       type: 'object',
       description: 'what the job costs to deliver, built up from scratch, independent of what the quote says',
@@ -110,22 +126,24 @@ const OUT_SCHEMA = {
     bottomLine: { type: 'string', description: 'sign it, negotiate it, or walk, and why, in 2-3 sentences' },
     confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
   },
-  required: ['readable', 'unreadableReason', 'trade', 'contractorName', 'jobSummary', 'totalQuoted', 'verdict', 'headline', 'fairRange', 'costBreakdown', 'lines', 'missing', 'redFlags', 'questions', 'sayThis', 'bottomLine', 'confidence'],
+  required: ['readable', 'unreadableReason', 'trade', 'contractorName', 'jobSummary', 'totalQuoted', 'verdict', 'headline', 'fairRange', 'area', 'whyHigher', 'whyLower', 'costBreakdown', 'lines', 'missing', 'redFlags', 'questions', 'sayThis', 'bottomLine', 'confidence'],
   additionalProperties: false,
 };
 
-const SYSTEM = `You are Quote Check: a licensed general contractor with over twenty years in residential construction in the United States, reading a homeowner's quote before they sign it. You have priced thousands of jobs and seen every way a quote gets padded, and every way a cheap quote hides a problem.
+const SYSTEM = `You are Quote Check: a licensed general contractor with over twenty years in residential construction in the United States, reading a homeowner's quote before they sign it. You have priced thousands of jobs and seen every way a quote gets inflated, and every way a cheap quote hides a problem.
 
 The homeowner has paid for a straight answer. Write the way an honest contractor talks to a friend at the kitchen table: plain, specific, no hedging, no lecture. Short sentences. Dollar figures wherever you can put one.
 
 What you do:
 1. Read every line of the quote. If the quote is a lump sum, say so and judge the total against the scope.
-2. Judge each line against what this work normally costs in the homeowner's area right now (use the ZIP for regional labor and material rates; say what region you assumed). "fair" = within the normal range. "watch" = on the high side or vague. "high" = clearly padded. "missing_detail" = you cannot judge it because the quote does not say enough.
-3. Cost the job from scratch, the way you would to bid it yourself: current material prices for the spec (name the main materials and the price basis), labor as crew size times days times the regional rate, other costs (permits, disposal, equipment, subs). Then apply the normal overhead-and-profit margin for this trade (roofing, HVAC and remodeling typically run 20 to 35 percent of price; handyman and painting less; specialty trades more) to get the fair price range. Work out the margin this quote implies: quoted total minus your mid-point costs, divided by the quoted total. A contractor deserves a real margin; say whether this one is normal, thin, or fat.
-4. List what a proper quote for this job should include and this one does not (permits, disposal, materials spec, warranty, start and finish dates, payment schedule, change-order terms, licence and insurance).
-5. Red flags: more than a third down, cash discounts, no licence number, "materials TBD", pressure to sign today, no written warranty.
-6. Give them the exact questions to ask and a short script they can say or text to the contractor.
-7. Bottom line: sign, negotiate, get another bid, or walk.
+2. Judge each line against what this work normally costs in the homeowner's area right now (use the ZIP for regional labor and material rates; say what region you assumed). "fair" = within the normal range. "watch" = on the high side or vague. "high" = clearly above the going rate. "missing_detail" = you cannot judge it because the quote does not say enough.
+3. Price for the homeowner's area, not a national average, and show it: name the metro or region the ZIP is in, say how its labor and material costs compare to the national average, state the labor rate you assumed, and give what this job typically runs there. That comparison is the part they cannot get anywhere else.
+4. Cost the job from scratch, the way you would to bid it yourself: current material prices for the spec (name the main materials and the price basis), labor as crew size times days times the regional rate, other costs (permits, disposal, equipment, subs). Then apply the normal overhead-and-profit margin for this trade (roofing, HVAC and remodeling typically run 20 to 35 percent of price; handyman and painting less; specialty trades more) to get the fair price range. Work out the margin this quote implies: quoted total minus your mid-point costs, divided by the quoted total. A contractor deserves a real margin; say whether this one is normal, thin, or fat.
+5. List what a proper quote for this job should include and this one does not (permits, disposal, materials spec, warranty, start and finish dates, payment schedule, change-order terms, licence and insurance).
+6. Be fair to the contractor: list what could legitimately justify a higher price on this job (pitch, layers, access, premium materials, insurance, season, a real warranty), and what usually explains a lower one and what to check before trusting it.
+7. Red flags: more than a third down, cash discounts, no licence number, "materials TBD", pressure to sign today, no written warranty.
+8. Give them the exact questions to ask and a short script they can say or text to the contractor.
+9. Bottom line: sign, negotiate, get another bid, or walk.
 
 Rules:
 - Never invent a number that is not on the quote. When the quote does not itemize, say "not itemized" and judge the total.
@@ -134,6 +152,8 @@ Rules:
 - Do not call the contractor a crook. A high number is a high number; say it and move on.
 - If the upload is not a construction or home-services quote, or is unreadable, set readable=false and say why in one sentence.
 - Write for a nervous homeowner, not a contractor. Explain a trade word the first time you use it.
+- Never use the words "padded" or "padding". Say "above the going rate", "overpriced", or "high for the area".
+- Call the document a report, not a review.
 - Sentence case. No exclamation marks.`;
 
 /**
@@ -198,10 +218,14 @@ export function reviewEmail(id, review) {
   const h = (t) => `<h2 style="font-size:17px;margin:26px 0 8px;color:#0b1220">${t}</h2>`;
   const p = (t) => `<p style="margin:0 0 12px;font-size:16px;line-height:1.55;color:#0b1220">${t}</p>`;
   const html = `<div style="font-family:Inter,-apple-system,Segoe UI,Roboto,sans-serif;max-width:600px;margin:0 auto;padding:28px 20px;color:#0b1220">
-  <p style="margin:0 0 6px;font-size:13px;font-weight:600;color:#2563eb">Quote Check</p>
+  <p style="margin:0 0 6px;font-size:13px;font-weight:600;color:#2563eb">Quote Check · Report · Ticket ${esc(id.slice(0, 6).toUpperCase())}</p>
   <h1 style="font-size:26px;line-height:1.15;margin:0 0 6px;letter-spacing:-.02em">${esc(VERDICT_WORDS[r.verdict] || r.headline)}</h1>
   ${p(esc(r.headline))}
   ${p(`<b>${esc(r.trade)}</b> · ${esc(r.jobSummary)}${r.totalQuoted ? ` · quoted <b>${money(r.totalQuoted)}</b>` : ''}`)}
+  <div style="margin:18px 0 0;padding:14px 16px;background:#eef4ff;border:1px solid #bfd3ff;border-radius:12px">
+    <div style="font-size:12px;font-weight:700;letter-spacing:.03em;color:#2563eb">FOR YOUR AREA · ${esc(r.area.name)}</div>
+    <div style="margin-top:6px;font-size:15px;line-height:1.5;color:#0b1220">Costs here run <b>${esc(r.area.comparedToNational)}</b>. This job typically runs <b>${money(r.area.typicalLow)} to ${money(r.area.typicalHigh)}</b> in your area. Labor assumed at ${esc(r.area.laborRate)}. ${esc(r.area.note)}</div>
+  </div>
   ${h('What this job should cost')}
   ${p(`<b>${money(r.fairRange.low)} to ${money(r.fairRange.high)}</b>. ${esc(r.fairRange.basis)}`)}
   ${h('How that number is built')}
@@ -212,6 +236,10 @@ export function reviewEmail(id, review) {
   </table>
   ${h('Line by line')}
   <table style="width:100%;border-collapse:collapse">${lines}</table>
+  ${h('What could justify a higher price')}
+  <ul style="padding-left:20px;font-size:15px;line-height:1.5">${li(r.whyHigher)}</ul>
+  ${h('What could explain a lower price')}
+  <ul style="padding-left:20px;font-size:15px;line-height:1.5">${li(r.whyLower)}</ul>
   ${r.missing.length ? h('What is missing from this quote') + `<ul style="padding-left:20px;font-size:15px;line-height:1.5">${li(r.missing)}</ul>` : ''}
   ${r.redFlags.length ? h('Red flags') + `<ul style="padding-left:20px;font-size:15px;line-height:1.5">${li(r.redFlags)}</ul>` : ''}
   ${h('Ask the contractor')}
@@ -220,8 +248,8 @@ export function reviewEmail(id, review) {
   <blockquote style="margin:0;padding:12px 16px;background:#f5f7fb;border-radius:12px;font-size:15px;line-height:1.55">${esc(r.sayThis)}</blockquote>
   ${h('Bottom line')}
   ${p(esc(r.bottomLine))}
-  <p style="margin:26px 0"><a href="${url}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 20px;border-radius:10px">Open your review</a></p>
-  <p style="font-size:13px;line-height:1.5;color:#5b6472">This review is a contractor's professional read of the document you sent, based on typical costs for your area. It is not an inspection of the property, and prices vary with access, materials and the contractor's workload. Reply to this email if something in the quote was misread.</p>
+  <p style="margin:26px 0"><a href="${url}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 20px;border-radius:10px">Open your report</a></p>
+  <p style="font-size:13px;line-height:1.5;color:#5b6472">This report is a contractor's professional read of the document you sent, based on typical costs for your area. It is not an inspection of the property, and prices vary with access, materials and the contractor's workload. Reply to this email if something in the quote was misread.</p>
 </div>`;
   const text = [
     'Quote Check', VERDICT_WORDS[r.verdict] || '', r.headline, '',
@@ -233,11 +261,14 @@ export function reviewEmail(id, review) {
     `- Permits, disposal, other: ${money(r.costBreakdown.otherCosts.low)} to ${money(r.costBreakdown.otherCosts.high)}. ${r.costBreakdown.otherCosts.note}`,
     `- Normal overhead and profit: ${r.costBreakdown.industryMarginPercent.low}% to ${r.costBreakdown.industryMarginPercent.high}%. ${r.costBreakdown.industryMarginPercent.note}`,
     ...(r.totalQuoted ? [`- Margin this quote implies: ${Math.round(r.costBreakdown.impliedMarginPercent)}%. ${r.costBreakdown.impliedMarginNote}`] : []), '',
+    `For your area (${r.area.name}): costs run ${r.area.comparedToNational}. This job typically runs ${money(r.area.typicalLow)} to ${money(r.area.typicalHigh)} here. Labor assumed at ${r.area.laborRate}. ${r.area.note}`, '',
+    'What could justify a higher price:', ...r.whyHigher.map(x => `- ${x}`), '',
+    'What could explain a lower price:', ...r.whyLower.map(x => `- ${x}`), '',
     'Line by line:', ...r.lines.map(l => `- ${l.item} (${l.quoted}) [${l.status}]: ${l.note}`), '',
     ...(r.missing.length ? ['Missing from this quote:', ...r.missing.map(x => `- ${x}`), ''] : []),
     ...(r.redFlags.length ? ['Red flags:', ...r.redFlags.map(x => `- ${x}`), ''] : []),
     'Ask the contractor:', ...r.questions.map(x => `- ${x}`), '',
-    'Say this:', r.sayThis, '', 'Bottom line:', r.bottomLine, '', `Open your review: ${url}`,
+    'Say this:', r.sayThis, '', 'Bottom line:', r.bottomLine, '', `Open your report: ${url}`,
   ].join('\n');
-  return { subject: `Your Quote Check: ${VERDICT_WORDS[r.verdict] ? VERDICT_WORDS[r.verdict].toLowerCase() : r.headline}`, html, text };
+  return { subject: `Your Quote Check report: ${VERDICT_WORDS[r.verdict] ? VERDICT_WORDS[r.verdict].toLowerCase() : r.headline}`, html, text };
 }

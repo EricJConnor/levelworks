@@ -410,6 +410,7 @@ export default function QuoteCheck() {
             )}
             {err && <p className="qc-err">{err}</p>}
           </div>
+          {stage === 'idle' && <SaveCard />}
         </section>
 
         <section className="qc-sec">
@@ -422,8 +423,6 @@ export default function QuoteCheck() {
             <div className="qc-stake us"><span>A contractor's report on your estimate, tonight</span><b>{PRICE}</b></div>
           </div>
         </section>
-
-        <SaveCard />
 
         <section className="qc-sec">
           <h2 className="qc-h2">Priced for your ZIP, not a national average</h2>

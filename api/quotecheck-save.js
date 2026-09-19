@@ -8,15 +8,15 @@
 import { json, readBody, missingEnv, sendMail, layout } from './_lib/annual.js';
 import { resend } from './_lib/audience.js';
 import { PAGE } from './_lib/quotecheck.js';
+import { recordLead, LEADS_LEADS_AUDIENCE, FROM } from './_lib/quotecheckDrip.js';
 
-const AUDIENCE = 'Quote Check · leads';
 const clean = (v, max = 120) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
 async function audienceId() {
   const list = await resend('/audiences');
-  const hit = (list.data || []).find(a => a.name === AUDIENCE);
+  const hit = (list.data || []).find(a => a.name === LEADS_AUDIENCE);
   if (hit) return hit.id;
-  const made = await resend('/audiences', { method: 'POST', body: JSON.stringify({ name: AUDIENCE }) });
+  const made = await resend('/audiences', { method: 'POST', body: JSON.stringify({ name: LEADS_AUDIENCE }) });
   return made.id;
 }
 
@@ -52,7 +52,8 @@ export default async function handler(req, res) {
       unsubscribe: true,
     });
     const text = `Your Quote Check link: ${link}\n\nFive things on any estimate that should make you slow down:\n1. More than a third down.\n2. A cash discount.\n3. "Materials" with no list.\n4. Price good for 7 days.\n5. No licence number, no insurance certificate.\n\nWhen the estimate comes, take a photo and upload it. You see the verdict free. The full report is $79.`;
-    await sendMail({ to: email, subject: 'Your Quote Check link, and five red flags to watch for', html, text, unsubscribe: 'en' });
+    await sendMail({ to: email, from: FROM, subject: 'Your Quote Check link, and five red flags to watch for', html, text, unsubscribe: 'en' });
+    await recordLead(email, utm).catch(e => console.error('[quotecheck-save] lead', e.message));
     return json(res, 200, { ok: true });
   } catch (e) {
     console.error('[quotecheck-save]', e.message);

@@ -22,10 +22,12 @@ type Teaser = {
   verdict?: 'fair' | 'high' | 'very_high' | 'low' | 'unclear';
   counts?: { lines: number; flags: number; missing: number; redFlags: number; questions: number };
 };
+type Band = { low: number; high: number; note: string };
 type Line = { item: string; quoted: string; status: 'fair' | 'watch' | 'high' | 'missing_detail'; note: string };
 type Result = {
   readable: boolean; trade: string; contractorName: string; jobSummary: string; totalQuoted: number;
   verdict: Teaser['verdict']; headline: string; fairRange: { low: number; high: number; basis: string };
+  costBreakdown: { materials: Band; labor: Band; otherCosts: Band; industryMarginPercent: Band; impliedMarginPercent: number; impliedMarginNote: string };
   lines: Line[]; missing: string[]; redFlags: string[]; questions: string[]; sayThis: string; bottomLine: string; confidence: string;
 };
 
@@ -189,7 +191,7 @@ export default function QuoteCheck() {
         <section className="qc-hero">
           <div className="qc-label">Before you sign</div>
           <h1 className="qc-h1">Is your contractor's quote fair? Find out tonight.</h1>
-          <p className="qc-sub">Upload the quote. A contractor's-eye review reads it line by line and tells you <b>what's fair, what's padded, what's missing</b>, and exactly what to say to the contractor. {PRICE}. Back in minutes.</p>
+          <p className="qc-sub">Upload the quote. It gets costed the way a contractor bids it, <b>materials, labor and margin</b>, then judged line by line: what's fair, what's padded, what's missing, and exactly what to say. {PRICE}. Back in minutes.</p>
 
           <div className="qc-card" ref={cardRef}>
             {stage === 'idle' && (
@@ -247,11 +249,11 @@ export default function QuoteCheck() {
                   </div>
                   <div className="qc-locked">
                     <div className="blur" aria-hidden="true">
-                      <p><b>What this job should cost:</b> $00,000 to $00,000. Based on the scope as written, regional labor rates and current material pricing for your area.</p>
+                      <p><b>What this job should cost:</b> $00,000 to $00,000. Materials $0,000 to $0,000. Labor $0,000 to $0,000. Normal margin 00% to 00%. This quote implies 00%.</p>
                       <p><b>Line by line.</b> Tear-off and disposal, quoted at $0,000: on the high side for this square footage. Underlayment: not specified, ask which product. Flashing: fair.</p>
                       <p><b>Say this.</b> "Thanks for the quote. Before I sign, can you break out the ..."</p>
                     </div>
-                    <div className="lock">{Ic.lock}<b>The full review is locked</b><span>Fair price range, every line, what's missing, the questions, the script, and the bottom line.</span></div>
+                    <div className="lock">{Ic.lock}<b>The full review is locked</b><span>Materials, labor and margin itemized, every line judged, what's missing, the questions, the script, and the bottom line.</span></div>
                   </div>
                   <div className="qc-unlock">
                     <label htmlFor="qc-email">Where should we send it?</label>
@@ -288,7 +290,7 @@ export default function QuoteCheck() {
           <h2 className="qc-h2">What you get back</h2>
           <div className="qc-gets">
             <div className="qc-get">{Ic.gavel}<div><b>The verdict</b><span>Fair, high, or too vague to sign, in one plain sentence.</span></div></div>
-            <div className="qc-get">{Ic.dollar}<div><b>What the job should cost</b><span>A fair price range for the scope as written, for your ZIP, and how it was built.</span></div></div>
+            <div className="qc-get">{Ic.dollar}<div><b>What the job should cost, itemized</b><span>Current material prices, projected labor for your area, permits and disposal, then the normal profit margin for that trade. Side by side with what the quote implies.</span></div></div>
             <div className="qc-get">{Ic.list}<div><b>Every line, judged</b><span>Fair, on the high side, padded, or missing detail, with a note on each one a contractor would actually say.</span></div></div>
             <div className="qc-get">{Ic.flag}<div><b>What's missing and what's a red flag</b><span>Permits, disposal, material specs, warranty, dates, the payment schedule, licence and insurance. Half down and a cash discount are red flags. You'll know which ones you have.</span></div></div>
             <div className="qc-get">{Ic.q}<div><b>The questions to ask</b><span>Exact questions, in your words, that a contractor can't wave away.</span></div></div>
@@ -312,7 +314,7 @@ export default function QuoteCheck() {
             <div className="qc-sample-tag">SAMPLE REVIEW · ROOF REPLACEMENT · QUOTED $18,400</div>
             <div className="qc-sample-body">
               <h3>This quote is high</h3>
-              <p>About $3,500 over the going rate for a 24-square architectural shingle roof in your area, mostly in tear-off and the "miscellaneous materials" line. The workmanship terms are fine. Ask two questions and this is a signable quote.</p>
+              <p>About $3,500 over the going rate for a 24-square architectural shingle roof in your area, mostly in tear-off and the "miscellaneous materials" line. Materials run $5,200 to $6,400, labor $5,500 to $6,800, disposal and permits $900 to $1,300; at a normal 25 to 35 percent margin that's $15,500 to $17,600. This quote implies a 39 percent margin. The workmanship terms are fine. Ask two questions and this is a signable quote.</p>
               <div className="qc-lines">
                 <div className="qc-line"><div><b>Tear-off and disposal, 24 sq</b><small>$140 a square is the top of the range for a single layer. $85 to $110 is typical unless there are two layers, and the quote doesn't say.</small></div><div className="amt">$3,360<span className="st high">high</span></div></div>
                 <div className="qc-line"><div><b>Architectural shingles, installed</b><small>In range for a 30-year shingle. The brand and line aren't named. Ask which one, in writing.</small></div><div className="amt">$9,600<span className="st watch">watch</span></div></div>
@@ -409,6 +411,15 @@ export function QuoteCheckResult() {
 
             <h2>What this job should cost</h2>
             <div className="qc-range"><b>{money(r.fairRange.low)} to {money(r.fairRange.high)}</b><span>{r.fairRange.basis}</span></div>
+
+            <h2>How that number is built</h2>
+            <div className="qc-lines">
+              {([['Materials', r.costBreakdown.materials], ['Labor', r.costBreakdown.labor], ['Permits, disposal, other', r.costBreakdown.otherCosts]] as [string, Band][]).map(([k, v]) => (
+                <div className="qc-line" key={k}><div><b>{k}</b><small>{v.note}</small></div><div className="amt">{money(v.low)} to {money(v.high)}</div></div>
+              ))}
+              <div className="qc-line"><div><b>Normal overhead and profit for {r.trade.toLowerCase()}</b><small>{r.costBreakdown.industryMarginPercent.note}</small></div><div className="amt">{r.costBreakdown.industryMarginPercent.low}% to {r.costBreakdown.industryMarginPercent.high}%</div></div>
+              {r.totalQuoted > 0 && <div className="qc-line total"><div><b>Margin this quote implies</b><small>{r.costBreakdown.impliedMarginNote}</small></div><div className="amt"><b>{Math.round(r.costBreakdown.impliedMarginPercent)}%</b></div></div>}
+            </div>
 
             <h2>Line by line</h2>
             <div className="qc-lines">

@@ -93,6 +93,8 @@ export const estimates: Record<string, string> = {
   'inv.fillRequired': 'Please fill in all required fields',
   'inv.created': 'Invoice created',
   'inv.createdBody': 'You can send it from the Invoices list.',
+  'inv.saved': 'Invoice saved',
+  'inv.editInvoice': 'Edit invoice',
   'inv.couldNotCreate': 'Error creating invoice',
   'inv.couldNotSend': 'Error sending invoice',
   'inv.sent': 'Invoice sent',

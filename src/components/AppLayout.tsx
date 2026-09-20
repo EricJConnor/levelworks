@@ -35,6 +35,8 @@ export const AppLayout: React.FC = () => {
   const [selectedEstimate, setSelectedEstimate] = useState<any>(null);
   const [showInvoice, setShowInvoice] = useState(false);
   const [invoiceInitialData, setInvoiceInitialData] = useState<any>(null);
+  /** An existing invoice being reopened to change, rather than a new one. */
+  const [editInvoiceId, setEditInvoiceId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -111,7 +113,8 @@ export const AppLayout: React.FC = () => {
   };
   const goToEstimates = (filter: 'all' | 'sent' = 'all') => { setEstimatesFilter(filter); setCurrentView(filter === 'sent' ? 'estimates' : 'estimates'); };
   const newEstimate = () => { setSelectedEstimate(null); setShowEstimate(true); setMobileMenuOpen(false); };
-  const newInvoice = () => { setInvoiceInitialData(null); setShowInvoice(true); setMobileMenuOpen(false); };
+  const newInvoice = () => { setInvoiceInitialData(null); setEditInvoiceId(null); setShowInvoice(true); setMobileMenuOpen(false); };
+  const editInvoice = (id: string) => { setInvoiceInitialData(null); setEditInvoiceId(id); setShowInvoice(true); };
 
   if (isAuthenticated === null || loading) return (
     <div className="lv-app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -201,7 +204,7 @@ export const AppLayout: React.FC = () => {
         {currentView === 'clients' && <ClientsList clients={clients} onAddClient={addClient} onCreateEstimate={() => { setCurrentView('estimates'); setShowEstimate(true); }} onConnectStripe={handleConnectStripe} />}
         {currentView === 'estimates' && <EstimatesList initialStatusFilter={estimatesFilter} />}
         {currentView === 'photos' && <PhotosHub onOpenEstimate={(est) => { setSelectedEstimate(est); setShowEstimate(true); }} />}
-        {currentView === 'invoices' && <InvoicesList onCreateInvoice={newInvoice} />}
+        {currentView === 'invoices' && <InvoicesList onCreateInvoice={newInvoice} onEditInvoice={editInvoice} />}
         {currentView === 'notes' && <Notes />}
         {currentView === 'account' && <AccountView onBack={() => setCurrentView('dashboard')} />}
       </main>
@@ -249,6 +252,7 @@ export const AppLayout: React.FC = () => {
             setShowEstimate(false);
             setSelectedEstimate(null);
             setInvoiceInitialData(data);
+            setEditInvoiceId(null);
             setShowInvoice(true);
           }}
         />
@@ -256,7 +260,8 @@ export const AppLayout: React.FC = () => {
       {showInvoice && (
         <InvoiceBuilder
           initialData={invoiceInitialData}
-          onClose={() => { setShowInvoice(false); setInvoiceInitialData(null); }}
+          invoiceId={editInvoiceId || undefined}
+          onClose={() => { setShowInvoice(false); setInvoiceInitialData(null); setEditInvoiceId(null); }}
         />
       )}
       {showHelpModal && <HelpModal onClose={() => setShowHelpModal(false)} />}

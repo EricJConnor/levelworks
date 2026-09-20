@@ -60,19 +60,31 @@ export default function PublicEstimateView() {
     }
     
     try {
-      // Through a function, not the table. The table is locked by row level
-      // security so nobody can ask for everyone else's estimates; this answers
-      // exactly one row, and only to somebody holding the token.
-      const fetchUrl = `${SUPABASE_URL}/rest/v1/rpc/estimate_by_token`;
-      const response = await fetch(fetchUrl, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ t: token })
+      /*
+       * Through a function, not the table. The table is locked by row level
+       * security so nobody can ask for everyone else's estimates; this answers
+       * exactly one row, and only to somebody holding the token.
+       *
+       * The direct read stays as a fallback for exactly one situation: the code
+       * ships before the SQL is run by hand, and a contractor's customer must
+       * not meet a broken link in between. Once the SQL has run the fallback is
+       * unreachable, because the function answers and row level security would
+       * refuse the direct read anyway.
+       */
+      const headers = {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json'
+      };
+      let response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/estimate_by_token`, {
+        method: 'POST', headers, body: JSON.stringify({ t: token })
       });
+      if (response.status === 404) {
+        response = await fetch(
+          `${SUPABASE_URL}/rest/v1/estimates?view_token=eq.${encodeURIComponent(token)}&select=*`,
+          { method: 'GET', headers }
+        );
+      }
       
       if (!response.ok) {
         setError(t('pg.est.loadFailed'));

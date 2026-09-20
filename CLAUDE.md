@@ -300,6 +300,14 @@ flipped. No competitor claims. Under 560px the two phones are scaled inside 172p
 grid track grows to fit its content and clipped the headline; the translate card drops its
 sub-lines under 980px. Checked at 390 and 1366 in both languages, no horizontal scroll.
 
+## Quote Check (Sep 19–20 2026) — read `QUOTECHECK.md` first
+
+A second product, live at `/quote-check`: a homeowner uploads a contractor's estimate and buys a
+contractor's report for $79. Built, tested live and advertised on Meta in one day at Eric's
+direction. **Everything about it is in `QUOTECHECK.md`**, including Eric's standing instruction
+for that track: it is a money-first test, he decides, build what he asks and do not steer him back
+to LevelWorks. Keep this file's LevelWorks notes and that file's Quote Check notes separate.
+
 ## Where everything stands at the end of Sep 16 2026 (read this first in a new session)
 
 Eric has **applied for funding** and expects the reviewers to look at the product and the list

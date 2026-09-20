@@ -185,6 +185,84 @@ export async function reviewQuote({ file, zip, about, homeownerNotes }) {
   return out;
 }
 
+/* ---------- the three-tap range check ---------- */
+
+/**
+ * The free read before the upload, from three fields: trade, price, ZIP.
+ *
+ * Why it exists: the upload is a two-minute job for somebody who was thinking
+ * about something else ten seconds ago. Asking a stranger to go and find a PDF
+ * is the whole reason cold traffic bounces. Three taps is ten seconds, needs no
+ * file, no email and no name, and the answer is the hook: "a roof that size in
+ * your area runs $14,000 to $19,000 and you were quoted $26,400" makes $79 feel
+ * cheap. If the number is fine we say so, which is what makes the high ones
+ * believable.
+ *
+ * Deliberately NOT the report. It is one number against a range, and it says so.
+ */
+const RANGE_SCHEMA = {
+  type: 'object',
+  properties: {
+    understood: { type: 'boolean', description: 'false if the trade is not a home-services or construction job' },
+    jobLabel: { type: 'string', description: 'the job named back in three or four plain words, e.g. "Asphalt shingle roof replacement"' },
+    areaName: { type: 'string', description: 'the metro or region assumed from the ZIP, e.g. "Tacoma / Puyallup, WA"; "the US average" if no ZIP' },
+    low: { type: 'number', description: 'the low end of what this job typically runs in that area, in dollars' },
+    high: { type: 'number', description: 'the high end, in dollars' },
+    stance: { type: 'string', enum: ['below', 'fair', 'high', 'very_high'], description: 'where the quoted number sits against that range' },
+    headline: { type: 'string', description: 'one blunt sentence a contractor would say, no more than 15 words' },
+    because: { type: 'string', description: 'one sentence on what drives the price for this trade in this area' },
+    unsure: { type: 'string', description: 'one short sentence naming the biggest thing the price depends on that we cannot know without seeing the estimate, e.g. square footage, how many layers come off, which unit' },
+  },
+  required: ['understood', 'jobLabel', 'areaName', 'low', 'high', 'stance', 'headline', 'because', 'unsure'],
+  additionalProperties: false,
+};
+
+const RANGE_SYSTEM = `You are a working US contractor giving a homeowner a fast gut check on a price, from three facts only: the kind of job, the number they were quoted, and their ZIP code.
+
+You have not seen the estimate. Say so plainly in the "unsure" field by naming the single biggest thing the price depends on that you cannot know.
+
+Rules:
+- Price for the ZIP, not a national average. Regional labor rates are most of the difference.
+- Give a range, never one number. A range is honest.
+- A low number is not good news by default. If it is below the range, say what usually gets cut to get there.
+- Do not call the contractor a crook. A high number is a high number.
+- "very_high" only when the quote is well clear of the top of the range, not merely above the middle.
+- Write for a nervous homeowner. Explain a trade word the first time you use it.
+- Never use the words "padded" or "padding". Say "above the going rate" or "high for the area".
+- Call what the contractor sent an estimate.
+- Sentence case. No exclamation marks. Be brief: this is read standing up, on a phone.`;
+
+/** Three fields in, a range and a verdict out. No file, no personal details. */
+export async function rangeCheck({ trade, amount, zip }) {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const response = await client.messages.parse({
+    model: MODEL,
+    max_tokens: 1200,
+    system: RANGE_SYSTEM,
+    // Medium, not high: this is a fast read against known pricing, not the
+    // line-by-line reasoning the paid report does, and somebody is standing
+    // there waiting for it.
+    output_config: { effort: 'medium', format: jsonSchemaOutputFormat(RANGE_SCHEMA) },
+    messages: [{
+      role: 'user',
+      content: [{
+        type: 'text',
+        text: [
+          `Job: ${trade}`,
+          `Quoted: $${Number(amount).toLocaleString('en-US')}`,
+          zip ? `ZIP code: ${zip}` : 'ZIP code: not given (use the US average and say so)',
+          `Today's date: ${new Date().toISOString().slice(0, 10)}`,
+          '',
+          'Give me the gut check.',
+        ].join('\n'),
+      }],
+    }],
+  });
+  const out = response.parsed_output;
+  if (!out) throw new Error('empty range check');
+  return out;
+}
+
 /** What the page shows before payment: enough to prove it is real, not enough to act on. */
 export function teaserOf(review) {
   const r = review.result;

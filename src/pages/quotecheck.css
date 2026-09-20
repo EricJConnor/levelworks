@@ -17,6 +17,46 @@
 .qc-sub { margin-top: 14px; font-size: 17px; line-height: 1.5; color: var(--mute); max-width: 560px; }
 .qc-sub b { color: var(--ink); font-weight: 600; }
 
+/* The ten-second check, ahead of the upload. Quieter than the upload card on
+   purpose: it is the easy way in, not the main event. Once it has answered it
+   turns into the loudest thing on the page, because the answer is the hook. */
+.qc-quick { margin-top: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--soft); padding: 16px; }
+.qc-quick-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
+.qc-quick-head b { font-size: 16px; color: var(--ink); }
+.qc-quick-head span { font-size: 14px; color: var(--mute); }
+.qc-quick-row { display: grid; gap: 10px; grid-template-columns: 1fr; }
+.qc-q-f { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.qc-q-f span { font-size: 13px; font-weight: 600; color: var(--ink); }
+/* 16px or iOS zooms the whole page when the field takes focus. */
+.qc-q-f input { font: inherit; font-size: 16px; width: 100%; padding: 12px 13px; border: 1px solid var(--line); border-radius: 11px; background: #fff; color: var(--ink); }
+.qc-q-f input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .14); }
+.qc-quick-go { width: 100%; margin-top: 12px; }
+@media (min-width: 620px) {
+  .qc-quick-row { grid-template-columns: 1fr 150px 110px; }
+  .qc-quick-go { width: auto; }
+}
+
+/* the answer */
+.qc-quick-out { display: flex; flex-direction: column; gap: 10px; }
+.qc-quick-tag { font-size: 12px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--mute); }
+.qc-quick-head-line { font-size: clamp(21px, 5.2vw, 27px); font-weight: 700; line-height: 1.18; letter-spacing: -.02em; color: var(--ink); }
+.qc-quick-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.qc-quick-bar > div { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; min-width: 0; }
+.qc-quick-bar span { display: block; font-size: 12px; color: var(--mute); }
+.qc-quick-bar b { display: block; margin-top: 3px; font-size: 19px; letter-spacing: -.02em; color: var(--ink); font-variant-numeric: tabular-nums; }
+/* Their number carries the verdict's colour: it is the one they came to check. */
+.qc-quick-out.fair .qc-quick-bar b.q { color: #15803d; }
+.qc-quick-out.below .qc-quick-bar b.q { color: #b45309; }
+.qc-quick-out.high .qc-quick-bar b.q,
+.qc-quick-out.very_high .qc-quick-bar b.q { color: #b91c1c; }
+.qc-quick-why { font-size: 15px; line-height: 1.5; color: var(--mute); }
+.qc-quick-unsure { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.45; color: var(--mute); background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; }
+.qc-quick-unsure svg { width: 16px; height: 16px; flex: 0 0 16px; margin-top: 2px; stroke: var(--blue); fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.qc-quick-next { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 2px; }
+.qc-quick-next .qc-cta { flex: 1 1 auto; }
+.qc-quick-keep { border: 1px solid var(--line); background: #fff; color: var(--ink); }
+.qc-quick-keep-note { font-size: 13px; color: var(--mute); }
+
 /* the upload card is the call to action */
 .qc-card { margin-top: 22px; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: var(--shadow-lg); padding: 18px; }
 .qc-drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 150px; border: 2px dashed #c7cfdb; border-radius: 14px; background: var(--soft); cursor: pointer; text-align: center; padding: 18px; transition: border-color .18s var(--ease), background .18s var(--ease); }

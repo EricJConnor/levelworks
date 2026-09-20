@@ -23,11 +23,26 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
   const { toast } = useToast();
   const t = useT();
 
+  // The missing rung on the ladder. Meta needs roughly 50 events a week to
+  // optimise against one; at our budget a completed sign-up produces about
+  // three, so it never learns and buys the cheapest inventory it can find.
+  // Someone typing the first character into the sign-up form is real intent
+  // and happens several times per completed sign-up, which is frequent enough
+  // to bid on. Standard event, so it appears in the optimisation dropdown with
+  // no custom conversion to configure. Once per opening of the form.
+  const [leadSent, setLeadSent] = useState(false);
+  const noteIntent = useCallback(() => {
+    if (leadSent || !isSignUp) return;
+    setLeadSent(true);
+    trackEvent('Lead', { content_name: 'signup_started' });
+  }, [leadSent, isSignUp]);
+
   // Reset form fields when modal closes or mode changes
   const resetForm = useCallback(() => {
     setEmail('');
     setPassword('');
     setIsForgotPassword(false);
+    setLeadSent(false);
   }, []);
 
   // Update isSignUp when defaultMode changes or modal opens
@@ -176,7 +191,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                     type="email"
                     inputMode="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); noteIntent(); }}
                     required
                     placeholder={t('mod.emailPlaceholder')}
                     autoComplete="email"
@@ -192,7 +207,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = 'sig
                         className="lv-input"
                         type={showPassword ? 'text' : 'password'}
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => { setPassword(e.target.value); noteIntent(); }}
                         required
                         minLength={6}
                         placeholder={t('mod.atLeast6Characters')}

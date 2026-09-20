@@ -102,6 +102,15 @@ unsubscribed contacts; stops at the end of the list. Preview each in a browser, 
 - Pixel events on the page: `Lead` (readable upload, eventID = review id), `InitiateCheckout`
   (pay click), `Purchase` value 79 (unlock, eventID = session id), `Subscribe` (save the page).
 - First two hours: approved and delivering; ~66 views, 34 people, 1 click, ~$1.44. Normal.
+- **Day-1 read (Sep 20, 9:30am ET): Audience Network was eating the budget.** $5.00 total,
+  1,466 views, 8 clicks, 0 uploads, 0 paid. The placement breakdown showed 1,353 of those views
+  and 6 of the 8 clicks came from Audience Network (banner slots inside random apps, where
+  clicks are mostly accidental taps) for 85 cents; the real placements (Facebook feed, Instagram
+  feed, Reels, Stories) had 111 views and 2 clicks for about $4. **Audience Network is now
+  excluded** (`publisher_platforms: facebook, instagram, messenger` on the ad set). Learning had
+  zero events, so the reset cost nothing. Same lesson as LW49: read the placement breakdown
+  (`publisher_platform`, `platform_position` in Windsor) before believing any number, and never
+  let `audience_network` into a rule again. Next read Sep 22.
 - **Rules:** nothing touched before day five unless rejected or zero delivery. Judge by cost per
   upload (under $5 working) and uploads → purchases. Short pauses cost nothing; a pause of a week
   or edits to budget/targeting reset Meta's learning. Do not daypart (not available on daily

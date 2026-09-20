@@ -651,8 +651,12 @@ spec**, so read `adset_targeting` from the connector first and send it back with
 geo and age targeting is wiped. And a placement edit puts the ad back into `IN_PROCESS` review: the
 cut-3 creative carries asset-customization rules for both a square feed asset and a tall story asset,
 and the tall rule now matches nothing. That is allowed (a format that cannot serve needs no rule) but
-it is the mirror image of the Sep 12 bug, so **confirm the ad returns to ACTIVE rather than assuming
-it**. The edit also restarts Meta's learning; judge it no sooner than Sep 23.
+it is the mirror image of the Sep 12 bug. **It cleared review in under twenty minutes and went back
+to ACTIVE**, so a customization rule whose placements are no longer eligible is harmless: Meta simply
+never serves it. That is the opposite of a format that is eligible with no rule, which is what broke
+the feed in September. The leftover 9x16 asset was left in place on purpose — removing it would mean
+building a new creative, a fresh review, and the Page-permission problem, for no gain. The edit does
+restart Meta's learning; judge it no sooner than Sep 23.
 
 **Quote Check was deliberately left alone the same day.** Eric asked whether to make the same cut
 there. No: campaign `52550071722537` was one day old with about $10 of real spend after the Audience

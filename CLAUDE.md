@@ -4,6 +4,43 @@ LevelWorks is Eric Connor's estimating and invoicing app for contractors. Eric o
 everything; he is a novice technically, so keep answers plain and direct, and never hand him errands.
 He reviews on a laptop and on his phone.
 
+## WHERE THINGS STAND — read this first (Sep 20 2026)
+
+Everything below this heading is reference. This is the live state. Older sections marked
+**History** were current once and are kept for the reasoning, not the status.
+
+**Waiting on Eric, in order of how much it matters:**
+
+1. **Run `supabase/sql/rls_estimates_invoices.sql` in the Supabase SQL editor.** Until it runs,
+   `estimates` (42 rows) and `invoices` (15 rows) are readable by **anyone on the internet**,
+   including client names, emails, phones, addresses and prices. Verified from outside with no
+   login on Sep 20. The code half is deployed and falls back safely, so there is no rush-induced
+   outage, but the door is open until that SQL runs.
+2. **Switch on ACH Direct Debit** for connected accounts in Stripe. Done Sep 20, verify it stuck.
+   Then a $5 test invoice to himself, paid by bank, to prove the whole path.
+3. **A Google Ads account with a card on it.** Blocks both untried channels, search and YouTube.
+4. **Ask the roofer whether his name can go on the testimonial.** One line, `lp.reviewWho`.
+
+**Money and ads:** the ad account has about **$27** left and both campaigns stop when it runs
+out. Eric's call on Sep 20: let it run out, reset, get the records and checks right, then design
+new campaigns. **Do not start a campaign without reading `marketing/PREFLIGHT.md` first.** The
+whole history and every lesson is in `marketing/LEDGER.md`: $567 spent, 16 sign-ups, $0 revenue.
+
+**The product is not the problem.** `https://www.levelworks.org/api/levelworks-stats` is public
+and honest: 53 members, 13 have built an estimate, 9 sent one to a client, $376 has moved
+through the app, and **four of the last five sign-ups built an estimate**. Meta attributed none
+of those five. People who find it use it; people we interrupt do not.
+
+**Shipped Sep 20 and live:** invoices can be saved without sending and reopened to edit; bank
+transfer with a per-invoice choice of card, bank or both and no fee from LevelWorks; the payment
+states both sides see; the `Lead` pixel event; the public stats page; Quote Check's three-tap
+free range check with a claim ticket; the first real testimonial.
+
+**Open and known, not urgent:** `public_estimate_branding` and `public_invoice_branding` can be
+listed without a token, exposing a list of member company names but no client data. Card and
+bank payments have still never been proven with real money. Stripe Express onboarding is agreed
+in principle and not built.
+
 ## Stack and shipping
 
 - React 18 + Vite + TypeScript, Tailwind and a partial shadcn/ui layer, Supabase (auth, data, edge
@@ -343,7 +380,7 @@ direction. **Everything about it is in `QUOTECHECK.md`**, including Eric's stand
 for that track: it is a money-first test, he decides, build what he asks and do not steer him back
 to LevelWorks. Keep this file's LevelWorks notes and that file's Quote Check notes separate.
 
-## Where everything stands at the end of Sep 16 2026 (read this first in a new session)
+## History: where things stood on Sep 16 2026
 
 Eric has **applied for funding** and expects the reviewers to look at the product and the list
 closely. Treat every visible detail as something a stranger with money will judge.
@@ -543,6 +580,13 @@ only pricing that may appear anywhere.
 - Other repos in the same sessions: `ec-home-improvement` (ec-homes.com) and `ecwd1` (ecwd1.com),
   each with its own CLAUDE.md.
 
+## Advertising — start at the ledger, not here
+
+**`marketing/LEDGER.md`** is the record: every campaign, what it cost, what it produced and what
+it taught us, verified against the platform. **`marketing/PREFLIGHT.md`** is what to check before
+spending and in the first hour after. Read both before touching an ad account. Everything below
+is the chronological history that produced them, kept for the reasoning.
+
 ## The $49 annual launch (LW49), Sep 8–9 2026 — WHERE IT STANDS
 
 Everything is built, live on levelworks.org, and verified with real money. Notes in
@@ -699,7 +743,7 @@ Network exclusion that morning, and every placement was still in double-digit vi
 cut would have been a guess. Excluding Audience Network was already the same move in substance. Read
 its placement breakdown on Sep 22 and decide then.
 
-**Where everything stands at the end of Sep 14 2026 (read this first in a new session).**
+**History: where the ads stood on Sep 14 2026.**
 
 - **Live campaign:** `52548965992137` LW-Signups-Sep2026-Broad, $12/day, bidding for free-trial
   sign-ups, cut-3 ads EN `52548966081137` / ES `52548966118937`. First day: ~$7, 78 reached, 5

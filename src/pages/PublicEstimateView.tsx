@@ -60,14 +60,18 @@ export default function PublicEstimateView() {
     }
     
     try {
-      const fetchUrl = `${SUPABASE_URL}/rest/v1/estimates?view_token=eq.${encodeURIComponent(token)}&select=*`;
+      // Through a function, not the table. The table is locked by row level
+      // security so nobody can ask for everyone else's estimates; this answers
+      // exactly one row, and only to somebody holding the token.
+      const fetchUrl = `${SUPABASE_URL}/rest/v1/rpc/estimate_by_token`;
       const response = await fetch(fetchUrl, {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'apikey': SUPABASE_ANON_KEY,
           'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ t: token })
       });
       
       if (!response.ok) {

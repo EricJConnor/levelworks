@@ -74,7 +74,12 @@ export default function PublicInvoiceView() {
 
   const loadInvoice = async () => {
     try {
-      const { data, error } = await supabase.from('invoices').select('*').eq('view_token', token).single();
+      // Through a function, not the table. The table is locked by row level
+      // security so nobody can ask for everyone else's invoices; this answers
+      // exactly one row, and only to somebody holding the token.
+      const { data: rows, error } = await supabase.rpc('invoice_by_token', { t: token });
+      const data = Array.isArray(rows) ? rows[0] : rows;
+      if (!error && !data) throw new Error('not found');
       if (error) throw error;
       setInvoice(data);
       loadBranding();
@@ -93,7 +98,8 @@ export default function PublicInvoiceView() {
           });
           const sd = await sr.json().catch(() => ({}));
           if (sd?.changed) {
-            const { data: fresh } = await supabase.from('invoices').select('*').eq('view_token', token).single();
+            const { data: freshRows } = await supabase.rpc('invoice_by_token', { t: token });
+            const fresh = Array.isArray(freshRows) ? freshRows[0] : freshRows;
             if (fresh) setInvoice(fresh);
             setBankPending(Number(sd.pending) > 0);
             const fh = Array.isArray(fresh?.payment_history) ? fresh.payment_history : [];

@@ -635,6 +635,31 @@ budget chased the cheaper Spanish Reels views and starved the set that converted
 Sep 21 read is scheduled in this session. **Lesson: never put the two languages under one shared
 budget again**; if Spanish comes back it gets its own campaign with its own budget.
 
+**Sep 20 2026: the English ad set is feed only (Eric: "switch it to feed only").** Seven days of the
+sign-up campaign `52548965992137` read: **$84.20 spent, 29 link clicks, 0 sign-ups, 0 purchases** (the
+$49 counter is still 0). English alone since Sep 18 spent $33.62 for 7 clicks at roughly **$80 CPM** —
+Meta was buying Reels and Stories, the most expensive inventory, on a set that converts nothing. The
+placement breakdown was the whole argument: Facebook feed took $17 for 274 views and 4 of the 7
+clicks, Facebook Reels took $11.49 for 93 views and 3. So ad set `52548966017337` (EN) now names its
+placements: `publisher_platforms` facebook + instagram, `facebook_positions` **feed**,
+`instagram_positions` **stream**. Reels, Stories, in-stream, Marketplace, Messenger and Audience
+Network are gone. Nothing else changed — US 25-60, locales en, Advantage+ audience and the $12/day CBO
+budget are untouched.
+
+**Two things to know before touching this again.** `update_adset` **replaces the whole targeting
+spec**, so read `adset_targeting` from the connector first and send it back with the additions, or the
+geo and age targeting is wiped. And a placement edit puts the ad back into `IN_PROCESS` review: the
+cut-3 creative carries asset-customization rules for both a square feed asset and a tall story asset,
+and the tall rule now matches nothing. That is allowed (a format that cannot serve needs no rule) but
+it is the mirror image of the Sep 12 bug, so **confirm the ad returns to ACTIVE rather than assuming
+it**. The edit also restarts Meta's learning; judge it no sooner than Sep 23.
+
+**Quote Check was deliberately left alone the same day.** Eric asked whether to make the same cut
+there. No: campaign `52550071722537` was one day old with about $10 of real spend after the Audience
+Network exclusion that morning, and every placement was still in double-digit views, so a feed-only
+cut would have been a guess. Excluding Audience Network was already the same move in substance. Read
+its placement breakdown on Sep 22 and decide then.
+
 **Where everything stands at the end of Sep 14 2026 (read this first in a new session).**
 
 - **Live campaign:** `52548965992137` LW-Signups-Sep2026-Broad, $12/day, bidding for free-trial

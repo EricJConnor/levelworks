@@ -175,6 +175,10 @@ export const landing: Record<string, string> = {
 
   // ---- founder ----
   'lp.founderEyebrow': 'Por qué existe',
+  'lp.reviewEyebrow': 'De un cliente',
+  'lp.reviewQuote': '\u00a1LevelWorks es excelente! Est\u00e1 hecho por un contratista para contratistas. Tiene lo que necesitamos para enviar presupuestos, obtener la aprobaci\u00f3n del cliente y facturar cuando el trabajo est\u00e1 terminado. He pedido peque\u00f1os cambios y Eric los ha hecho todos muy r\u00e1pido. \u00a1El precio tambi\u00e9n es buen\u00edsimo! Le recomiendo LevelWorks a cualquiera que quiera mandar presupuestos r\u00e1pido desde el tel\u00e9fono.',
+  'lp.reviewWho': 'Un contratista de techos',
+  'lp.reviewRole': 'Cliente de LevelWorks',
   'lp.founderQuote': '"Tengo una empresa de remodelación. Estaba pagando más de cien dólares al mes por un programa de presupuestos que ponía su propio logotipo en mis papeles y ni siquiera hacía cobros recurrentes. Así que construí la aplicación que yo quería, y le puse el precio que a mí me gustaría pagar."',
   'lp.founderRolePre': 'Fundador de LevelWorks · Dueño de',
   'lp.founderRolePost': ', Filadelfia',

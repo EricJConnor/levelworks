@@ -659,6 +659,34 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ----------- what a customer said, in his own words -----------
+          The first real testimonial LevelWorks has had, from the roofer whose
+          feedback produced the line-prices switch, the client address, the
+          invoice editing and the bank-transfer option. Unedited.
+
+          Attribution is his trade only, on purpose: he wrote this as feedback
+          to Eric, not as ad copy, and his name should not go up until he says
+          it can. Swapping `lp.reviewWho` for his name and company is a one-line
+          change once he does. Eric's standing rule is that nothing invented
+          ever appears here, so there is no rating, no count and no stock photo.
+      */}
+      <section className="lw-sec">
+        <div className="lw-wrap">
+          <div className="lw-founder">
+            <div className="lw-rv">
+              <span className="lw-eyebrow">{t('lp.reviewEyebrow')}</span>
+              <blockquote style={{ marginTop: 16 }}>
+                {t('lp.reviewQuote')}
+              </blockquote>
+              <div className="who">
+                <div className="av">RC</div>
+                <div><b>{t('lp.reviewWho')}</b><span>{t('lp.reviewRole')}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ---------------- faq ---------------- */}
       <section id="faq" className="lw-sec">
         <div className="lw-wrap">

@@ -24,6 +24,8 @@ export interface LineItem {
   hidePrice?: boolean;
   /** The client's address, stamped on every line (see src/lib/clientAddress.ts). */
   clientAddress?: string;
+  /** How the client may pay this invoice: card, bank transfer, or both (see src/lib/payMethods.ts). */
+  payMethods?: 'card' | 'bank' | 'both';
 }
 export interface Estimate { 
   id: string; clientName: string; clientEmail: string; clientPhone?: string; projectName: string; 

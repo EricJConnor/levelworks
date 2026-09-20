@@ -124,6 +124,12 @@ export const pages: Record<string, string> = {
   'pg.inv.thankYou': 'Thank you',
   'pg.inv.payInvoice': 'Pay invoice',
   'pg.inv.payNow': 'Pay {amount} now',
+  'pg.inv.payBankNow': 'Pay {amount} by bank transfer',
+  'pg.inv.payBankButton': 'Pay {amount} from your bank',
+  'pg.inv.bankIntro': 'You will sign in to your bank through Stripe. Your account details are never shown to us.',
+  'pg.inv.bankPending': 'Payment on its way',
+  'pg.inv.bankPendingBody': 'Bank transfers take about 4 business days to clear. Nothing more to do.',
+  'pg.inv.bankNotOn': 'This business is not taking bank transfers yet.',
   'pg.inv.secure': '100% secure payment through Stripe',
 
   // ---- Public job and update views ----

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { linePricesShown, lineAmountShown } from '@/lib/linePrices';
 import { clientAddressOf } from '@/lib/clientAddress';
+import { payMethodsOf, allowsCard, allowsBank } from '@/lib/payMethods';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useT } from '@/i18n';
-import { Loader2, CheckCircle, CreditCard } from 'lucide-react';
+import { Loader2, CheckCircle, CreditCard, Landmark } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import { getStripePromiseForAccount } from '@/lib/stripe';
 import { InvoicePaymentForm } from '@/components/InvoicePaymentForm';
@@ -22,15 +23,22 @@ export default function PublicInvoiceView() {
   // Payment happens on the contractor's own Stripe account: the intent is
   // created server-side (/api/invoice-payment) and Stripe.js is loaded scoped
   // to that account before the card form mounts.
-  const [payment, setPayment] = useState<{ clientSecret: string; paymentIntentId: string; amount: number } | null>(null);
+  const [payment, setPayment] = useState<{ clientSecret: string; paymentIntentId: string; amount: number; method: 'card' | 'bank' } | null>(null);
   const [stripe, setStripe] = useState<any>(null);
   const [preparing, setPreparing] = useState(false);
   const [payBlocked, setPayBlocked] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  /**
+   * A bank debit does not clear at the counter: Stripe holds it `processing`
+   * for about four business days. The server records it as pending and `sync`
+   * finishes the job, so the page has to say "on its way" rather than either
+   * "paid" or "unpaid", both of which would be wrong.
+   */
+  const [bankPending, setBankPending] = useState(false);
 
   useEffect(() => { loadInvoice(); }, [token]);
 
-  const startPayment = async () => {
+  const startPayment = async (method: 'card' | 'bank' = 'card') => {
     if (!invoice) return;
     setPreparing(true);
     setPayBlocked(null);
@@ -38,16 +46,18 @@ export default function PublicInvoiceView() {
       const r = await fetch('/api/invoice-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'create', invoiceId: invoice.id, viewToken: token, customerName: invoice.client_name, customerEmail: invoice.client_email }),
+        body: JSON.stringify({ action: 'create', method, invoiceId: invoice.id, viewToken: token, customerName: invoice.client_name, customerEmail: invoice.client_email }),
       });
       const data = await r.json().catch(() => ({}));
       if (r.status === 409 && data?.error === 'not_set_up') { setPayBlocked(t('pg.inv.notSetUp')); return; }
+      if (r.status === 409 && data?.error === 'bank_not_enabled') { setPayBlocked(t('pg.inv.bankNotOn')); return; }
+      if (r.status === 409 && data?.error === 'method_not_allowed') { setPayBlocked(data?.message || t('pg.inv.payFailedBody')); return; }
       if (r.status === 409 && data?.error === 'already_paid') { setPaymentSuccess(true); loadInvoice(); return; }
       if (!r.ok || !data?.clientSecret) throw new Error(data?.message || t('pg.inv.payFailedBody'));
       const s = await getStripePromiseForAccount(data.stripeAccountId);
       if (!s) throw new Error(t('pg.inv.payFailedBody'));
       setStripe(s);
-      setPayment({ clientSecret: data.clientSecret, paymentIntentId: data.paymentIntentId, amount: Number(data.amount) || 0 });
+      setPayment({ clientSecret: data.clientSecret, paymentIntentId: data.paymentIntentId, amount: Number(data.amount) || 0, method });
     } catch (e: any) {
       toast({ title: t('pg.inv.payFailed'), description: e?.message || t('pg.inv.payFailedBody'), variant: 'destructive' });
     } finally {
@@ -61,6 +71,25 @@ export default function PublicInvoiceView() {
       if (error) throw error;
       setInvoice(data);
       loadBranding();
+      // Anything still clearing gets re-checked whenever the page is opened.
+      // That is what stands in for a webhook: a bank debit settles days later,
+      // and whoever looks next is the one who finishes recording it.
+      const history = Array.isArray(data?.payment_history) ? data.payment_history : [];
+      if (history.some((h: any) => h && h.pending)) {
+        setBankPending(true);
+        try {
+          const sr = await fetch('/api/invoice-payment', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'sync', invoiceId: data.id, viewToken: token }),
+          });
+          const sd = await sr.json().catch(() => ({}));
+          if (sd?.changed) {
+            const { data: fresh } = await supabase.from('invoices').select('*').eq('view_token', token).single();
+            if (fresh) setInvoice(fresh);
+            setBankPending(Number(sd.pending) > 0);
+          }
+        } catch { /* the next open tries again */ }
+      }
     } catch (error: any) {
       console.error('Load invoice error:', error);
       toast({ title: t('e.somethingWrong'), description: t('pg.inv.loadFailed'), variant: 'destructive' });
@@ -76,8 +105,10 @@ export default function PublicInvoiceView() {
     }
   };
 
-  const handlePaymentSuccess = () => {
-    setPaymentSuccess(true);
+  const handlePaymentSuccess = (pending?: boolean) => {
+    // A bank debit is accepted, not settled. Showing the green "paid" tick for
+    // it would be a lie for the next four business days.
+    if (pending) setBankPending(true); else setPaymentSuccess(true);
     setPayment(null);
     loadInvoice();
   };
@@ -107,6 +138,7 @@ export default function PublicInvoiceView() {
   const isPaid = invoice.status === 'paid';
   const lineItems = parseLineItems(invoice.line_items);
   const pricesShown = linePricesShown(lineItems);
+  const payMethods = payMethodsOf(invoice?.line_items as any);
 
 
   // Calculate subtotal from line items
@@ -191,19 +223,45 @@ export default function PublicInvoiceView() {
               </div>
             ) : payment && stripe ? (
               <div className="border-t pt-6">
-                <h3 className="font-semibold text-lg mb-4 flex items-center gap-2"><CreditCard className="w-5 h-5" /> {t('pg.inv.payInvoice')}</h3>
+                <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">{payment.method === 'bank' ? <Landmark className="w-5 h-5" /> : <CreditCard className="w-5 h-5" />} {t('pg.inv.payInvoice')}</h3>
                 <Elements stripe={stripe}>
-                  <InvoicePaymentForm invoiceId={invoice.id} viewToken={token || ''} clientSecret={payment.clientSecret} paymentIntentId={payment.paymentIntentId} amount={payment.amount} clientName={invoice.client_name} clientEmail={invoice.client_email} onSuccess={handlePaymentSuccess} />
+                  <InvoicePaymentForm method={payment.method} invoiceId={invoice.id} viewToken={token || ''} clientSecret={payment.clientSecret} paymentIntentId={payment.paymentIntentId} amount={payment.amount} clientName={invoice.client_name} clientEmail={invoice.client_email} onSuccess={handlePaymentSuccess} />
                 </Elements>
               </div>
             ) : payBlocked ? (
               <div className="bg-gray-50 border p-5 rounded-lg text-center"><p className="text-sm text-gray-700">{payBlocked}</p></div>
+            ) : bankPending ? (
+              /* Money is on its way but not landed. Saying "unpaid" here would
+                 tell someone who has already paid that they have not. */
+              <div className="bg-blue-50 border border-blue-200 p-6 rounded-lg text-center">
+                <Loader2 className="w-10 h-10 text-blue-600 mx-auto mb-2 animate-spin" />
+                <p className="text-blue-900 font-semibold">{t('pg.inv.bankPending')}</p>
+                <p className="text-sm text-blue-700">{t('pg.inv.bankPendingBody')}</p>
+              </div>
             ) : (
              <>
-              <Button onClick={startPayment} disabled={preparing} className="w-full bg-green-600 hover:bg-green-700 py-5 md:py-6 text-base md:text-lg">
-                {preparing ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <CreditCard className="w-5 h-5 mr-2" />}
-                {preparing ? t('pg.inv.preparing') : t('pg.inv.payNow', { amount: `$${amountDue.toFixed(2)}` })}
-              </Button>
+              {/* The contractor chose which of these the client gets. A bank
+                  transfer saves him the card fee, which on a big job is the
+                  difference between $5 and several hundred dollars. */}
+              {allowsCard(payMethods) && (
+                <Button onClick={() => startPayment('card')} disabled={preparing} className="w-full bg-green-600 hover:bg-green-700 py-5 md:py-6 text-base md:text-lg">
+                  {preparing ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <CreditCard className="w-5 h-5 mr-2" />}
+                  {preparing ? t('pg.inv.preparing') : t('pg.inv.payNow', { amount: `$${amountDue.toFixed(2)}` })}
+                </Button>
+              )}
+              {allowsBank(payMethods) && (
+                <Button
+                  onClick={() => startPayment('bank')}
+                  disabled={preparing}
+                  variant={allowsCard(payMethods) ? 'outline' : 'default'}
+                  className={allowsCard(payMethods)
+                    ? 'w-full py-5 md:py-6 text-base md:text-lg mt-3'
+                    : 'w-full bg-green-600 hover:bg-green-700 py-5 md:py-6 text-base md:text-lg'}
+                >
+                  {preparing ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Landmark className="w-5 h-5 mr-2" />}
+                  {preparing ? t('pg.inv.preparing') : t('pg.inv.payBankNow', { amount: `$${amountDue.toFixed(2)}` })}
+                </Button>
+              )}
               <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '13px', marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 🔒 {t('pg.inv.secure')}
               </p>

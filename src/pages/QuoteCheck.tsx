@@ -303,6 +303,65 @@ export default function QuoteCheck() {
   const inputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * The three-tap check, ahead of the upload.
+   *
+   * Asking a stranger to go and find a PDF is a two-minute job for somebody who
+   * was thinking about something else ten seconds ago, and it is why cold
+   * traffic leaves. Three fields is ten seconds, needs no file, no email and no
+   * name, and the answer is the hook: a number against a real range for their
+   * ZIP. If it is fine we say so, which is what makes the high ones believable.
+   *
+   * Then the coat-check idea the page already runs on does the rest. They get a
+   * ticket. The ticket brings them back with the estimate in hand.
+   */
+  const [rTrade, setRTrade] = useState('');
+  const [rAmount, setRAmount] = useState('');
+  const [rZip, setRZip] = useState('');
+  const [rBusy, setRBusy] = useState(false);
+  const [rErr, setRErr] = useState('');
+  const [range, setRange] = useState<any>(null);
+  const [rTicket, setRTicket] = useState('');
+  const [copied, setCopied] = useState(false);
+  const rangeRef = useRef<HTMLDivElement>(null);
+
+  const runRange = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (rBusy) return;
+    setRErr(''); setRBusy(true);
+    try {
+      const r = await fetch('/api/quotecheck-range', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trade: rTrade, amount: rAmount, zip: rZip }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (j?.understood === false) { setRErr(j.message || 'Try naming the trade, like roofing or HVAC.'); return; }
+      if (!r.ok) { setRErr(j?.message || 'Could not work that one out. Try again in a moment.'); return; }
+      setRange(j.range); setRTicket(j.ticket);
+      // The ZIP carries into the paid report, so it is not asked for twice.
+      if (rZip && !zip) setZip(rZip);
+      if (rTrade && !about) setAbout(rTrade);
+      setTimeout(() => rangeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 60);
+    } catch {
+      setRErr('Could not work that one out. Try again in a moment.');
+    } finally { setRBusy(false); }
+  };
+
+  // A ticket in the link reopens somebody's own answer, days later.
+  useEffect(() => {
+    const t = new URLSearchParams(location.search).get('ticket');
+    if (!t || range) return;
+    fetch(`/api/quotecheck-range?ticket=${encodeURIComponent(t)}`).then(async r => {
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j?.range) return;
+      setRange(j.range); setRTicket(j.ticket);
+      if (j.asked?.zip) { setRZip(j.asked.zip); setZip(j.asked.zip); }
+      if (j.asked?.trade) { setRTrade(j.asked.trade); setAbout(j.asked.trade); }
+      if (j.asked?.amount) setRAmount(String(j.asked.amount));
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
+
   // Back from a cancelled checkout: pick the locked report up where it was.
   useEffect(() => {
     const rid = new URLSearchParams(location.search).get('id');
@@ -363,6 +422,69 @@ export default function QuoteCheck() {
           <div className="qc-label">Before you sign</div>
           <h1 className="qc-h1">Is your contractor's estimate fair for your area? Find out tonight.</h1>
           <p className="qc-sub">Upload the estimate. It gets priced for your ZIP the way a contractor bids it, <b>materials, labor and margin</b>, then judged line by line: what's fair, what's overpriced, what's missing, and exactly what to say. {PRICE}. Back in minutes.</p>
+
+          {/*
+            The ten-second version, ahead of the upload. No file, no email, no
+            name. Hidden once the real flow is under way so there are never two
+            things asking to be done at once.
+          */}
+          {stage === 'idle' && !file && (
+            <div className="qc-quick" ref={rangeRef}>
+              {!range ? (
+                <form className="qc-quick-form" onSubmit={runRange}>
+                  <div className="qc-quick-head">
+                    <b>Not ready to upload it? Start with the number.</b>
+                    <span>Ten seconds, free, and we don't ask who you are.</span>
+                  </div>
+                  <div className="qc-quick-row">
+                    <label className="qc-q-f qc-q-trade">
+                      <span>What's the job</span>
+                      <input value={rTrade} onChange={e => setRTrade(e.target.value)} placeholder="New roof, AC replacement, bathroom…" maxLength={120} />
+                    </label>
+                    <label className="qc-q-f qc-q-amt">
+                      <span>What they quoted</span>
+                      <input value={rAmount} onChange={e => setRAmount(e.target.value)} inputMode="decimal" placeholder="$26,400" maxLength={12} />
+                    </label>
+                    <label className="qc-q-f qc-q-zip">
+                      <span>Your ZIP</span>
+                      <input value={rZip} onChange={e => setRZip(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))} inputMode="numeric" placeholder="98404" maxLength={5} />
+                    </label>
+                  </div>
+                  <button type="submit" className="lw-btn pri qc-quick-go" disabled={rBusy || !rTrade.trim() || !rAmount.trim()}>
+                    {rBusy ? 'Checking…' : 'Is that a fair price?'}
+                  </button>
+                  {rErr && <p className="qc-err">{rErr}</p>}
+                </form>
+              ) : (
+                <div className={'qc-quick-out ' + range.stance}>
+                  <div className="qc-quick-tag">Ticket {rTicket.slice(0, 6).toUpperCase()} · {range.jobLabel} · {range.areaName}</div>
+                  <p className="qc-quick-head-line">{range.headline}</p>
+                  <div className="qc-quick-bar">
+                    <div><span>Typical in your area</span><b>{money(range.low)} to {money(range.high)}</b></div>
+                    <div><span>You were quoted</span><b className="q">{money(Number(String(rAmount).replace(/[^0-9.]/g, '')) || 0)}</b></div>
+                  </div>
+                  <p className="qc-quick-why">{range.because}</p>
+                  <p className="qc-quick-unsure">{Ic.pin}<span>{range.unsure} That's what the full report settles.</span></p>
+                  <div className="qc-quick-next">
+                    <button type="button" className="lw-btn pri qc-cta" onClick={goUpload}>Check the estimate in</button>
+                    <button
+                      type="button"
+                      className="lw-btn qc-quick-keep"
+                      onClick={() => {
+                        const url = `${window.location.origin}/quote-check?ticket=${rTicket}`;
+                        navigator.clipboard?.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); }).catch(() => {});
+                      }}
+                    >
+                      {copied ? 'Link copied' : 'Keep my ticket'}
+                    </button>
+                  </div>
+                  <p className="qc-quick-keep-note">
+                    Haven't got the estimate to hand? Keep the ticket and come back to this answer whenever you do.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="qc-card" ref={cardRef}>
             {stage === 'idle' && (

@@ -255,6 +255,41 @@ Second round of feedback from the roofer who asked for the line-prices switch. T
   gets a plain "not taking card payments yet" line instead of a form. LevelWorks takes no fee.
   Not yet verified with a real card: needs a contractor with Stripe connected and a live invoice.
 
+## The roofer's fourth round (Sep 20 2026)
+
+Four asks from the same customer, all built. He also sent the **first real testimonial** the
+product has had; it is on the landing page in the founder-quote block, attributed to his trade
+only. **His name does not go up until he says it can** — he wrote it as feedback, not ad copy.
+`lp.reviewWho` is the one line to change.
+
+- **Save without sending, and reopen an invoice to change it.** The action bar showed Save beside
+  Send only when converting an estimate; a fresh invoice offered Send alone, so he had to send,
+  mark paid, and send again to give a customer a receipt, and she got it twice. Save is now in
+  every mode. The builder could also only ever create: `invoiceId` opens an existing invoice,
+  Edit sits on each row and in the detail, and saving **recomputes status from `amountPaid`
+  against the new total** or a paid invoice edited upward stays "paid" while money is owed. His
+  reason is ordinary practice: the estimate says "$89 a sheet of plywood as needed" because
+  nobody knows the count until the roof is stripped, and the customer approved that wording.
+- **Two near-duplicate save paths are now one**, and the cleaner they shared **was dropping
+  `sourceText` / `sourceLang` / `sourceStale`** — converting a translated estimate threw away the
+  contractor's own words and left him an invoice he could not read. The whitelist trap, already
+  sprung. Send always opens `SendInvoiceModal` now, so a new invoice gets email, text and link
+  like a converted one.
+- **Bank transfer (ACH), and card/bank/both chosen per invoice.** `src/lib/payMethods.ts`, the
+  same JSONB trick as `hidePrice`: `payMethods` on every line, carried by both InvoiceContext
+  mappers and the builder's cleaner. A segmented control under the line-prices switch prints the
+  real fee for that invoice. **LevelWorks takes 0% on both, deliberately** — bank transfer is the
+  method people pick to escape fees, so a cut of it defeats the point (Joist takes 3.49% + 49c;
+  on a $20,000 roof that is $580 against $5, because Stripe's 0.8% is capped at $5).
+- **Settlement without a webhook.** A bank debit returns `processing` and takes ~4 business days.
+  It is written to `payment_history` with `pending: true`, counting toward neither paid nor
+  unpaid, and a new **`sync`** action on `api/invoice-payment.js` re-checks it whenever the
+  invoice is opened, by the client on the public link or by the contractor in his list. Whoever
+  looks next finishes recording it. Both sides show "clearing" meanwhile.
+- **Bank debit must be switched on once in the platform's Stripe dashboard.** Until then `create`
+  answers `bank_not_enabled` with a plain sentence rather than leaking a Stripe error to a
+  client. Not yet proven with a real bank account, same as the card path.
+
 ## Send after converting, and the Stripe connection that never saved (Sep 16 2026)
 
 - **Convert to invoice now offers Send.** The converted invoice's action bar has Save (dark,

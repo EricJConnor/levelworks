@@ -68,7 +68,9 @@ export default async function handler(req, res) {
       members(),
       byUser('estimates', 'user_id,status,sent_at,total,created_at'),
       byUser('invoices', 'user_id,status,sent_at,amount_paid,total,created_at'),
-      byUser('profiles', 'id,stripe_account_id,lang'),
+      // profiles is keyed by user_id, not id. Joining on id silently returns
+      // nobody, which is exactly what the first version of this file did.
+      byUser('profiles', 'user_id,stripe_account_id,lang'),
     ]);
   } catch (e) {
     return json(res, 200, { error: String(e.message || e) });
@@ -86,8 +88,9 @@ export default async function handler(req, res) {
   const invoiced = set(inv, () => true);
   const paid = set(inv, r => r.status === 'paid' || r.status === 'partially_paid' || Number(r.amount_paid) > 0);
   const connected = new Set(
-    profiles.filter(p => p.stripe_account_id && mine.has(p.id)).map(p => p.id)
+    profiles.filter(p => p.stripe_account_id && mine.has(p.user_id)).map(p => p.user_id)
   );
+  const spanish = profiles.filter(p => mine.has(p.user_id) && p.lang === 'es').length;
 
   const funnel = group => {
     const ids = new Set(group.map(p => p.id));
@@ -114,6 +117,7 @@ export default async function handler(req, res) {
   return json(res, 200, {
     asOf: new Date().toISOString(),
     members: people.length,
+    spanishMembers: spanish,
     // The headline: what share of sign-ups ever do the core job.
     activation: {
       signedInPct: pct(all.signedIn, all.people),

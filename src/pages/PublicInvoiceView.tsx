@@ -13,6 +13,29 @@ import { Elements } from '@stripe/react-stripe-js';
 import { getStripePromiseForAccount } from '@/lib/stripe';
 import { InvoicePaymentForm } from '@/components/InvoicePaymentForm';
 
+/**
+ * One invoice, by its share token.
+ *
+ * Prefers the `invoice_by_token` function, which is what makes it safe to lock
+ * the table: a function answers one row and cannot be asked for all of them.
+ * Falls back to reading the table directly while the function does not exist
+ * yet, because the code ships before the SQL is run by hand and a contractor's
+ * customer must not meet a broken link in between. Once the SQL has run the
+ * fallback is unreachable: the function answers, and row level security would
+ * refuse the direct read anyway.
+ */
+async function oneInvoice(token: string) {
+  const rpc = await supabase.rpc('invoice_by_token', { t: token });
+  if (!rpc.error) {
+    const row = Array.isArray(rpc.data) ? rpc.data[0] : rpc.data;
+    return { data: row || null, error: row ? null : new Error('not found') };
+  }
+  // PGRST202 is "no such function": the SQL has not been run yet.
+  if (rpc.error.code && rpc.error.code !== 'PGRST202') return { data: null, error: rpc.error };
+  const old = await supabase.from('invoices').select('*').eq('view_token', token).maybeSingle();
+  return { data: old.data || null, error: old.error || (old.data ? null : new Error('not found')) };
+}
+
 export default function PublicInvoiceView() {
   const { token } = useParams();
   const { toast } = useToast();
@@ -77,9 +100,7 @@ export default function PublicInvoiceView() {
       // Through a function, not the table. The table is locked by row level
       // security so nobody can ask for everyone else's invoices; this answers
       // exactly one row, and only to somebody holding the token.
-      const { data: rows, error } = await supabase.rpc('invoice_by_token', { t: token });
-      const data = Array.isArray(rows) ? rows[0] : rows;
-      if (!error && !data) throw new Error('not found');
+      const { data, error } = await oneInvoice(token);
       if (error) throw error;
       setInvoice(data);
       loadBranding();
@@ -98,8 +119,7 @@ export default function PublicInvoiceView() {
           });
           const sd = await sr.json().catch(() => ({}));
           if (sd?.changed) {
-            const { data: freshRows } = await supabase.rpc('invoice_by_token', { t: token });
-            const fresh = Array.isArray(freshRows) ? freshRows[0] : freshRows;
+            const { data: fresh } = await oneInvoice(token);
             if (fresh) setInvoice(fresh);
             setBankPending(Number(sd.pending) > 0);
             const fh = Array.isArray(fresh?.payment_history) ? fresh.payment_history : [];

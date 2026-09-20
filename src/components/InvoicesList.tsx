@@ -1,7 +1,7 @@
 import { clientAddressOf } from '@/lib/clientAddress';
 import React, { useState } from 'react';
 import { useInvoices } from '@/contexts/InvoiceContext';
-import { FileText, DollarSign, Calendar, Trash2, Link, Check, Send, X, Search, Plus, ChevronRight } from 'lucide-react';
+import { FileText, DollarSign, Calendar, Trash2, Link, Check, Send, X, Search, Plus, ChevronRight, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { sendInvoiceEmail } from '@/lib/edgeFunctions';
@@ -9,6 +9,8 @@ import { useT } from '@/i18n';
 
 interface InvoicesListProps {
   onCreateInvoice?: () => void;
+  /** Reopen an existing invoice in the builder to change it. */
+  onEditInvoice?: (id: string) => void;
 }
 
 const money = (n: number) =>
@@ -61,7 +63,7 @@ const styles = `
 }
 `;
 
-export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) => {
+export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice, onEditInvoice }) => {
   const { invoices, deleteInvoice, recordPayment, updateInvoice } = useInvoices();
   const { toast } = useToast();
   const t = useT();
@@ -255,6 +257,11 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
                       <Check size={14} /> {t('lst.markPaidShort')}
                     </button>
                   )}
+                  {onEditInvoice && (
+                    <button className="lv-btn sec sm" onClick={() => onEditInvoice(invoice.id)}>
+                      <Pencil size={14} /> {t('a.edit')}
+                    </button>
+                  )}
                   <button
                     className="lv-btn sec sm"
                     onClick={() => handleSendInvoice(invoice)}
@@ -350,6 +357,14 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice }) =
 
             <div className="lv-modal-foot">
               <div className="lv-actions">
+                {onEditInvoice && (
+                  <button
+                    className="lv-btn sec"
+                    onClick={() => { const id = selectedInvoice.id; setSelectedInvoice(null); onEditInvoice(id); }}
+                  >
+                    <Pencil size={16} /> {t('a.edit')}
+                  </button>
+                )}
                 <button
                   className="lv-btn pri span"
                   onClick={() => handleSendInvoice(selectedInvoice)}

@@ -3,7 +3,6 @@ import { useInvoices } from '@/contexts/InvoiceContext';
 import { useData } from '@/contexts/DataContext';
 import { Plus, Trash2, Send, X, FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { sendInvoiceEmail } from '@/lib/edgeFunctions';
 import { useToast } from '@/hooks/use-toast';
 import { autoGrowTextarea } from '@/lib/utils';
 import { useT, LanguageToggle } from '@/i18n';
@@ -16,6 +15,14 @@ import { SendInvoiceModal } from './SendInvoiceModal';
 
 interface InvoiceBuilderProps {
   estimateId?: string;
+  /**
+   * An existing invoice to reopen and change. The roofer's case: the estimate
+   * says "$89 a sheet of plywood as needed" because nobody knows the count
+   * until the roof is stripped, so the real number belongs on the invoice.
+   * The customer already approved that wording. Also covers simply forgetting
+   * a line, which used to mean starting the whole invoice again.
+   */
+  invoiceId?: string;
   initialData?: any;
   onComplete?: () => void;
   onClose?: () => void;
@@ -23,8 +30,8 @@ interface InvoiceBuilderProps {
 
 const money = (n: number) => `$${(Number(n) || 0).toFixed(2)}`;
 
-export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, initialData, onComplete, onClose }) => {
-  const { addInvoice, invoices } = useInvoices();
+export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, invoiceId, initialData, onComplete, onClose }) => {
+  const { addInvoice, updateInvoice, invoices } = useInvoices();
   const { addClient, clients, estimates } = useData();
   const { toast } = useToast();
   const t = useT();
@@ -54,7 +61,9 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
     : [];
 
   // Determine if this is a conversion from an estimate
-  const isConversion = !!(estimateId || initialData);
+  const isEditing = !!invoiceId;
+  const existing = isEditing ? invoices.find((i: any) => i.id === invoiceId) : null;
+  const isConversion = !isEditing && !!(estimateId || initialData);
 
   /**
    * The invoice made from an estimate, once saved, waiting for the send modal.
@@ -71,6 +80,27 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, []);
+
+  /**
+   * Reopening an existing invoice: fill the form from the saved row once it
+   * arrives. The context loads asynchronously, so this cannot be done in the
+   * useState initialisers. Guarded so it never overwrites typing afterwards.
+   */
+  const [loadedId, setLoadedId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!existing || loadedId === existing.id) return;
+    setLoadedId(existing.id);
+    setClientName(existing.clientName || '');
+    setClientEmail(existing.clientEmail || '');
+    setClientPhone(existing.clientPhone || '');
+    setClientAddress(clientAddressOf(existing.lineItems) || '');
+    setProjectName(existing.projectName || '');
+    setLineItems(existing.lineItems?.length ? existing.lineItems : [{ description: '', quantity: 1, rate: 0 }]);
+    setTaxRate(existing.taxRate || 0);
+    setShowPricesState(linePricesShown(existing.lineItems));
+    setDueDate(existing.dueDate ? String(existing.dueDate).slice(0, 10) : '');
+    setNotes(existing.notes || '');
+  }, [existing, loadedId]);
 
   const addLineItem = () => setLineItems([...lineItems, { description: '', quantity: 1, rate: 0 }]);
 
@@ -142,9 +172,34 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
   };
 
   /**
-   * Conversion: save the invoice and hand back the saved row (with its view
-   * token) so the caller can close, or open the send modal on it. Returns
-   * null when validation or the save failed; the toast has already said why.
+   * The line items as they go to the database. Anything the document carries
+   * inside `line_items` has to be stamped here or it vanishes on save: that is
+   * the trap `sourceText`, `hidePrice` and `clientAddress` each taught in turn.
+   */
+  const cleanLineItems = () => {
+    const num = (v: any) => { const n = Number(v); return isNaN(n) ? 0 : n; };
+    const str = (v: any) => (v === null || v === undefined ? '' : String(v));
+    return lineItems.map((item: any, index: number) => ({
+      id: str(item.id || `item-${index}`),
+      description: str(item.description),
+      quantity: num(item.quantity),
+      rate: num(item.rate),
+      total: num(item.quantity) * num(item.rate),
+      ...(item.sourceText ? { sourceText: str(item.sourceText) } : {}),
+      ...(item.sourceLang ? { sourceLang: item.sourceLang } : {}),
+      ...(item.sourceStale ? { sourceStale: true } : {}),
+      ...(showPrices ? {} : { hidePrice: true }),
+      ...(clientAddress.trim() ? { clientAddress: clientAddress.trim() } : {}),
+    }));
+  };
+
+  /**
+   * Save a new invoice and hand back the saved row (with its view token) so
+   * the caller can close, or open the send modal on it. Used both for an
+   * invoice converted from an estimate and for one started from scratch: the
+   * two used to be separate code paths that drifted, and only one of them
+   * offered Save. Returns null when validation or the save failed; the toast
+   * has already said why.
    */
   const saveConversion = async (): Promise<any | null> => {
     if (!clientName || !projectName || lineItems.length === 0) {
@@ -153,6 +208,15 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
     }
     setSending(true);
     try {
+      // A client typed straight onto an invoice is still a client worth
+      // keeping; the old send-only path did this and it would be a quiet
+      // regression to lose it.
+      const trimmedName = clientName.trim();
+      if (!clients.some((c: any) => c.name.toLowerCase() === trimmedName.toLowerCase())) {
+        try {
+          await addClient({ name: trimmedName, email: clientEmail.trim(), phone: clientPhone.trim(), address: clientAddress.trim(), totalJobs: 0, totalValue: 0 });
+        } catch (e) { console.log('[InvoiceBuilder] Client save skipped:', e); }
+      }
       // Helper to safely convert to number (handles NaN)
       const safeNumber = (val: any): number => {
         if (val === null || val === undefined) return 0;
@@ -170,18 +234,10 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
       const total = calculateTotal();
       
       // Clean line items before saving - NO NaN, NO undefined
-      const cleanLineItems = lineItems.map((item: any, index: number) => ({
-        id: safeString(item.id || `item-${index}`),
-        description: safeString(item.description),
-        quantity: safeNumber(item.quantity),
-        rate: safeNumber(item.rate),
-        total: safeNumber(item.quantity) * safeNumber(item.rate),
-        ...(showPrices ? {} : { hidePrice: true }),
-        ...(clientAddress.trim() ? { clientAddress: clientAddress.trim() } : {})
-      }));
+      const cleanItems = cleanLineItems();
       
       console.log('[InvoiceBuilder] Converting estimate to invoice...');
-      console.log('[InvoiceBuilder] Clean line items:', JSON.stringify(cleanLineItems));
+      console.log('[InvoiceBuilder] Clean line items:', JSON.stringify(cleanItems));
       
       // Save the invoice to the database (without sending email)
       const invoiceId = await addInvoice({
@@ -191,7 +247,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         clientEmail: safeString(clientEmail).trim(), 
         clientPhone: safeString(clientPhone).trim(), 
         projectName: safeString(projectName).trim(), 
-        lineItems: cleanLineItems, 
+        lineItems: cleanItems, 
         taxRate: safeNumber(taxRate), 
         total: safeNumber(total),
         amountPaid: 0, 
@@ -199,7 +255,8 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
         status: 'unpaid', 
         issueDate: new Date().toISOString(),
         dueDate: dueDate || null,
-        notes: notes ? `Converted from estimate. ${notes}` : 'Converted from estimate.',
+        // Only an invoice that really came from an estimate says so.
+        notes: isConversion ? (notes ? `Converted from estimate. ${notes}` : 'Converted from estimate.') : (notes || null),
         sentAt: null // Not sent yet
       });
 
@@ -234,148 +291,83 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
     }
   };
 
+  /**
+   * Reopening an existing invoice writes over it instead of making a second
+   * one. Everything else about the screen is identical, which is the point:
+   * the contractor should not have to learn a different form to fix a typo.
+   */
+  const saveEdit = async () => {
+    if (!clientName || !projectName || lineItems.length === 0) {
+      toast({ title: t('inv.fillRequired'), variant: 'destructive' });
+      return null;
+    }
+    setSending(true);
+    try {
+      const total = calculateTotal();
+      const paid = Number(existing?.amountPaid) || 0;
+      // The total moved, so what is still owed moved with it. Without this a
+      // paid invoice edited upward silently stays "paid" while money is owed,
+      // and one edited downward stays "unpaid" when it is settled.
+      const status = paid <= 0
+        ? (existing?.status === 'overdue' ? 'overdue' : 'unpaid')
+        : paid + 0.005 >= total ? 'paid' : 'partially_paid';
+
+      await updateInvoice(invoiceId!, {
+        clientName: clientName.trim(),
+        clientEmail: clientEmail.trim(),
+        clientPhone: clientPhone.trim(),
+        projectName: projectName.trim(),
+        lineItems: cleanLineItems(),
+        taxRate: Number(taxRate) || 0,
+        total,
+        status: status as any,
+        dueDate: dueDate || null,
+        notes: notes || null,
+      });
+
+      const { data: row } = await supabase.from('invoices').select('*').eq('id', invoiceId).single();
+      return {
+        id: invoiceId, invoiceNumber: row?.invoice_number || existing?.invoiceNumber || '',
+        clientName: clientName.trim(), clientEmail: clientEmail.trim(), clientPhone: clientPhone.trim(),
+        projectName: projectName.trim(), total, amountPaid: paid,
+        issueDate: row?.issue_date || existing?.issueDate || new Date().toISOString(),
+        dueDate: row?.due_date || dueDate || null, notes: row?.notes || null,
+        viewToken: row?.view_token || existing?.viewToken || '',
+      };
+    } catch (error: any) {
+      console.error('Update invoice error:', error);
+      toast({ title: t('e.somethingWrong'), description: error?.message || t('inv.couldNotCreate'), variant: 'destructive' });
+      return null;
+    } finally { setSending(false); }
+  };
+
+  /** One save for every mode: new, converted from an estimate, or reopened. */
+  const saveAny = () => (isEditing ? saveEdit() : saveConversion());
+
   /** Save and close; it can still go out from the Invoices list. */
   const handleConvertAndClose = async () => {
-    const saved = await saveConversion();
+    const saved = await saveAny();
     if (!saved) return;
-    toast({ title: t('inv.created'), description: t('inv.createdBody') });
+    toast({ title: isEditing ? t('inv.saved') : t('inv.created'), description: isEditing ? undefined : t('inv.createdBody') });
     onComplete?.();
     onClose?.();
   };
 
   /** Save, then send it right away. */
   const handleConvertAndSend = async () => {
-    const saved = await saveConversion();
+    const saved = await saveAny();
     if (!saved) return;
     setSendInvoice(saved);
   };
 
   const closeAfterSave = () => { setSendInvoice(null); onComplete?.(); onClose?.(); };
 
-  // Handle sending a new invoice (not conversion)
-  const handleSendInvoice = async () => {
-    if (!clientName || !clientEmail || !projectName || lineItems.length === 0) {
-      toast({ title: t('inv.fillRequired'), variant: 'destructive' });
-      return;
-    }
-    setSending(true);
-    try {
-      const trimmedName = clientName.trim();
-      const exists = clients.some((c: any) => c.name.toLowerCase() === trimmedName.toLowerCase());
-      if (!exists) {
-        try {
-          await addClient({ name: trimmedName, email: clientEmail.trim(), phone: clientPhone.trim(), address: clientAddress.trim(), totalJobs: 0, totalValue: 0 });
-        } catch (e) { console.log('[InvoiceBuilder] Client save skipped:', e); }
-      }
-      // Helper to safely convert to number (handles NaN)
-      const safeNumber = (val: any): number => {
-        if (val === null || val === undefined) return 0;
-        const num = Number(val);
-        return isNaN(num) ? 0 : num;
-      };
-      
-      // Helper to safely convert to string
-      const safeString = (val: any): string => {
-        if (val === null || val === undefined) return '';
-        return String(val);
-      };
-      
-      const invoiceNumber = generateInvoiceNumber();
-      const total = calculateTotal();
-      
-      // Clean line items before saving - NO NaN, NO undefined
-      const cleanLineItems = lineItems.map((item: any, index: number) => ({
-        id: safeString(item.id || `item-${index}`),
-        description: safeString(item.description),
-        quantity: safeNumber(item.quantity),
-        rate: safeNumber(item.rate),
-        total: safeNumber(item.quantity) * safeNumber(item.rate),
-        ...(showPrices ? {} : { hidePrice: true }),
-        ...(clientAddress.trim() ? { clientAddress: clientAddress.trim() } : {})
-      }));
-      
-      console.log('[InvoiceBuilder] Clean line items:', JSON.stringify(cleanLineItems));
-      
-      // First, save the invoice to the database
-      const invoiceId = await addInvoice({
-        estimateId, 
-        invoiceNumber, 
-        clientName: safeString(clientName).trim(), 
-        clientEmail: safeString(clientEmail).trim(), 
-        clientPhone: safeString(clientPhone).trim(), 
-        projectName: safeString(projectName).trim(), 
-        lineItems: cleanLineItems, 
-        taxRate: safeNumber(taxRate), 
-        total: safeNumber(total),
-        amountPaid: 0, 
-        paymentHistory: [], 
-        status: 'unpaid', 
-        issueDate: new Date().toISOString(),
-        dueDate: dueDate || null,  // Use null, not undefined
-        notes: notes || null,  // Use null, not undefined
-        sentAt: new Date().toISOString()
-      });
-
-      // Wait a moment for the database to fully commit
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Fetch the saved invoice to get the view_token
-      const { data: invoiceData } = await supabase.from('invoices').select('*').eq('id', invoiceId).single();
-      
-      // Get user ID
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      console.log('Sending invoice email...');
-
-      // Use the edge function helper
-      const result = await sendInvoiceEmail({
-        invoiceId,
-        clientEmail,
-        invoiceData: {
-          invoiceNumber,
-          clientName,
-          clientEmail,
-          clientPhone,
-          projectName,
-          total,
-          amountDue: total,
-          issueDate: new Date().toISOString(),
-          dueDate,
-          notes,
-          viewToken: invoiceData?.view_token
-        },
-        userId: user?.id
-      });
-
-      console.log('Send invoice result:', result);
-      
-      if (result.error) {
-        console.error('Send invoice error:', result.error);
-        throw result.error;
-      }
-
-      const responseData = result.data;
-
-      if (responseData?.errors && responseData.errors.length > 0) {
-        toast({ title: t('inv.sentWithWarnings'), description: responseData.errors.join(', ') });
-      } else {
-        toast({ title: t('inv.sent') });
-      }
-
-      onComplete?.();
-      onClose?.();
-    } catch (error: any) {
-      console.error('Send invoice error:', error);
-      let errorMessage = t('inv.couldNotSend');
-      if (error?.message) {
-        errorMessage = error.message;
-      }
-      toast({ title: t('e.somethingWrong'), description: errorMessage, variant: 'destructive' });
-    } finally { 
-      setSending(false); 
-    }
-  };
-
+  /*
+   * The old direct-email send path lived here. Send now always goes through
+   * SendInvoiceModal, the same screen a converted invoice uses, so the client
+   * can be reached by email, by text from his own phone, or by a copied link,
+   * and there is one send flow instead of two that drifted apart.
+   */
 
   const handleClose = () => { onClose?.(); onComplete?.(); };
 
@@ -483,7 +475,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
 
         <header className="eb-head-bar">
           <div className="eb-head-l">
-            <span className="lv-eyebrow">{isConversion ? t('est.convertToInvoice') : t('nav.newInvoice')}</span>
+            <span className="lv-eyebrow">{isEditing ? t('inv.editInvoice') : isConversion ? t('est.convertToInvoice') : t('nav.newInvoice')}</span>
             <h2 className="lv-h2">{projectName?.trim() || (clientName?.trim() ? clientName : t('inv.untitled'))}</h2>
           </div>
           <div className="lv-inline">
@@ -621,20 +613,20 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, init
           <div className="lv-actions">
             <button className="lv-btn quiet lv-hide-mobile" onClick={handleClose} disabled={sending}>{t('a.cancel')}</button>
             <div className="spacer" />
-            {isConversion ? (
-              <>
-                <button className="lv-btn dark" onClick={handleConvertAndClose} disabled={sending}>
-                  {sending ? t('a.saving') : t('a.save')}
-                </button>
-                <button className="lv-btn pri" onClick={handleConvertAndSend} disabled={sending}>
-                  <Send size={16} /> {sending ? t('a.saving') : t('est.sendToClient')}
-                </button>
-              </>
-            ) : (
-              <button className="lv-btn pri span" onClick={handleSendInvoice} disabled={sending}>
-                <Send size={16} /> {sending ? t('a.sending') : t('inv.sendInvoice')}
-              </button>
-            )}
+            {/*
+              Save sits beside Send in every mode. It used to appear only when
+              converting an estimate, so a fresh invoice could only be sent —
+              which is why the roofer had to send one, mark it paid, and send it
+              again just to give a customer a receipt. She got it twice. Saving
+              without sending lets him write it up while the crew works, mark it
+              paid when the cheque is in his hand, and send the receipt once.
+            */}
+            <button className="lv-btn dark" onClick={handleConvertAndClose} disabled={sending}>
+              {sending ? t('a.saving') : t('a.save')}
+            </button>
+            <button className="lv-btn pri" onClick={handleConvertAndSend} disabled={sending}>
+              <Send size={16} /> {sending ? t('a.saving') : t('est.sendToClient')}
+            </button>
           </div>
         </footer>
       </div>

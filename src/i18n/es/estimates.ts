@@ -97,6 +97,8 @@ export const estimates: Record<string, string> = {
   'inv.fillRequired': 'Completa todos los campos obligatorios',
   'inv.created': 'Factura creada',
   'inv.createdBody': 'Puedes enviarla desde la lista de Facturas.',
+  'inv.saved': 'Factura guardada',
+  'inv.editInvoice': 'Editar factura',
   'inv.couldNotCreate': 'Error al crear la factura',
   'inv.couldNotSend': 'Error al enviar la factura',
   'inv.sent': 'Factura enviada',

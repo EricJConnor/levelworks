@@ -35,6 +35,13 @@ export default function PublicInvoiceView() {
    * "paid" or "unpaid", both of which would be wrong.
    */
   const [bankPending, setBankPending] = useState(false);
+  /**
+   * A bank transfer can bounce days after it was accepted, usually because the
+   * account was short. Without saying so the page would simply show the pay
+   * buttons again, and a customer who believes she has paid would have no idea
+   * why she is being asked twice.
+   */
+  const [bankFailed, setBankFailed] = useState(false);
 
   useEffect(() => { loadInvoice(); }, [token]);
 
@@ -75,6 +82,8 @@ export default function PublicInvoiceView() {
       // That is what stands in for a webhook: a bank debit settles days later,
       // and whoever looks next is the one who finishes recording it.
       const history = Array.isArray(data?.payment_history) ? data.payment_history : [];
+      const last = [...history].reverse().find((h: any) => h && h.method === 'bank');
+      setBankFailed(!!last?.failed);
       if (history.some((h: any) => h && h.pending)) {
         setBankPending(true);
         try {
@@ -87,6 +96,9 @@ export default function PublicInvoiceView() {
             const { data: fresh } = await supabase.from('invoices').select('*').eq('view_token', token).single();
             if (fresh) setInvoice(fresh);
             setBankPending(Number(sd.pending) > 0);
+            const fh = Array.isArray(fresh?.payment_history) ? fresh.payment_history : [];
+            const fl = [...fh].reverse().find((h: any) => h && h.method === 'bank');
+            setBankFailed(!!fl?.failed);
           }
         } catch { /* the next open tries again */ }
       }
@@ -240,6 +252,12 @@ export default function PublicInvoiceView() {
               </div>
             ) : (
              <>
+              {bankFailed && (
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg mb-4">
+                  <p className="text-amber-900 font-semibold">{t('pg.inv.bankFailed')}</p>
+                  <p className="text-sm text-amber-800">{t('pg.inv.bankFailedBody')}</p>
+                </div>
+              )}
               {/* The contractor chose which of these the client gets. A bank
                   transfer saves him the card fee, which on a big job is the
                   difference between $5 and several hundred dollars. */}

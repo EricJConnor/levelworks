@@ -65,8 +65,11 @@ export async function settlePending({ a, dry = false }) {
       if (pi.status === 'processing') { out.stillWaiting++; continue; }
       changed = true;
       if (pi.status === 'succeeded') {
+        // Capped: see the same note in api/invoice-payment.js. A contractor who
+        // marked it paid by hand mid-clearing must not end up showing an
+        // overpayment when the transfer lands.
         const got = (Number(pi.amount_received) || 0) / 100;
-        paid = Math.round((paid + got) * 100) / 100;
+        paid = Math.min(Math.round((paid + got) * 100) / 100, Math.round((Number(inv.total) || 0) * 100) / 100);
         next = next.map((h) => (h.paymentIntentId === pi.id ? { ...h, pending: false, amount: got, settledAt: new Date().toISOString() } : h));
         out.cleared++;
       } else {

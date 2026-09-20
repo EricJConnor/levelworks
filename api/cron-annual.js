@@ -11,6 +11,8 @@
  * 4a. Scheduled notes from Eric (api/_lib/notes.js): any note whose sendAt has passed, once per member.
  * 4b. The feature tips (api/_lib/tips.js): the next one to anyone whose last was 40+ hours ago.
      Nobody gets a tip on a morning they got a note.
+ * 4c. Settle bank transfers that have cleared (api/_lib/settle.js): the backstop
+ *     for an invoice nobody reopens, since ACH takes ~4 business days.
  * 5. Add every user to the Resend audiences (api/_lib/audience.js) for broadcasts.
  * 6. Draft each broadcast in Resend once, so Eric can send it from the dashboard.
  *
@@ -25,6 +27,7 @@ import { syncAudience, unsubscribedEmails } from './_lib/audience.js';
 import { runBroadcast, BROADCASTS, ensureTracking } from './_lib/broadcasts.js';
 import { sendTips } from './_lib/tips.js';
 import { sendNotes } from './_lib/notes.js';
+import { settlePending } from './_lib/settle.js';
 
 const DAY = 86400 * 1000;
 
@@ -136,6 +139,11 @@ export default async function handler(req, res) {
     const skip = new Set([...optedOut, ...report.sent.map(x => x.email), ...(report.notes?.sent || []).map(x => x.email)]);
     report.tips = await sendTips({ a, users, skip, dry, now, langOf });
   } catch (e) { report.errors.push('tips: ' + e.message); }
+
+  // 4c. Bank transfers that have cleared since yesterday. Opening an invoice
+  // already settles it either side; this catches the ones nobody reopens.
+  try { report.settled = await settlePending({ a, dry }); }
+  catch (e) { report.errors.push('settle: ' + e.message); }
 
   // 5. Resend audiences, so a broadcast from the Resend dashboard reaches everyone.
   try { report.audience = await syncAudience({ dry }); }

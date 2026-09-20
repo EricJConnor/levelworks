@@ -156,8 +156,13 @@ export default async function handler(req, res) {
       if (p.status === 'processing') continue;
       changed = true;
       if (p.status === 'succeeded') {
+        // Capped at the total on purpose. If the contractor marked the invoice
+        // paid by hand while the transfer was still clearing — he was handed a
+        // cheque, or he just did not want to wait — adding the bank amount on
+        // top would show the client as having overpaid. An invoice can never
+        // be more than settled.
         const got = (Number(p.amount_received) || 0) / 100;
-        newPaid = Math.round((newPaid + got) * 100) / 100;
+        newPaid = Math.min(Math.round((newPaid + got) * 100) / 100, Math.round(total * 100) / 100);
         next = next.map((h) => (h.paymentIntentId === p.id ? { ...h, pending: false, amount: got, settledAt: new Date().toISOString() } : h));
       } else {
         // Failed or cancelled: the money never moved, so the record should not

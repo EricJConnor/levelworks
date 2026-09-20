@@ -286,7 +286,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice, onE
                 </div>
 
                 <div className="iv-acts">
-                  {invoice.status !== 'paid' && (
+                  {invoice.status !== 'paid' && !(invoice.paymentHistory || []).some((h: any) => h && h.pending) && (
                     <button className="lv-btn go sm" onClick={(e) => handleMarkPaid(invoice, e)}>
                       <Check size={14} /> {t('lst.markPaidShort')}
                     </button>
@@ -350,6 +350,43 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice, onE
                 </div>
               </div>
 
+              {/*
+                What has actually happened to the money. There was no payment
+                history on this screen at all, which was survivable when every
+                payment was a card and instant. With bank transfers a payment
+                can be in flight for four days or bounce a week later, and the
+                contractor has to be able to see which.
+              */}
+              {(selectedInvoice.paymentHistory || []).length > 0 && (
+                <div className="iv-sec" style={{ marginTop: 18 }}>
+                  <span className="lv-eyebrow">{t('lst.payments')}</span>
+                  <div className="lv-card">
+                    {(selectedInvoice.paymentHistory || []).map((h: any, idx: number) => (
+                      <div className="lv-row" key={idx}>
+                        <div style={{ minWidth: 0 }}>
+                          <div className="lv-row-t">
+                            {h?.pending ? t('lst.payClearing') : h?.failed ? t('lst.payFailed') : t('lst.payReceived')}
+                          </div>
+                          <div className="lv-row-s">
+                            {h?.date ? new Date(h.date).toLocaleDateString() : ''}
+                            {h?.method === 'bank' ? ` · ${t('lst.payByBank')}` : h?.method === 'card' ? ` · ${t('lst.payByCard')}` : ''}
+                          </div>
+                        </div>
+                        <b
+                          className="lv-num"
+                          style={{ color: h?.failed ? 'var(--lv-muted)' : h?.pending ? 'var(--lv-blue, #2563eb)' : 'var(--lv-green)' }}
+                        >
+                          {h?.failed ? '—' : money(Number(h?.amount) || 0)}
+                        </b>
+                      </div>
+                    ))}
+                  </div>
+                  {(selectedInvoice.paymentHistory || []).some((h: any) => h && h.pending) && (
+                    <p className="lv-small" style={{ marginTop: 8 }}>{t('lst.clearingNote')}</p>
+                  )}
+                </div>
+              )}
+
               <div className="iv-sec">
                 <span className="lv-eyebrow">{t('lst.lineItems')}</span>
                 <div className="lv-card">
@@ -407,7 +444,7 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice, onE
                   <Send size={16} />
                   {sendingId === selectedInvoice.id ? t('a.sending') : selectedInvoice.sentAt ? t('lst.resendInvoice') : t('lst.sendInvoice')}
                 </button>
-                {selectedInvoice.status !== 'paid' && (
+                {selectedInvoice.status !== 'paid' && !(selectedInvoice.paymentHistory || []).some((h: any) => h && h.pending) && (
                   <>
                     <button className="lv-btn go" onClick={() => handleMarkPaid(selectedInvoice)}>
                       <Check size={16} /> {t('lst.markAsPaid')}

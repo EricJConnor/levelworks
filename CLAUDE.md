@@ -773,3 +773,13 @@ blast as a cold start** and send a second one with a fresh opening a few days la
 `EMAILS` entry (the name lock will not resend the first). Check `_dmarc`, `send` and
 `resend._domainkey` with a DNS lookup before any future blast; `dig` is not installed here,
 `node -e "require('node:dns').promises.resolveTxt(...)"` works.
+
+## The next product: the idea list (Sep 20 2026) — read `IDEAS.md`
+
+Eric is hunting for a genuinely new product that makes money, not necessarily trades, "buy it
+and use it", on the stack we already have. **`IDEAS.md`** is the list: only ideas whose shelf has
+been searched and found empty go on it, with the competitor names written down (up to 50). Top
+of the list: a **senior-care admission contract check** for the adult child signing it. Every idea
+pitched from memory on Sep 20 already existed; do not pitch without searching first. Eight of ten
+research lanes were cut off by usage limits and still need rerunning, one at a time to keep the
+cost down. Quote Check is untouched until its five days are up.

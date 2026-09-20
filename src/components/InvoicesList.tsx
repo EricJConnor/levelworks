@@ -1,5 +1,5 @@
 import { clientAddressOf } from '@/lib/clientAddress';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useInvoices } from '@/contexts/InvoiceContext';
 import { FileText, DollarSign, Calendar, Trash2, Link, Check, Send, X, Search, Plus, ChevronRight, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -64,7 +64,7 @@ const styles = `
 `;
 
 export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice, onEditInvoice }) => {
-  const { invoices, deleteInvoice, recordPayment, updateInvoice } = useInvoices();
+  const { invoices, deleteInvoice, recordPayment, updateInvoice, refreshInvoices } = useInvoices();
   const { toast } = useToast();
   const t = useT();
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
@@ -72,6 +72,36 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice, onE
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentNote, setPaymentNote] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  /**
+   * A bank transfer sits in Stripe for about four business days before anyone
+   * knows whether it cleared. There is no webhook: instead every pending
+   * payment is re-checked whenever the invoice is looked at, by the client on
+   * the public link or by the contractor here. Whoever opens it next finishes
+   * recording it. Runs once per mount, and only when something is actually
+   * waiting.
+   */
+  const [synced, setSynced] = useState(false);
+  useEffect(() => {
+    if (synced || !invoices.length) return;
+    const waiting = invoices.filter((i: any) => (i.paymentHistory || []).some((h: any) => h && h.pending) && i.viewToken);
+    if (!waiting.length) return;
+    setSynced(true);
+    (async () => {
+      let changed = false;
+      for (const inv of waiting) {
+        try {
+          const r = await fetch('/api/invoice-payment', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'sync', invoiceId: inv.id, viewToken: inv.viewToken }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (d?.changed) changed = true;
+        } catch { /* the next visit tries again */ }
+      }
+      if (changed) refreshInvoices?.();
+    })();
+  }, [invoices, synced, refreshInvoices]);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [query, setQuery] = useState('');
@@ -246,7 +276,11 @@ export const InvoicesList: React.FC<InvoicesListProps> = ({ onCreateInvoice, onE
                   </div>
                   <div className="iv-amt">
                     <div className="lv-row-r lv-num">{money(invoice.total)}</div>
-                    <div className="lv-small lv-num">{due > 0 ? t('lst.amountDue', { amount: money(due) }) : t('lst.paidInFull')}</div>
+                    <div className="lv-small lv-num">
+                      {(invoice.paymentHistory || []).some((h: any) => h && h.pending)
+                        ? t('lst.bankClearing')
+                        : due > 0 ? t('lst.amountDue', { amount: money(due) }) : t('lst.paidInFull')}
+                    </div>
                   </div>
                   <ChevronRight className="iv-chev" size={18} />
                 </div>

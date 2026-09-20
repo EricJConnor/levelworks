@@ -70,6 +70,9 @@ const parseLineItems = (items: any): LineItem[] => {
     sourceStale: item?.sourceStale === true ? true : undefined,
     hidePrice: item?.hidePrice === true ? true : undefined,
     clientAddress: item?.clientAddress ? safeString(item.clientAddress) : undefined,
+    // Card, bank, or both. Like hidePrice, it lives on the line items so the
+    // public link reads it off the row with no migration and no extra column.
+    payMethods: ['card', 'bank', 'both'].includes(item?.payMethods) ? item.payMethods : undefined,
   }));
 };
 
@@ -95,6 +98,7 @@ const formatLineItemsForDb = (items: any): object[] => {
       ...(item.sourceStale ? { sourceStale: true } : {}),
       ...(item.hidePrice ? { hidePrice: true } : {}),
       ...(item.clientAddress ? { clientAddress: safeString(item.clientAddress) } : {}),
+      ...(['card', 'bank', 'both'].includes((item as any).payMethods) ? { payMethods: (item as any).payMethods } : {}),
     };
   });
   

@@ -14,6 +14,8 @@ import { useT } from '@/i18n';
  * never changes an invoice.
  */
 interface Props {
+  /** 'bank' uses Stripe's bank-transfer flow instead of card fields. */
+  method?: 'card' | 'bank';
   invoiceId: string;
   viewToken: string;
   clientSecret: string;
@@ -21,10 +23,10 @@ interface Props {
   amount: number;
   clientName: string;
   clientEmail: string;
-  onSuccess: () => void;
+  onSuccess: (pending?: boolean) => void;
 }
 
-export function InvoicePaymentForm({ invoiceId, viewToken, clientSecret, paymentIntentId, amount, clientName, clientEmail, onSuccess }: Props) {
+export function InvoicePaymentForm({ method = 'card', invoiceId, viewToken, clientSecret, paymentIntentId, amount, clientName, clientEmail, onSuccess }: Props) {
   const stripe = useStripe();
   const elements = useElements();
   const t = useT();
@@ -38,15 +40,38 @@ export function InvoicePaymentForm({ invoiceId, viewToken, clientSecret, payment
     if (!stripe || !elements) return;
     setLoading(true);
     try {
-      const card = elements.getElement(CardNumberElement);
-      if (!card) throw new Error('Card element not found');
+      let paymentIntent: any;
+      if (method === 'bank') {
+        /*
+         * Bank transfer. Stripe collects the account through its own hosted
+         * flow (Financial Connections), so there are no account numbers in
+         * this page and nothing sensitive passes through LevelWorks. Unlike a
+         * card it does not finish here: the intent goes to `processing` and
+         * takes about four business days to clear.
+         */
+        const collected = await stripe.collectBankAccountForPayment({
+          clientSecret,
+          params: { payment_method_type: 'us_bank_account', payment_method_data: { billing_details: { name, email } } },
+        });
+        if (collected.error) throw new Error(collected.error.message);
+        // The customer can abandon Stripe's bank picker; that is not a failure.
+        if (collected.paymentIntent?.status === 'requires_payment_method') { setLoading(false); return; }
+        const confirmed = await stripe.confirmUsBankAccountPayment(clientSecret);
+        if (confirmed.error) throw new Error(confirmed.error.message);
+        paymentIntent = confirmed.paymentIntent;
+        if (!['processing', 'succeeded'].includes(paymentIntent?.status)) throw new Error(t('pg.inv.payFailedBody'));
+      } else {
+        const card = elements.getElement(CardNumberElement);
+        if (!card) throw new Error('Card element not found');
 
-      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: { card, billing_details: { name, email } },
-        receipt_email: email || undefined,
-      });
-      if (confirmError) throw new Error(confirmError.message);
-      if (paymentIntent?.status !== 'succeeded') throw new Error(t('pg.inv.payFailedBody'));
+        const res = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: { card, billing_details: { name, email } },
+          receipt_email: email || undefined,
+        });
+        if (res.error) throw new Error(res.error.message);
+        paymentIntent = res.paymentIntent;
+        if (paymentIntent?.status !== 'succeeded') throw new Error(t('pg.inv.payFailedBody'));
+      }
 
       // Record it. If this call fails the card was still charged, so say so
       // plainly rather than "failed": the contractor can reconcile from Stripe.
@@ -58,8 +83,12 @@ export function InvoicePaymentForm({ invoiceId, viewToken, clientSecret, payment
       const data = await r.json().catch(() => ({}));
       if (!r.ok && !data?.ok) console.error('[InvoicePaymentForm] confirm failed', data);
 
-      toast({ title: t('pg.inv.paidToast'), description: t('pg.inv.paidToastBody') });
-      onSuccess();
+      const pending = paymentIntent?.status === 'processing';
+      toast({
+        title: pending ? t('pg.inv.bankPending') : t('pg.inv.paidToast'),
+        description: pending ? t('pg.inv.bankPendingBody') : t('pg.inv.paidToastBody'),
+      });
+      onSuccess(pending);
     } catch (err: any) {
       toast({ title: t('pg.inv.payFailed'), description: err?.message || t('pg.inv.payFailedBody'), variant: 'destructive' });
     } finally {
@@ -84,23 +113,29 @@ export function InvoicePaymentForm({ invoiceId, viewToken, clientSecret, payment
           <input className="lv-input" type="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
         </label>
       </div>
-      <div className="lv-field">
-        <span className="lv-label">{t('pg.inv.cardNumber')}</span>
-        <div style={box}><CardNumberElement options={elementOptions} /></div>
-      </div>
-      <div style={{ display: 'grid', gap: 14, gridTemplateColumns: '1fr 1fr' }}>
-        <div className="lv-field">
-          <span className="lv-label">{t('pg.inv.expiry')}</span>
-          <div style={box}><CardExpiryElement options={elementOptions} /></div>
-        </div>
-        <div className="lv-field">
-          <span className="lv-label">{t('pg.inv.cvc')}</span>
-          <div style={box}><CardCvcElement options={elementOptions} /></div>
-        </div>
-      </div>
+      {method === 'bank' ? (
+        <p className="lv-small">{t('pg.inv.bankIntro')}</p>
+      ) : (
+        <>
+          <div className="lv-field">
+            <span className="lv-label">{t('pg.inv.cardNumber')}</span>
+            <div style={box}><CardNumberElement options={elementOptions} /></div>
+          </div>
+          <div style={{ display: 'grid', gap: 14, gridTemplateColumns: '1fr 1fr' }}>
+            <div className="lv-field">
+              <span className="lv-label">{t('pg.inv.expiry')}</span>
+              <div style={box}><CardExpiryElement options={elementOptions} /></div>
+            </div>
+            <div className="lv-field">
+              <span className="lv-label">{t('pg.inv.cvc')}</span>
+              <div style={box}><CardCvcElement options={elementOptions} /></div>
+            </div>
+          </div>
+        </>
+      )}
       <button type="submit" className="lv-btn go lg wide" disabled={!stripe || loading}>
         {loading ? <Loader2 size={16} className="animate-spin" /> : <Lock size={16} />}
-        {loading ? t('pg.inv.processing') : t('pg.inv.payButton', { amount: `$${amount.toFixed(2)}` })}
+        {loading ? t('pg.inv.processing') : t(method === 'bank' ? 'pg.inv.payBankButton' : 'pg.inv.payButton', { amount: `$${amount.toFixed(2)}` })}
       </button>
       <p className="lv-small" style={{ textAlign: 'center' }}>{t('pg.inv.stripeNote')}</p>
     </form>

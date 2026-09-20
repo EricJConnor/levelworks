@@ -54,6 +54,7 @@ export const lists: Record<string, string> = {
   'lst.notSent': 'Not sent',
   'lst.amountDue': '{amount} due',
   'lst.paidInFull': 'Paid in full',
+  'lst.bankClearing': 'Bank transfer clearing',
   'lst.markPaidShort': 'Mark paid',
   'lst.markAsPaid': 'Mark as paid',
   'lst.markedAsPaidNote': 'Marked as paid',

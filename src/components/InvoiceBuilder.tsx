@@ -11,6 +11,7 @@ import { looksSpanish } from '@/lib/translate';
 import { linePricesShown, lineAmountShown, rememberedLinePrices, rememberLinePrices } from '@/lib/linePrices';
 import { Switch } from './Switch';
 import { clientAddressOf } from '@/lib/clientAddress';
+import { payMethodsOf, rememberedPayMethods, rememberPayMethods, bankFee, cardFee, type PayMethod } from '@/lib/payMethods';
 import { SendInvoiceModal } from './SendInvoiceModal';
 
 interface InvoiceBuilderProps {
@@ -46,6 +47,16 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, invo
   // the estimate it came from; a fresh invoice opens the way he left the last.
   const [showPrices, setShowPricesState] = useState<boolean>(initialData?.lineItems?.length ? linePricesShown(initialData.lineItems) : rememberedLinePrices());
   const setShowPrices = (v: boolean) => { setShowPricesState(v); rememberLinePrices(v); };
+  /**
+   * How the client may pay: card, bank transfer, or both. His choice, per
+   * invoice, because the fee difference is trivial on a repair and enormous on
+   * a roof. Carried over from the estimate it came from; a fresh invoice opens
+   * the way he left the last one.
+   */
+  const [payMethods, setPayMethodsState] = useState<PayMethod>(
+    initialData?.lineItems?.length ? payMethodsOf(initialData.lineItems) : rememberedPayMethods()
+  );
+  const setPayMethods = (v: PayMethod) => { setPayMethodsState(v); rememberPayMethods(v); };
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
   const [sending, setSending] = useState(false);
@@ -98,6 +109,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, invo
     setLineItems(existing.lineItems?.length ? existing.lineItems : [{ description: '', quantity: 1, rate: 0 }]);
     setTaxRate(existing.taxRate || 0);
     setShowPricesState(linePricesShown(existing.lineItems));
+    setPayMethodsState(payMethodsOf(existing.lineItems));
     setDueDate(existing.dueDate ? String(existing.dueDate).slice(0, 10) : '');
     setNotes(existing.notes || '');
   }, [existing, loadedId]);
@@ -190,6 +202,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, invo
       ...(item.sourceStale ? { sourceStale: true } : {}),
       ...(showPrices ? {} : { hidePrice: true }),
       ...(clientAddress.trim() ? { clientAddress: clientAddress.trim() } : {}),
+      payMethods,
     }));
   };
 
@@ -407,6 +420,28 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, invo
       <div className="eb-sum-row prices">
         <span className="eb-prices-txt"><b>{t('est.showLinePrices')}</b><span className="lv-small">{t('est.showLinePricesHint')}</span></span>
         <Switch on={showPrices} onChange={setShowPrices} label={t('est.showLinePrices')} />
+      </div>
+      {/*
+        How the client may pay. The fee line underneath is the whole argument:
+        a card on a $20,000 roof costs $580, a bank transfer costs $5, because
+        Stripe caps it. LevelWorks adds nothing to either.
+      */}
+      <div className="eb-sum-row prices">
+        <span className="eb-prices-txt">
+          <b>{t('inv.howTheyPay')}</b>
+          <span className="lv-small">
+            {payMethods === 'card' ? t('inv.feeCard', { fee: money(cardFee(total)) })
+              : payMethods === 'bank' ? t('inv.feeBank', { fee: money(bankFee(total)) })
+              : t('inv.feeBoth', { card: money(cardFee(total)), bank: money(bankFee(total)) })}
+          </span>
+        </span>
+      </div>
+      <div className="lv-seg eb-pay-seg">
+        {(['card', 'bank', 'both'] as PayMethod[]).map((m) => (
+          <button key={m} type="button" className={payMethods === m ? 'on' : ''} onClick={() => setPayMethods(m)}>
+            {t(m === 'card' ? 'inv.payCard' : m === 'bank' ? 'inv.payBank' : 'inv.payBoth')}
+          </button>
+        ))}
       </div>
     </div>
   );

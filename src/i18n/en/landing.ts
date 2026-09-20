@@ -164,6 +164,10 @@ export const landing: Record<string, string> = {
 
   // ---- founder ----
   'lp.founderEyebrow': 'Why it exists',
+  'lp.reviewEyebrow': 'From a customer',
+  'lp.reviewQuote': 'LevelWorks is awesome! It\u2019s made by a contractor for contractors. It has what we need in order to send out estimates, get approval from the customer and invoice it once the work is done. I have asked for small updates and Eric has made all of them happen very quickly! The pricing is fantastic as well! I highly recommend LevelWorks to anyone who wants to get proposals out quickly right from your phone.',
+  'lp.reviewWho': 'A roofing contractor',
+  'lp.reviewRole': 'LevelWorks customer',
   'lp.founderQuote': '"I run a home improvement company. I was paying over a hundred dollars a month for estimating software that put its own logo on my paperwork and still didn\'t do recurring billing. So I built the app I wanted, and priced it the way I\'d want to pay for it."',
   'lp.founderRolePre': 'Founder, LevelWorks · Owner,',
   'lp.founderRolePost': ', Philadelphia',

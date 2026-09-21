@@ -110,3 +110,20 @@ by checking production rather than assuming.
 
 Same discipline as the rest of this file: **verify what is actually there, not what you asked
 for.**
+
+**And two things the database taught on 21 September.**
+
+Switching on row level security does not start from nothing. It **wakes up policies that were
+already there and asleep**, because a policy on a table with security off does nothing at all.
+Turning it on activated four old ones and the tables stayed wide open. Always list the policies
+after enabling it, never assume the state you just created is the whole state.
+
+**Read what a rule does, not what it is called.** The one that leaked everything was named
+"Public can view estimates by token" and its actual condition was `view_token IS NOT NULL`. That
+checks the row *has* a token, not that the caller *knows* it, and every sent estimate has one.
+The name described an intention nobody had implemented.
+
+**And say "the rule looks wrong", not "I proved it".** The test used to demonstrate that a
+stranger could write aimed at a row that does not exist, so it returned success either way and
+proved nothing. The policy text was damning on its own. Overstating the evidence is its own
+failure even when the conclusion turns out right.

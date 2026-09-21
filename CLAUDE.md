@@ -11,11 +11,14 @@ Everything below this heading is reference. This is the live state. Older sectio
 
 **Waiting on Eric, in order of how much it matters:**
 
-1. **Run `supabase/sql/rls_estimates_invoices.sql` in the Supabase SQL editor.** Until it runs,
-   `estimates` (42 rows) and `invoices` (15 rows) are readable by **anyone on the internet**,
-   including client names, emails, phones, addresses and prices. Verified from outside with no
-   login on Sep 20. The code half is deployed and falls back safely, so there is no rush-induced
-   outage, but the door is open until that SQL runs.
+1. ~~Run the row-level-security SQL.~~ **DONE Sep 21, and verified.** `estimates` and `invoices`
+   now return 0 rows to a stranger, where they returned 42 and 15. A real `/view-estimate` link
+   opened signed out on a phone still loads. **The sting: enabling security was not enough.** The
+   tables already carried four policies that had been asleep, and one of them, named "Public can
+   view estimates by token", actually read `view_token IS NOT NULL` — it checked that a row *has*
+   a token, not that the caller knows it. Turning security on woke them up and the tables stayed
+   open. They are dropped; all ten remaining policies end in `auth.uid() = user_id`. The whole
+   story and the exact SQL are in `supabase/sql/rls_estimates_invoices.sql`.
 2. **Switch on ACH Direct Debit** for connected accounts in Stripe. Done Sep 20, verify it stuck.
    Then a $5 test invoice to himself, paid by bank, to prove the whole path.
 3. **A Google Ads account with a card on it.** Blocks both untried channels, search and YouTube.

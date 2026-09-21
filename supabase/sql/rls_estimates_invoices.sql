@@ -105,6 +105,56 @@ create policy "invoices are the owner's"
 
 commit;
 
+-- ---------------------------------------------------------------------
+-- 3. The part that was not in the plan, and was the whole problem.
+-- ---------------------------------------------------------------------
+-- Run on 21 Sep. Enabling row level security did NOT close the hole,
+-- because the tables already carried policies that had been asleep the
+-- whole time: with security switched off a policy does nothing, and
+-- switching it on woke them up. Four of them, and they were the leak:
+--
+--   "Public can view estimates by token"  SELECT  {public}  (view_token IS NOT NULL)
+--   "Public can sign estimates"           UPDATE  {public}  (view_token IS NOT NULL)
+--   and the matching pair on invoices
+--
+-- Read that condition carefully. It does not check the token. It checks
+-- that the row HAS a token, which every sent estimate does. The name says
+-- "by token" and describes an intention the rule never implemented.
+--
+-- Signing does not need the UPDATE policy: it goes through the deployed
+-- `save-signature` edge function, which runs server side.
+--
+-- This drops only policies that never check who is asking, and keeps every
+-- policy that does. Safe to run again; it will find nothing.
+
+do $$
+declare p record;
+begin
+  for p in
+    select tablename, policyname
+    from pg_policies
+    where schemaname = 'public'
+      and tablename in ('estimates', 'invoices')
+      and 'public' = any(roles)
+      and (qual is null or qual not like '%auth.uid()%')
+      and (with_check is null or with_check not like '%auth.uid()%')
+  loop
+    execute format('drop policy %I on public.%I', p.policyname, p.tablename);
+    raise notice 'dropped: % on %', p.policyname, p.tablename;
+  end loop;
+end $$;
+
+-- =====================================================================
+-- VERIFIED 21 Sep 2026, from outside with only the anon key
+-- =====================================================================
+--   read estimates  -> 0 rows (was 42)
+--   read invoices   -> 0 rows (was 15)
+--   estimate_by_token with a wrong token -> []
+--   a real /view-estimate link, signed out on a phone -> loads normally
+--
+-- Ten policies remain across the two tables and every one of them ends in
+-- auth.uid() = user_id.
+--
 -- =====================================================================
 -- CHECK IT WORKED
 -- =====================================================================

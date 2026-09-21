@@ -12,7 +12,7 @@ dated.
 when it is read. Write the lesson in plain words, even when the lesson is embarrassing,
 especially then. Never delete a row: a campaign that failed is the most useful row in the file.
 
-Last verified against the platform: **20 September 2026**.
+Last verified against the platform: **21 September 2026**.
 
 ---
 
@@ -23,13 +23,15 @@ Last verified against the platform: **20 September 2026**.
 | `52532618280737` Level-Works-Signups-Test1 | Jun 2026 | Registration | $315.00 | ~194 | 13 | 0 |
 | `52547713746537` LW49-Annual-Launch | Sep 9–14 | **Purchase** | $152.73 | 43 | 3 | 0 |
 | `52548403713537` LW49-LPV | Sep 11–12 | Landing page view | $0.00 | 0 | 0 | 0 |
-| `52548965992137` LW-Signups-Sep2026-Broad | Sep 14– | Registration | $84.20 | 29 | 0 | 0 |
-| `52550071722537` QuoteCheck-Affluent-Uploads | Sep 19– | Lead (upload) | $15.27 | 10 | 0 uploads | 0 |
+| `52548965992137` LW-Signups-Sep2026-Broad | Sep 14– | Registration | $91.14 | 31 | **1** | 0 |
+| `52550071722537` QuoteCheck-Affluent-Uploads | Sep 19– | Lead (upload) | $19.90 | 8 | 0 uploads | 0 |
 
-**Total spent: about $567. Total sign-ups: 16. Total revenue from advertising: $0.**
+**Total spent: about $579. Total sign-ups: 17. Total revenue from advertising: $0.**
 
 Account `3071713068446`, owned by the "What's Next" business portfolio (`1245227667768739`).
-Balance on 20 Sep: **$26.82**, which is a day or two. Prepaid, so delivery simply stops.
+Balance on 20 Sep: **$26.82**. Roughly $24 has gone since across the two campaigns, so it is
+all but empty and delivery stops on its own. The Windsor connector cannot read the balance —
+that figure is Eric's own reading from the billing page, and the spend since is measured.
 
 ### What each one actually taught us
 
@@ -47,14 +49,41 @@ nine hours later it had zero impressions with `estimate_dau: 0`. A full day lost
 delivery estimate at launch would have caught it in one minute. It is now step 1 of the
 pre-flight.
 
-**The sign-up campaign, $84.20 for 29 clicks and nothing.** Two separate faults. Budget was
+**The sign-up campaign's first week, $84.20 for 29 clicks and nothing.** Two separate faults. Budget was
 shared across English and Spanish, so Meta starved the set that converted in favour of cheaper
 Spanish Reels views. And at $12 a day it was producing about three registration events a week
 against the fifty Meta needs, so it never left the learning phase at all.
 
-**Quote Check, $15.27 for 10 clicks.** Six of those ten came from Audience Network, in-app
-banner inventory where clicks are mostly accidents. So the real number is about four visitors,
-and nothing can be concluded from it. Audience Network was excluded on day one, which was right.
+**The feed-only switch held, and produced the campaign's first sign-up (21 Sep).** The day
+after ad set `52548966017337` was restricted to Facebook feed and Instagram feed, **every dollar
+landed in those two placements** — nothing in Reels, Stories, in-stream, Marketplace or Audience
+Network. That matters beyond this campaign: Meta's "allow limited spend to excluded placements"
+setting, on by default since October 2025 and applicable to this OUTCOME_SALES campaign, did
+**not** fire. A named-placement list is therefore a real restriction here, not a suggestion.
+
+And on 20 September the Facebook feed recorded **1 completed registration and 1 Lead** — the
+first sign-up this campaign has ever been credited with, out of $91. On the same day Facebook
+Reels took $5.93 for 42 views and produced nothing. One sign-up is not proof; it is the first
+evidence in the direction the placement breakdown already pointed.
+
+Cost per thousand views on the Facebook feed went $68.77 (20 Sep) to $87.49 (21 Sep), on 47
+views in a few hours. That is noise, not a trend. The placement edit also restarted learning, so
+nothing about cost is readable before 23 September.
+
+**The Lead event fires, and one event is not a ladder.** The `Lead` pixel event added on 20
+September is recording (1 so far, through `offsite_conversion.fb_pixel_lead`). The point of it
+was to give Meta a rung that happens often enough to optimise against — roughly 50 a week. At one
+event, switching the ad set's optimisation to Lead would trade a rare event for a slightly less
+rare one and still sit far below the threshold. Leave it on CompleteRegistration until Lead is
+accumulating several a day.
+
+**Quote Check, $19.90 for 1,670 views and 8 link clicks.** At the first read, six of the then-ten
+clicks came from Audience Network — in-app banner inventory where clicks are mostly accidents —
+and it was excluded on day one, which was right. The number that stands out now is different:
+**8 link clicks produced 2 landing page views.** Six of eight people who clicked never arrived.
+That is either the placement still serving accidental taps or the page failing to load fast
+enough on a phone, and it is worth an hour before another dollar goes in. Cost per thousand views
+is about $12 here against $80 on the LevelWorks set, so cheap attention is not the problem.
 
 ---
 

@@ -34,6 +34,17 @@ and honest: 53 members, 13 have built an estimate, 9 sent one to a client, $376 
 through the app, and **four of the last five sign-ups built an estimate**. Meta attributed none
 of those five. People who find it use it; people we interrupt do not.
 
+**The feature tips run until Eric stops them (Sep 21).** Subjects are "Tip of the day", never
+numbered. **18 tips**, both languages. At the end of the list a member simply stops getting them,
+and **Eric is emailed at 7echome@gmail.com two tips before that happens** so he can write the next
+round (`warnOwner` in `api/_lib/tips.js`). Looping back to the first tip was built and then
+rejected by him: sending somebody a tip they have already read is worse than a quiet gap. The
+warning fires once per length of the list, flagged on his own auth record, so adding tips arms it
+again for the new end. **Every third tip carries a short, clearly labelled note about Eric Connor
+Web Design** (`STUDIO`), four rotating versions per language. It is separated by a rule and says
+it is his other company: do not disguise it as advice, because what makes these emails work is
+that they are useful and ask for nothing.
+
 **Shipped Sep 20 and live:** invoices can be saved without sending and reopened to edit; bank
 transfer with a per-invoice choice of card, bank or both and no fee from LevelWorks; the payment
 states both sides see; the `Lead` pixel event; the public stats page; Quote Check's three-tap

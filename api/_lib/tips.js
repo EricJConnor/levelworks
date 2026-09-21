@@ -11,10 +11,11 @@
  *
  * Adding a tip: append to TIPS (en + es). Never reorder or remove: stage numbers are positions.
  *
- * THE LIST NEVER ENDS. Past the last tip it wraps to the first, so nobody stops
- * hearing from Eric just because they have been here a while. That is why no
- * subject carries a number any more: it is "Tip of the day", and a repeat five
- * weeks later reads as one rather than as tip 3 for the second time.
+ * AT THE END THE EMAIL STOPS, and Eric gets a reminder two tips before that so
+ * he can write the next round (warnOwner). Looping back to the first tip was
+ * tried and rejected: sending somebody a tip they have already read is worse
+ * than a quiet gap. No subject carries a number, so the list can grow or be
+ * reordered in spirit without anybody noticing a seam.
  *
  * Every third tip carries a short, clearly labelled note about Eric Connor Web
  * Design, his other company (see STUDIO below). It is separated by a rule and
@@ -435,6 +436,57 @@ export function tipMail(n, lang) {
 }
 
 /**
+ * Tell Eric before the tips run out, not after.
+ *
+ * His instruction: "rather than loop back to the first tip, just send me a
+ * reminder email and I'll come here and figure out what would work for the
+ * next round". Looping would have meant sending people things they had already
+ * read, which is worse than a gap.
+ *
+ * Fires when the member furthest along is LEAD tips from the end, so there are
+ * a few days to write more before anybody actually runs dry.
+ *
+ * Sent once per length of the list. The flag lives on Eric's own auth record,
+ * which is already in `users` because he is on the list, so this needs no
+ * extra lookup and no migration. Adding tips changes TIPS.length, which arms
+ * it again for the new end of the list.
+ */
+const OWNER_EMAIL = '7echome@gmail.com';
+const LEAD = 2;
+
+async function warnOwner({ a, users, crowd, dry, report }) {
+  if (crowd < TIPS.length - LEAD) return;
+  const owner = users.find(u => String(u.email || '').trim().toLowerCase() === OWNER_EMAIL);
+  const flag = Number((owner?.app_metadata || {}).tips_refill_warned) || 0;
+  if (owner && flag === TIPS.length) return;
+  // Without a record to mark, only fire on the exact tip so it cannot repeat daily.
+  if (!owner && crowd !== TIPS.length - LEAD) return;
+  if (dry) { report.refill = 'would warn'; return; }
+
+  const left = Math.max(0, TIPS.length - crowd);
+  const lines = [
+    'This is the tips email telling on itself.',
+    `<b>You are ${left === 0 ? 'out of tips' : left === 1 ? 'one tip from the end' : `${left} tips from the end`}.</b>`,
+    `There are ${TIPS.length} tips in the list and the members furthest along have had ${crowd}. When someone reaches the end they simply stop getting the every-other-morning email. Nothing breaks and nobody gets a repeat, it just goes quiet for them.`,
+    'Open a conversation with Claude and say you want to write the next round. It knows where the tips live, what the last ones covered, and which features have shipped since. Adding them arms this reminder again for the new end of the list.',
+    'If you would rather it stopped for good, say that instead.',
+  ];
+  const html = layout({ lang: 'en', lines, cta: 'Open LevelWorks', ctaUrl: APP });
+  const text = lines.map(strip).join('\n\n') + `\n\nOpen LevelWorks: ${APP}`;
+  try {
+    // Deliberately no unsubscribe: this is Eric's own operational reminder,
+    // not marketing, and he must not be able to switch it off by accident.
+    await sendMail({ to: OWNER_EMAIL, subject: `LevelWorks tips: ${left === 0 ? 'the list is finished' : `${left} left to write`}`, html, text });
+    report.refill = `warned at ${TIPS.length}`;
+    if (owner) {
+      await a.auth.admin.updateUserById(owner.id, {
+        app_metadata: { ...(owner.app_metadata || {}), tips_refill_warned: TIPS.length },
+      });
+    }
+  } catch (e) { report.errors.push('refill warning: ' + e.message); }
+}
+
+/**
  * Sends the next tip to every member who is due one. `users` are auth users, `langOf(u)`
  * gives the language, `skip` is a Set of lowercase emails to leave alone this run
  * (unsubscribed, or already emailed this morning). Returns a small report.
@@ -442,22 +494,21 @@ export function tipMail(n, lang) {
 export async function sendTips({ a, users, langOf, skip, dry = false, now = Date.now(), budget = 200 }) {
   const report = { sent: [], done: 0, errors: [] };
   const crowd = Math.max(0, ...users.filter(u => !(u.app_metadata || {}).observer).map(u => Number((u.app_metadata || {}).tip_stage) || 0));
+  try { await warnOwner({ a, users, crowd, dry, report }); }
+  catch (e) { report.errors.push('refill warning: ' + e.message); }
   for (const u of users) {
     if (budget <= 0) break;
     const email = String(u.email || '').trim().toLowerCase();
     if (!email || email.endsWith('@levelworks.org') || skip.has(email)) continue;
     const meta = u.app_metadata || {};
     const stage = Number(meta.tip_stage) || 0;
-    // No end. Eric: "I want this thing to just keep going forever until I say
-    // stop." Past the last tip it wraps to the first, so the email never goes
-    // quiet on a member who has been here a while. tip_stage keeps counting up
-    // so the cadence and the catch-up logic are unchanged; only the tip it
-    // picks wraps. With 18 tips at every other morning a repeat comes round
-    // about every five weeks, which is why the subjects no longer carry a
-    // number: it reads as the tip of the day, not as tip 3 again.
+    // At the end of the list a member simply stops hearing from us, rather than
+    // being sent tips they have already read. Eric is emailed before that
+    // happens so he can write the next round; see warnOwner below.
+    if (stage >= TIPS.length) { report.done++; continue; }
     const gap = meta.observer && stage < crowd ? CATCHUP_HOURS : GAP_HOURS;
     if (meta.tip_at && now - new Date(meta.tip_at).getTime() < gap * 3600 * 1000) continue;
-    const n = (stage % TIPS.length) + 1; const lang = langOf(u);
+    const n = stage + 1; const lang = langOf(u);
     const m = tipMail(n, lang);
     if (!dry) {
       try {

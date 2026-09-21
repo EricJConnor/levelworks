@@ -12,21 +12,29 @@ dated.
 when it is read. Write the lesson in plain words, even when the lesson is embarrassing,
 especially then. Never delete a row: a campaign that failed is the most useful row in the file.
 
-Last verified against the platform: **21 September 2026**.
+Last verified against the platform: **22 September 2026**, by reading every campaign on the
+account rather than the ones we remembered.
 
 ---
 
 ## The money
 
-| Campaign | Ran | Bid for | Spent | Clicks | Sign-ups | Sales |
-|---|---|---|---|---|---|---|
-| `52532618280737` Level-Works-Signups-Test1 | Jun 2026 | Registration | $315.00 | ~194 | 13 | 0 |
-| `52547713746537` LW49-Annual-Launch | Sep 9–14 | **Purchase** | $152.73 | 43 | 3 | 0 |
-| `52548403713537` LW49-LPV | Sep 11–12 | Landing page view | $0.00 | 0 | 0 | 0 |
-| `52548965992137` LW-Signups-Sep2026-Broad | Sep 14– | Registration | $91.14 | 31 | **1** | 0 |
-| `52550071722537` QuoteCheck-Affluent-Uploads | Sep 19– | Lead (upload) | $19.90 | 8 | 0 uploads | 0 |
+| Campaign | Ran | Bid for | Spent | Link clicks | Sign-ups | Cost each | Sales |
+|---|---|---|---|---|---|---|---|
+| `52532618280737` Level-Works-Signups-Test1 | Jun 2026 | Registration | $315.41 | ~194 | 13 | $24.26 | 0 |
+| `52542115911737` level works · $5 ad · aug 26 | **Aug 19–25** | Registration | **$77.41** | 45 | **6** | **$12.90** | 0 |
+| `52547713746537` LW49-Annual-Launch | Sep 9–14 | **Purchase** | $152.73 | 43 | 3 | $50.91 | 0 |
+| `52548403713537` LW49-LPV | Sep 11–12 | Landing page view | $0.00 | 0 | 0 | — | 0 |
+| `52548965992137` LW-Signups-Sep2026-Broad | Sep 14–21 | Registration | $92.66 | 31 | 1 | $92.66 | 0 |
+| `52550071722537` QuoteCheck-Affluent-Uploads | Sep 19–21 | Lead (upload) | $22.07 | 8 (**2 real**) | 0 uploads | — | 0 |
 
-**Total spent: about $579. Total sign-ups: 17. Total revenue from advertising: $0.**
+**Total spent: $660.28. Total sign-ups: 23. Total revenue from advertising: $0.**
+
+**A whole campaign was missing from this file until 22 September.** The August run
+(`52542115911737`, $77.41) was never recorded, because this ledger was built from what the
+last session remembered rather than from a list of every campaign on the account. It is the
+best campaign we have ever run. **Read the account, not the notes** — `get_data` with no
+campaign filter lists everything, and that is now the first step of any read.
 
 Account `3071713068446`, owned by the "What's Next" business portfolio (`1245227667768739`).
 Balance on 20 Sep: **$26.82**. Roughly $24 has gone since across the two campaigns, so it is
@@ -38,6 +46,34 @@ that figure is Eric's own reading from the billing page, and the spend since is 
 **June, $315 for 13 sign-ups (~$24 each).** The only campaign that ever produced anything. It
 bid for **registrations**, an event the pixel could actually see. This is the baseline every
 later campaign should have been measured against and was not.
+
+**August, $77.41 for 6 sign-ups (~$12.90 each) — the best campaign we have run, and it was
+not in this file.** One ad set, "US Contractors Broad — $10/day". One ad, "levelworks — your
+logo brand". It bid for **registrations**, like June.
+
+What separates it from everything since is visible in the breakdown, and it is not the
+targeting:
+
+| Placement | Spend | Views | Link clicks | Sign-ups | CPM |
+|---|---|---|---|---|---|
+| Facebook feed | $43.60 | 917 | 21 | **4** | $47.55 |
+| Instagram Stories | $12.32 | 4,063 | 14 | 0 | $3.03 |
+| Facebook Reels | $10.40 | 121 | 3 | 0 | $85.95 |
+| Instagram feed | $4.33 | 62 | 2 | **1** | $69.84 |
+| Threads feed | $0.36 | 13 | 1 | **1** | $27.69 |
+
+Two things to take from it. **The Facebook feed did the work at $10.90 a sign-up**, which is
+the best figure in the account, while Instagram Stories bought four thousand cheap views and
+converted none of them — the same story the September placement edit told, three weeks
+earlier, unread. And **the August ad had no video in it at all**: not one `video_view` action
+across the whole campaign, where every September ad is video-led. Its clicks also arrived:
+45 link clicks produced 36 landing page views, an 80% arrival rate against roughly 58% in
+September.
+
+Six sign-ups is a small number and August pointed at the ordinary site rather than the
+reworked `/annual` page, so this is a lead worth following, not a proof. But the pattern is
+consistent: **both campaigns that ever produced sign-ups bid for registrations, and the one
+that produced them cheapest was a still image in the feed.**
 
 **September annual launch, $152.73 for 0 purchases.** Bid for **purchase** on a pixel that had
 never seen one. Meta had nothing to learn from, so it bought the cheapest attention available
@@ -77,13 +113,25 @@ event, switching the ad set's optimisation to Lead would trade a rare event for 
 rare one and still sit far below the threshold. Leave it on CompleteRegistration until Lead is
 accumulating several a day.
 
-**Quote Check, $19.90 for 1,670 views and 8 link clicks.** At the first read, six of the then-ten
-clicks came from Audience Network — in-app banner inventory where clicks are mostly accidents —
-and it was excluded on day one, which was right. The number that stands out now is different:
-**8 link clicks produced 2 landing page views.** Six of eight people who clicked never arrived.
-That is either the placement still serving accidental taps or the page failing to load fast
-enough on a phone, and it is worth an hour before another dollar goes in. Cost per thousand views
-is about $12 here against $80 on the LevelWorks set, so cheap attention is not the problem.
+**Quote Check, $22.07 — and the Audience Network exclusion never took.** Audience Network was
+excluded on day one. The 22 September placement read shows it took **1,358 of the campaign's
+1,698 views, 80% of everything served**, at a cost per thousand of $0.65, and produced 6 of the
+8 link clicks and 1 landing page view.
+
+So the honest figure is not $22 for 8 clicks. Strip the banner taps out and it is
+**$21.19 for 2 real clicks and 1 real visitor.** The "8 clicks, 2 landing page views" puzzle
+had nothing to do with page speed: five of six Audience Network clicks were accidents that
+never loaded anything.
+
+**This is the finding that matters beyond Quote Check.** On the LevelWorks ad set the same week,
+placements were set as a **named include list** (facebook feed, instagram stream) and it held
+perfectly — not a cent went anywhere else. On Quote Check, Audience Network was **excluded**, and
+it still took four views in five. Meta's "allow limited spend to excluded placements" setting
+explains it, and the lesson is a rule:
+
+> **Name the placements you want. Never rely on excluding the ones you don't.**
+
+An exclusion is a request. An include list is a restriction.
 
 ---
 
@@ -113,13 +161,18 @@ placements are no longer eligible simply never serves.
 Both of the expensive mistakes above were invisible in the headline numbers and obvious in the
 breakdown.
 
-**Excluding a placement no longer fully excludes it.** Since October 2025 Meta ships a setting,
-on by default, that spends around 5% of budget on *each* excluded placement, on sales and leads
-campaigns. Exclude four and up to a fifth of the budget can still land there. Check the
-breakdown after any placement change rather than assuming the change took.
+**Excluding a placement does not exclude it; naming the ones you want does.** Since October 2025
+Meta ships a setting, on by default, that spends on *excluded* placements anyway — nominally
+around 5% each, on sales and leads campaigns. Measured on this account on 22 September it was far
+worse than 5%: Quote Check's excluded Audience Network took **80% of all views**. In the same
+week, the LevelWorks ad set used a **named include list** instead and not one cent left the two
+placements named. So: build placements as an include list, never as an exclusion, and read the
+breakdown afterwards either way.
 
-**Audience Network is not worth buying for this product.** In-app and in-game inventory where
-taps are largely accidental. It took six of Quote Check's first ten clicks and produced nothing.
+**Audience Network is not worth buying for this product, and excluding it does not remove it.**
+In-app and in-game inventory where taps are largely accidental. On Quote Check it took 80% of
+all views and 6 of 8 link clicks **after being excluded on day one**. Strip it out and $21 bought
+two real clicks. Always check the breakdown for a placement you thought you had removed.
 
 **`update_adset` replaces the entire targeting spec.** Read the current one back and resend it
 with your additions, or the geography and age targeting are silently wiped.

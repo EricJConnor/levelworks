@@ -13,6 +13,12 @@ Work top to bottom. Nothing here takes more than a minute.
 
 ## Before launch
 
+**0. List every campaign on the account, not the ones you remember.**
+`get_data` with no campaign filter returns all of them. On 22 September this turned up an
+August campaign worth $77.41 that had never been recorded anywhere — and it was the best
+campaign the account has ever run, at $12.90 a sign-up. A read built from notes repeats the
+notes' blind spots.
+
 **1. Can it deliver at all?**
 `GET /<adset_id>/delivery_estimate?fields=estimate_dau,estimate_mau_lower_bound,estimate_mau_upper_bound,estimate_ready`
 
@@ -31,6 +37,12 @@ has never seen one cost $152.73 and produced nothing.
 `GET /<ad_id>?fields=creative{asset_feed_spec}` and read `asset_customization_rules`. **A rule
 with no positions is not a catch-all.** Meta matches nothing to it and silently skips that
 format. This is why the feed was never served for three days at a cost per thousand of $79.
+
+**3b. Name the placements you want; never exclude the ones you don't.**
+An exclusion is a request and Meta may ignore most of it. Measured here: Quote Check excluded
+Audience Network and it still took **80% of all views**, while the LevelWorks ad set used a
+named include list the same week and nothing served outside it. Build placements as an include
+list, and read the breakdown afterwards either way.
 
 **4. One budget, one audience.**
 Never two languages, two countries or two audiences under one shared campaign budget. The

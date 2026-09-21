@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useInvoices } from '@/contexts/InvoiceContext';
 import { useData } from '@/contexts/DataContext';
 import { Plus, Trash2, Send, X, FileText } from 'lucide-react';
@@ -13,6 +13,8 @@ import { Switch } from './Switch';
 import { clientAddressOf } from '@/lib/clientAddress';
 import { payMethodsOf, rememberedPayMethods, rememberPayMethods, bankFee, cardFee, type PayMethod } from '@/lib/payMethods';
 import { SendInvoiceModal } from './SendInvoiceModal';
+import { NumInput } from './NumInput';
+import { useKeepInView } from '@/lib/keepInView';
 
 interface InvoiceBuilderProps {
   estimateId?: string;
@@ -42,6 +44,8 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, invo
   const [clientAddress, setClientAddress] = useState<string>(initialData?.clientAddress || clientAddressOf(initialData?.lineItems));
   const [projectName, setProjectName] = useState(initialData?.projectName || '');
   const [lineItems, setLineItems] = useState(initialData?.lineItems || [{ description: '', quantity: 1, rate: 0 }]);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useKeepInView(bodyRef);   // the phone keyboard otherwise sits over the field you are typing in
   const [taxRate, setTaxRate] = useState(initialData?.taxRate || 0);
   // Prices per line on the client's copy, or only the total. Carried over from
   // the estimate it came from; a fresh invoice opens the way he left the last.
@@ -403,14 +407,11 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, invo
       <div className="eb-sum-row">
         <span>{t('m.tax')}</span>
         <span className="eb-tax">
-          <input
-            type="number"
-            inputMode="decimal"
+          <NumInput
             className="lv-input num eb-tax-in"
             value={taxRate}
-            onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
-            onFocus={(e) => e.target.select()}
-            aria-label={t('est.taxRatePercent')}
+            onChange={setTaxRate}
+            ariaLabel={t('est.taxRatePercent')}
           />
           <span className="lv-small">%</span>
           <b className="lv-num">{money(tax)}</b>
@@ -489,11 +490,11 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, invo
         <div className="eb-qr">
           <label className="lv-field">
             <span className="lv-label">{t('m.qty')}</span>
-            <input type="number" inputMode="decimal" className="lv-input num" value={item.quantity} onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} />
+            <NumInput className="lv-input num" value={item.quantity} onChange={(n) => updateLineItem(index, 'quantity', n)} ariaLabel={t('m.qty')} />
           </label>
           <label className="lv-field">
             <span className="lv-label">{t('m.rate')}</span>
-            <input type="number" inputMode="decimal" className="lv-input num" value={item.rate} onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} />
+            <NumInput className="lv-input num" value={item.rate} onChange={(n) => updateLineItem(index, 'rate', n)} ariaLabel={t('m.rate')} placeholder="0.00" />
           </label>
           <div className="lv-field">
             <span className="lv-label">{t('m.lineTotal')}</span>
@@ -520,7 +521,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, invo
           </div>
         </header>
 
-        <div className="eb-body">
+        <div className="eb-body" ref={bodyRef}>
           <div className="eb-col">
 
             {/* --- who it's for --- */}

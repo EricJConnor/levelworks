@@ -13,6 +13,8 @@ import { looksSpanish } from '@/lib/translate';
 import { linePricesShown, withLinePrices, lineAmountShown, rememberedLinePrices, rememberLinePrices } from '@/lib/linePrices';
 import { Switch } from './Switch';
 import { clientAddressOf, withClientAddress } from '@/lib/clientAddress';
+import { NumInput } from './NumInput';
+import { useKeepInView } from '@/lib/keepInView';
 
 interface LineItem {
   id: string; description: string; quantity: number; rate: number; total: number; sectionTitle?: string;
@@ -88,6 +90,8 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
   const [openTitlePicker, setOpenTitlePicker] = useState<string | null>(null);
   const [newTitleInput, setNewTitleInput] = useState('');
   const [showNewTitleInput, setShowNewTitleInput] = useState(false);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  useKeepInView(bodyRef);   // the phone keyboard otherwise sits over the field you are typing in
   const titlePickerRef = useRef<HTMLDivElement>(null);
   const clientPickerRef = useRef<HTMLDivElement>(null);
   const [estimatePhotos, setEstimatePhotos] = useState<{ id: string; fileUrl: string; caption: string }[]>([]);
@@ -469,11 +473,11 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
       <div className="eb-qr">
         <label className="lv-field">
           <span className="lv-label">{t('m.qty')}</span>
-          <input type="number" inputMode="decimal" className="lv-input num" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} />
+          <NumInput className="lv-input num" value={item.quantity} onChange={(n) => updateItem(item.id, 'quantity', n)} disabled={isReadOnly} ariaLabel={t('m.qty')} />
         </label>
         <label className="lv-field">
           <span className="lv-label">{t('m.rate')}</span>
-          <input type="number" inputMode="decimal" className="lv-input num" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} />
+          <NumInput className="lv-input num" value={item.rate} onChange={(n) => updateItem(item.id, 'rate', n)} disabled={isReadOnly} ariaLabel={t('m.rate')} placeholder="0.00" />
         </label>
         <div className="lv-field">
           <span className="lv-label">{t('m.lineTotal')}</span>
@@ -607,7 +611,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
       <div className="eb-sum-row">
         <span>{t('m.tax')}</span>
         <span className="eb-tax">
-          <input type="number" inputMode="decimal" className="lv-input num eb-tax-in" value={taxRate} onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} aria-label={t('est.taxRatePercent')} />
+          <NumInput className="lv-input num eb-tax-in" value={taxRate} onChange={setTaxRate} disabled={isReadOnly} ariaLabel={t('est.taxRatePercent')} />
           <span className="lv-small">%</span>
           <b className="lv-num">{money(tax)}</b>
         </span>
@@ -615,7 +619,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
       <div className="eb-sum-row total"><span>{t('m.total')}</span><span className="lv-num">{money(total)}</span></div>
       <div className="eb-sum-row">
         <span>{t('m.deposit')}</span>
-        <input type="number" inputMode="decimal" className="lv-input num eb-dep-in" value={deposit} onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)} onFocus={(e) => e.target.select()} disabled={isReadOnly} aria-label={t('est.depositAmount')} />
+        <NumInput className="lv-input num eb-dep-in" value={deposit} onChange={setDeposit} disabled={isReadOnly} ariaLabel={t('est.depositAmount')} placeholder="0.00" />
       </div>
       <div className="eb-sum-row balance"><span>{t('m.balanceDue')}</span><span className="lv-num">{money(balanceDue)}</span></div>
       <div className="eb-sum-row prices">
@@ -644,7 +648,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
           </div>
         </header>
 
-        <div className="eb-body">
+        <div className="eb-body" ref={bodyRef}>
           <div className="eb-col">
 
             {/* --- who it's for --- */}

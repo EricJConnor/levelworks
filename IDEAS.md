@@ -20,8 +20,8 @@ shelves found so far are contracts signed in a stressful moment by someone with 
 
 Research status: ten lanes were planned (Reddit wish-lists, Hacker News wish-lists, life-stage
 pains, money pains, small-business pains, paperwork, fun/gifts, complaints about big apps,
-Spanish-speaking US, new-in-2026 problems). **Two finished** (big-app complaints, new-in-2026).
-The other eight were cut off by usage limits and never reported; rerun them one at a time.
+Spanish-speaking US, new-in-2026 problems). **Four finished** (big-app complaints, new-in-2026, money pains, life-stage). The other six
+were cut off by usage limits and never reported; rerun them one or two at a time.
 
 ---
 
@@ -147,6 +147,114 @@ $39 to $59. Evidence is lawyer content, not complaining users; respect the pract
 Same law as #4 from the landlord side. "A shared Google Drive folder is fully compliant," which
 caps the price; TurboTenant / zInspector / RentRedi likely have condition reports (not verified).
 Only as an add-on to #4.
+
+## Verified, run 2 (Sep 21 2026): money pains and life-stage lanes
+
+### 11. Extended warranty / service-contract denial appeal kit (auto, home, appliance)
+- **Need:** warranty companies deny by default. "Service contract companies deny nearly every
+  claim they see, because they know some people will hear no and give up." American Home Shield
+  alone has 28,700+ BBB complaints; Texas fined it ~$5M for routine denial of high-cost claims.
+  Denials say "wear and tear", "pre-existing", "no maintenance records", with a 30 to 60 day
+  appeal window nobody uses. https://empireautoprotect.com/blog/2026/05/20/extended-warranty-claim-denied
+- **Who:** millions of active vehicle service contracts and home warranty plans.
+- **Why empty:** only how-to blog posts and contingency lawyers after the fact. Claimable and
+  Counterforce exist for HEALTH insurance only; the auto/home/appliance shelf has nothing.
+- **Build:** upload the contract, the denial letter, the repair invoice → the clause the denial
+  contradicts → formal appeal citing the paragraph and the state's implied-warranty statute; a
+  second tier drafts the attorney-general / BBB complaint if ignored.
+- **Price:** $39 per claim; $69 with the AG follow-up.
+
+### 12. Wedding vendor contract check before signing, and the dispute letter after
+- **Need:** 2025 news: a couple lost $18,000 when the groom died and the venue kept the deposit
+  for "advance planning, staffing and operational commitments"; a Florida bride's fiancé died and
+  the venue kept $7,500 while every other vendor refunded. Avvo: "Wedding vendor contracts: traps
+  to avoid" (no force-majeure carve-out, sole remedy = reshoot, liability capped at the deposit).
+- **Who:** ~2M US weddings a year, 8 to 14 vendor contracts each, $30k+ spend, signed under time
+  pressure and excitement.
+- **Why empty:** everything that exists is for VENDORS (HoneyBook-style suites, vendor contract
+  tools). Nothing reviews the contract from the couple's side; Rocket Lawyer sells templates.
+- **Build:** upload each contract → red clauses in plain English with the edit to ask for; after
+  a dispute, a demand letter. **Price:** $19 per contract (couples run 3 to 6), $49 for a letter.
+
+### 13. Tenant / background screening report error dispute kit (FCRA)
+- **Need:** CFPB: "Errors in your tenant screening report shouldn't keep you from finding a place
+  to call home." ProPublica's "shadow credit score" investigation: mixed files, a dismissed or
+  someone else's eviction, killing an application on the spot.
+- **Who:** every renter or job applicant who gets an adverse action notice; FTC and CFPB call the
+  accuracy problem systemic (SafeRent, RentGrow, First Advantage, Checkr, SmartMove).
+- **Why empty:** only government how-to pages and plaintiff law firms fishing for a lawsuit later;
+  nothing that helps someone get the apartment NOW.
+- **Build:** upload the notice and the report → likely errors (mismatched identifiers, records
+  outside the 7-year window) → the dispute letter addressed to the specific screener from a table
+  of ~15 dispute addresses, plus a letter asking the landlord to hold the decision open for the
+  30-day reinvestigation the law allows. **Price:** $29.
+
+### 14. Rental-car damage bill / "diminished value" charge checker
+- **Need:** CBS: a couple billed $7,600 after a rental including $1,970 "diminished value" plus
+  admin and appraisal fees; NBC: a renter taken to court over disputed damage. Diminished-value
+  billing is barred in California, Indiana, Nevada, New York and Wisconsin, so a share of these
+  bills are simply illegal and nobody checks.
+- **Who:** smaller volume (renters in an accident), but $1,000 to $8,000 a bill, often with no
+  real damage documentation.
+- **Why empty:** only news stories and Amex chargeback anecdotes; diminished-value claim mills
+  work the other direction (your insurer), not the rental company's bill to you.
+- **Build:** upload the agreement, the invoice, the state → line items checked against the
+  company's own contract language and the state's rules → dispute letter plus the exact wording
+  for the credit-card chargeback form (the lever that actually worked). **Price:** $29.
+
+### 15. Long-term-care insurance rate-increase decision report
+- **Need (Bogleheads):** "455% Long Term Care Premium Increase", "Accept LTC Insurance Rate
+  Increase or Cash Out?" Retirees get a 30 to 90 day letter with a 20% to 455% hike and must pick
+  among "reduce benefit", "shared cost", "paid-up", "contingent nonforfeiture", with only the
+  carrier's own rep to ask. https://www.bogleheads.org/forum/viewtopic.php?t=463675
+- **Who:** millions; carriers have run mass rate actions on legacy blocks for a decade (Genworth,
+  John Hancock); it recurs every year.
+- **Why empty:** every calculator that exists (LTCTree, AgentCalc, Blake, seniorcarecostcalc) is
+  lead-gen for an agency selling a replacement policy. Nothing independent reads YOUR letter and
+  YOUR policy.
+- **Build:** upload the letter and the policy → each option in plain English, a break-even
+  projection (pay the increase vs reduced benefit vs lapse and self-insure), state rules (some
+  states cap increases or mandate nonforfeiture). **Price:** $39 to $59.
+
+### 16. CCRC ("buy-in" retirement community) entrance-contract check, before signing
+- **Need:** "Don't Sign a CCRC Contract Without Having a Lawyer Explain It." Entrance fees
+  $100k to $2M (average ~$402k), partly non-refundable depending on contract type (A/B/C),
+  signed by retirees on the sales office's timeline.
+- **Who:** 2,000+ CCRCs, tens of thousands of entrants a year, mostly 75+, often newly widowed.
+- **Why empty:** only generic corporate contract-review suites; nothing tuned to the three CCRC
+  contract types and refund schedules. Distinct from #1 (crisis admission): this is planned,
+  months ahead, and huge-dollar. **Natural sibling of #1 under one brand.**
+- **Build:** upload the contract → type, refund % and schedule, monthly-fee escalation, what
+  happens on a move to higher care, what happens to the entrance fee on death, questions for the
+  sales office. **Price:** $79 to $129.
+
+### Weaker, from the same runs
+- **Financial-aid "professional judgment" appeal** ($19): SwiftStudent is a good FREE tool with
+  school distribution; only worth it bundled with evidence analysis from uploaded pay stubs and
+  bills. Lowest rank.
+- **Private student loan cosigner-release appeal** ($19): a real regulatory right almost nobody
+  uses, but the blocker is lender policy (CFPB: ~90% denied); tiny market, bundle only.
+
+### Checked and rejected in run 2
+Structured-settlement buyout evaluator (SettlementDecisions.com "AI Offer Analyzer" plus buyer-
+run calculators); severance-agreement review (Justee, Contracko, ReviewMyDocs $10, Lexplio,
+Contract Analyzer: full shelf); prenup second read (prenups.ai, HelloPrenup, BeforeYouSign;
+independent counsel is legally required anyway); life-insurance in-force illustration review
+(Insurance Planner AI); reverse mortgage review (HUD counseling mandatory; evidence thin); HOA
+docs for buyers (GoverningDocs, Eli Report, CondoDoc, HomeStand AI); NICU bill review (medical-
+billing advocates, and it is a crisis moment); timeshare exit (the exit industry is the scam;
+Reed Hein paid $2.6M); nanny contracts (free templates, low stakes); relocation clawback (rare,
+small); annuity second opinion (densely occupied by advisors wanting your assets); QDRO drafting
+($300 to $600 cottage industry); gym cancellation (subset of subscription-cancelling shelf);
+life-insurance claim denials (contingency lawyers work for free until payout); debt validation
+letters ($5 to $50 commodity on Gumroad/Etsy); total-loss lowball disputes (public adjusters);
+medical debt on credit reports (largely fixed structurally in 2023).
+
+**Pattern after three lanes:** the empty shelves are all one shape: a letter or contract with a
+deadline, a person with money, and every "free help" paid by the other side. Auto/home warranty
+denials and the two senior-living contracts are the biggest of them. Six lanes still unrun:
+Reddit wish-lists, Hacker News wish-lists, small non-trade businesses, paperwork/bureaucracy,
+fun/gifts, Spanish-speaking US.
 
 ---
 

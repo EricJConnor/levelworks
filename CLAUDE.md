@@ -24,8 +24,8 @@ Everything below this heading is reference. This is the live state. Older sectio
 3. **A Google Ads account with a card on it.** Blocks both untried channels, search and YouTube.
 4. **Ask the roofer whether his name can go on the testimonial.** One line, `lp.reviewWho`.
 
-**Money and ads:** the ad account has about **$27** left and both campaigns stop when it runs
-out. Eric's call on Sep 20: let it run out, reset, get the records and checks right, then design
+**Money and ads:** the ad account is **all but empty** — it read $26.82 on Sep 20 and about $24
+has gone since, so both campaigns stop on their own within a day. Eric's call on Sep 20: let it run out, reset, get the records and checks right, then design
 new campaigns. **Do not start a campaign without reading `marketing/PREFLIGHT.md` first.** The
 whole history and every lesson is in `marketing/LEDGER.md`: $567 spent, 16 sign-ups, $0 revenue.
 

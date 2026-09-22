@@ -129,7 +129,7 @@ export const pages: Record<string, string> = {
   'pg.inv.payBankButton': 'Pagar {amount} desde su banco',
   'pg.inv.bankIntro': 'Iniciará sesión en su banco a través de Stripe. Nunca vemos los datos de su cuenta.',
   'pg.inv.bankPending': 'Pago en camino',
-  'pg.inv.bankPendingBody': 'Las transferencias bancarias tardan unos 4 días hábiles en acreditarse. No hay nada más que hacer.',
+  'pg.inv.bankPendingBody': 'Su transferencia bancaria se realizó. Tarda unos 4 días hábiles en acreditarse. Puede cerrar esta página.',
   'pg.inv.bankFailed': 'Su transferencia bancaria no se complet\u00f3',
   'pg.inv.bankFailedBody': 'No se retir\u00f3 nada de su cuenta. Puede intentarlo de nuevo abajo o pagar de otra forma.',
   'pg.inv.bankNotOn': 'Este negocio aún no acepta transferencias bancarias.',

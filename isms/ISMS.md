@@ -51,8 +51,12 @@ made up. Wear it before they grow out of it."
 Custom product, one listing: type the word, pick the color, same font, so a stranger's word
 looks like it belongs to the brand.
 
+**Domain: wearisms.com**, bought by Eric at GoDaddy Sep 22 2026, one year (Eric preferred it over
+shopisms; shopisms.com and isms.com are taken). A Routine "wearisms.com renewal reminder" fires
+Aug 22 2027 with email and push so he renews in time.
+
 ## Next steps
-1. Check "Isms" and "Yestertime" at USPTO and grab the domain before printing.
+1. Check "Isms" at USPTO under clothing.
 2. Open one print-on-demand account (Printful or Printify; free; plugs into Etsy and Shopify).
 3. Six designs, mocked up here first, then the Etsy shop.
 4. One Meta ad: Eric on camera telling the Yestertime story, $50, parents 28 to 45, judge by

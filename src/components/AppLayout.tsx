@@ -94,6 +94,7 @@ export const AppLayout: React.FC = () => {
   const handleAccountClick = () => { setCurrentView('account'); setMobileMenuOpen(false); };
   // First-run tour: /app?tour=1 (the screen after a $49 purchase lands here), once.
   const [showTour, setShowTour] = useState(false);
+  const [deskMenuOpen, setDeskMenuOpen] = useState(false);
   useEffect(() => { if (tourRequested()) { const id = setTimeout(() => setShowTour(true), 600); return () => clearTimeout(id); } }, []);
   const handleHelpClick = () => { setShowHelpModal(true); setMobileMenuOpen(false); };
 
@@ -173,12 +174,35 @@ export const AppLayout: React.FC = () => {
               {profile?.full_name?.split(' ')[0] || t('nav.account')}
             </button>
             <button className="lv-icon-btn lv-hide-mobile" onClick={handleSignOut} title={t('a.signOut')} aria-label={t('a.signOut')}><LogOut size={18} /></button>
+            {/* laptop: one button that lists everything, for anyone who does not want to hunt across the bar */}
+            <button className="lv-btn sec sm lv-hide-mobile" aria-haspopup="menu" aria-expanded={deskMenuOpen} onClick={() => setDeskMenuOpen(o => !o)}><Menu size={15} /> {t('nav.menu')}</button>
 
             {/* mobile: one primary action lives in the header, the rest in the tab bar */}
             <button className="lv-btn pri sm lv-hide-desktop" data-tour="estimate" onClick={newEstimate}><Plus size={15} /> {t('m.estimate')}</button>
           </div>
         </div>
       </header>
+
+      {deskMenuOpen && (
+        <>
+          <div className="lv-menu-scrim lv-hide-mobile" onClick={() => setDeskMenuOpen(false)} />
+          <div className="lv-menu lv-hide-mobile" role="menu" onClick={() => setDeskMenuOpen(false)}>
+            {navItems.map(item => (
+              <button key={item.key} className={currentView === item.key ? 'on' : ''} onClick={() => handleNavClick(item.key)}>
+                <item.icon size={17} /> {item.label}
+              </button>
+            ))}
+            <button className={currentView === 'notifications' ? 'on' : ''} onClick={() => handleNavClick('notifications')}><Bell size={17} /> {t('nav.notifications')}</button>
+            <button className={currentView === 'account' ? 'on' : ''} onClick={handleAccountClick}><User size={17} /> {t('nav.account')}</button>
+            <hr />
+            <button onClick={newEstimate}><Plus size={17} /> {t('nav.newEstimate')}</button>
+            <button onClick={newInvoice}><Plus size={17} /> {t('nav.newInvoice')}</button>
+            <hr />
+            <button onClick={handleHelpClick}><HelpCircle size={17} /> {t('nav.help')}</button>
+            <button onClick={handleSignOut} style={{ color: 'var(--lv-mute)' }}><LogOut size={17} /> {t('a.signOut')}</button>
+          </div>
+        </>
+      )}
 
       <main className="lv-main" style={{ paddingBottom: 96 }}>
         {currentView !== 'dashboard' && (

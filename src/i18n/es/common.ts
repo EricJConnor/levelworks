@@ -91,6 +91,7 @@ export const common: Record<string, string> = {
   'nav.clients': 'Clientes',
   'nav.photos': 'Fotos',
   'nav.notes': 'Notas',
+  'nav.menu': 'Menú',
   'nav.more': 'Más',
   'nav.account': 'Cuenta',
   'nav.help': 'Ayuda',

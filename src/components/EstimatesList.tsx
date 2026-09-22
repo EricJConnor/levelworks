@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useData, Estimate } from '@/contexts/DataContext';
-import { useInvoices } from '@/contexts/InvoiceContext';
 import { SendEstimateModal } from './SendEstimateModal';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, ImageIcon, ChevronDown, ChevronUp, Pencil, Eye, Copy, Check, Plus, Search, Send, Receipt, Trash2, Files } from 'lucide-react';
@@ -64,7 +63,6 @@ const styles = `
 
 export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilter }) => {
   const { estimates, deleteEstimate } = useData();
-  const { addInvoice } = useInvoices();
   const [statusFilter, setStatusFilter] = useState<string>(initialStatusFilter || 'all');
   const [sortBy, setSortBy] = useState<string>('date-desc');
   const [query, setQuery] = useState('');
@@ -103,26 +101,19 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
     setEstimatePhotos(prev => ({ ...prev, [estimateId]: (prev[estimateId] || []).filter(p => p.id !== photoId) }));
   };
 
-  const handleConvertToInvoice = async (estimate: Estimate) => {
-    try {
-      const invoiceNumber = `INV-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-      await addInvoice({
-        estimateId: estimate.id, invoiceNumber,
-        clientName: estimate.clientName,
-        clientEmail: estimate.clientEmail,
-        clientPhone: estimate.clientPhone,
-        projectName: estimate.projectName,
-        lineItems: estimate.lineItems,
-        taxRate: estimate.taxRate, total: estimate.total,
-        amountPaid: 0, paymentHistory: [], status: 'unpaid',
-        issueDate: new Date().toISOString(),
-        notes: t('lst.convertedFromEstimate', { number: `EST-${estimate.id.slice(-6)}` })
-      });
-      toast({ title: t('lst.invoiceCreated') });
-    } catch (error: any) {
-      toast({ title: t('lst.invoiceCreateFailed'), description: error.message, variant: 'destructive' });
-    }
-  };
+  // "Make invoice" on a row opens the invoice builder, like Convert inside the
+  // estimate: it used to write an invoice straight to the database, which gave
+  // him no say in how the client pays and no Send button afterwards.
+  const handleConvertToInvoice = (estimate: Estimate) => openInvoiceFrom({
+    estimateId: estimate.id,
+    clientName: estimate.clientName,
+    clientEmail: estimate.clientEmail,
+    clientPhone: estimate.clientPhone,
+    projectName: estimate.projectName,
+    lineItems: estimate.lineItems,
+    taxRate: estimate.taxRate,
+    deposit: (estimate as any).deposit,
+  });
 
   const statusPill = (status: string) => (
     <span className={`lv-pill ${STATUS_TONE[status] ?? ''}`}>{STATUS_KEY[status] ? t(STATUS_KEY[status]) : status}</span>

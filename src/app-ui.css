@@ -191,6 +191,38 @@
 .lv-sheet button.on { background: var(--lv-blue-soft); color: var(--lv-blue-2); font-weight: 600; }
 .lv-sheet hr { border: 0; border-top: 1px solid var(--lv-line); margin: 8px 0; }
 
+/* laptop menu: the same list as the phone's More sheet, dropped from the header */
+.lv-menu-scrim { position: fixed; inset: 0; z-index: 41; }
+.lv-menu {
+  position: fixed;
+  top: 62px;
+  right: max(16px, calc((100vw - 1280px) / 2 + 16px));
+  z-index: 42;
+  width: 240px;
+  background: var(--lv-surface);
+  border: 1px solid var(--lv-line);
+  border-radius: var(--lv-r-lg);
+  padding: 8px;
+  box-shadow: var(--lv-shadow-lg);
+}
+.lv-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 9px 10px;
+  border-radius: var(--lv-r);
+  font: 500 14.5px var(--lv-font);
+  color: var(--lv-ink-2);
+}
+.lv-menu button:hover { background: var(--lv-sunken); }
+.lv-menu button.on { background: var(--lv-blue-soft); color: var(--lv-blue-2); font-weight: 600; }
+.lv-menu hr { border: 0; border-top: 1px solid var(--lv-line); margin: 6px 0; }
+
 /* ------------------------------------------------------------- type */
 
 .lv-h1 { font-size: 26px; font-weight: 700; letter-spacing: -.025em; color: var(--lv-ink); margin: 0; line-height: 1.2; }

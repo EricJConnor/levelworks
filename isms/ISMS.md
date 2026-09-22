@@ -61,3 +61,24 @@ Aug 22 2027 with email and push so he renews in time.
 3. Six designs, mocked up here first, then the Etsy shop.
 4. One Meta ad: Eric on camera telling the Yestertime story, $50, parents 28 to 45, judge by
    cost per sale. Christmas is fourteen weeks out.
+
+## The look, decided Sep 22 2026 (six rounds of mockups in the session)
+Shrikhand (free for commercial use), a **very slight curve** (path `M-40 150 Q270 105 580 150`
+on a 540-wide box), a stacked drop shadow stepped 3px per layer. **Dark shirts** (navy, forest,
+rust, heather): cream `#f4e9d2` lettering over gold `#ffc43d`, orange `#ff7a1a`, red `#e0392b`,
+brown `#6b2e15`. **Soft mid-tone shirts** (sage `#8fb59a`, dusty blue `#9fb4c9`, like the
+original Christmas hoodies): yellow `#ffd23f` lettering over a dark edge `#2b1d12`, then red,
+orange, brown. Yellow on cream or sand gets lost; do not do it. Eric did not love black as a
+primary. Master file: the session scratchpad `isms/mock.html` (rebuild from these notes if lost).
+
+## The site, decided Sep 22 2026
+Eric: "the more options the better" inside the shop page, not on the landing. Landing stays
+simple (story, hero shots, one button). **The shop page**: pick any ism from the FULL list (all
+of them, with definitions, scattered as browseable cards), pick a product (tee, hoodie,
+crewneck, beanie, dad hat, scarf, tote, and whatever else the printer offers) and a color, and a
+**live preview** updates in the middle: the same SVG lettering drawn over the product photo, so
+it is instant and matches what ships. **Your ism**: the same screen with an empty word box.
+This is a real site on wearisms.com (Etsy cannot do a live custom preview): our stack plus
+Stripe checkout, orders sent to the print-on-demand company automatically. **Printful** is the
+pick (free, no minimums, API for mockups and orders). Eric opens the account; the site is a
+couple of days of build.

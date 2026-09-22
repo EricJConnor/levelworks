@@ -272,8 +272,10 @@ export default function PublicInvoiceView() {
               /* Money is on its way but not landed. Saying "unpaid" here would
                  tell someone who has already paid that they have not. */
               <div className="bg-blue-50 border border-blue-200 p-6 rounded-lg text-center">
-                <Loader2 className="w-10 h-10 text-blue-600 mx-auto mb-2 animate-spin" />
-                <p className="text-blue-900 font-semibold">{t('pg.inv.bankPending')}</p>
+                {/* A still icon on purpose. A spinner here read as "wait, don't
+                    close this", and there is nothing left to wait for. */}
+                <CheckCircle className="w-10 h-10 text-blue-600 mx-auto mb-2" />
+                <p className="text-blue-900 font-semibold text-lg">{t('pg.inv.bankPending')}</p>
                 <p className="text-sm text-blue-700">{t('pg.inv.bankPendingBody')}</p>
               </div>
             ) : (
@@ -299,7 +301,9 @@ export default function PublicInvoiceView() {
                   disabled={preparing}
                   variant={allowsCard(payMethods) ? 'outline' : 'default'}
                   className={allowsCard(payMethods)
-                    ? 'w-full py-5 md:py-6 text-base md:text-lg mt-3'
+                    /* second choice, not a lesser one: same weight as the card
+                       button, white with a green border so it reads as "pay" */
+                    ? 'w-full py-5 md:py-6 text-base md:text-lg mt-3 border-2 border-green-600 text-green-700 font-semibold hover:bg-green-50 hover:text-green-800'
                     : 'w-full bg-green-600 hover:bg-green-700 py-5 md:py-6 text-base md:text-lg'}
                 >
                   {preparing ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Landmark className="w-5 h-5 mr-2" />}

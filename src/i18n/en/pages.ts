@@ -128,7 +128,7 @@ export const pages: Record<string, string> = {
   'pg.inv.payBankButton': 'Pay {amount} from your bank',
   'pg.inv.bankIntro': 'You will sign in to your bank through Stripe. Your account details are never shown to us.',
   'pg.inv.bankPending': 'Payment on its way',
-  'pg.inv.bankPendingBody': 'Bank transfers take about 4 business days to clear. Nothing more to do.',
+  'pg.inv.bankPendingBody': 'Your bank transfer went through. It takes about 4 business days to clear. You can close this page.',
   'pg.inv.bankFailed': 'Your bank transfer did not go through',
   'pg.inv.bankFailedBody': 'Nothing was taken from your account. You can try again below, or pay another way.',
   'pg.inv.bankNotOn': 'This business is not taking bank transfers yet.',

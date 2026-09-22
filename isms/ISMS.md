@@ -88,3 +88,53 @@ couple of days of build.
 - **Print-on-demand partner: to be chosen on research, not by default.** Criteria from Eric:
   best for new brands, sales and marketing help, turnaround, product quality, reachable customer
   service, speed of payment, plus what we are not thinking of yet.
+
+## Print-on-demand partner: the research (Sep 22 2026, 35+ sources)
+
+**Recommendation: start on Printful; pair with Apliiq for hats/beanies and custom neck labels.**
+Printful is the only one with all four: a real documented REST API for one-off custom orders
+from our own site (v2, async mockups, webhooks for status and tracking, no minimums, no monthly
+fee); in-house US production (Charlotte NC x2, Los Angeles, Coppell TX); name-brand blanks
+(Bella+Canvas, Gildan, Independent Trading, Comfort Colors, Stanley/Stella) with consistent
+print; a documented 30-day free-reprint policy with photo evidence. It costs 15 to 30% more per
+unit than Printify's cheapest shops; for a one-person brand launching into Christmas with no way
+to QA a rotating cast of third-party printers, consistency is worth it.
+
+Numbers (Printful, Sep 2026): Bella+Canvas 3001 tee $11.69 to $11.92; Gildan 18500 hoodie
+from $26; embroidered beanie from $15.43 plus a one-time $2.95 to $6.50 digitizing fee; dad hat
+$11.72 to $36 by style; US shipping from ~$4.75 first item; inside neck label $0.99, outside
+label $2.49. Printify ranges: tee $8.50 to $13, Independent hoodie $22.95 to $25.56, shipping
+$5.35 to $6.95 first item plus $2 to $3.50 each extra; Printify Premium went $29 to $39 in Feb
+2026 and adds a $0.40/order holiday surcharge Oct 15 to Jan 17.
+
+Ruled out: **Teespring/Spring is shutting down (stages from Sep 15 2026)**; Redbubble-style
+marketplaces (their traffic, their checkout, not a brand); SPOD (fast and cheap but ~200
+products, no hats/scarves depth); CustomCat (dropped embroidered hats); Gooten (routes across
+partners, quality less consistent); Teelaunch (no 2025-26 presence); Fourthwall (well built but
+hosts the checkout itself, so not our Stripe); Gelato (API-first, 140 hubs in 32 countries, the
+best story for overseas or Spanish-speaking buyers later, but blanks depth and branded-label
+mockups are thinner: a second-stage add-on, not the launch partner).
+
+Risks and what to do: no sandbox in Printful's API, so test with real small orders in October;
+undelivered-order and slow-support complaints exist (BBB 2025-26), so track every order by hand
+the first month; set our Christmas cutoff 5 to 7 business days before Printful's; we are the
+merchant of record so **sales tax is ours** (Stripe Tax from day one); Apliiq's API for a
+non-Shopify site is unconfirmed, so email them before building on them, or run hats through
+Printful; pull base costs live from the API rather than hardcoding them. The custom-word product
+needs the print file generated on our server (the fixed template with the buyer's word) before
+the order is sent; Printful expects a finished file per line.
+
+Not verified (pages blocked the fetch): Apliiq's exact beanie/hat/tee prices, Gelato's exact
+tee price, Fourthwall's per-item costs. Check in a browser before committing.
+
+First week for Eric: create the Printful account and an API-store, generate a key; order one
+sample each of tee, hoodie, crewneck at the new-seller sample discount and wash-test one; create
+an Apliiq account, email the API question, order one beanie sample; turn on Stripe Tax; then the
+full pipeline test with a real small order.
+
+## The mark (Sep 22 2026)
+Nine directions rendered (stack, in quotes, speech bubble, dictionary lockup, crayon, round
+badge, chunky one-color, smiley dot, neck-label lockup) and then six "…isms" versions at Eric's
+suggestion (plain dots, red dots, three colored beads, the stack with dots, dots rising, dots in
+a typing bubble). Files in the session scratchpad `isms/logo.html`, `logo2.html`. Decision
+pending.

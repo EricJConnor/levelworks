@@ -138,3 +138,9 @@ badge, chunky one-color, smiley dot, neck-label lockup) and then six "…isms" v
 suggestion (plain dots, red dots, three colored beads, the stack with dots, dots rising, dots in
 a typing bubble). Files in the session scratchpad `isms/logo.html`, `logo2.html`. Decision
 pending.
+
+**Logo decided (Sep 22 2026): the woven label** ("it really says I'm fashion"): cream rectangle,
+dashed stitch border, three beads (gold, orange, red), "isms" in Shrikhand, "A WORD A KID MADE UP"
+under it. Master: `isms/logo/isms-label.svg`. App icon / favicon: the bead bubble,
+`isms/logo/isms-icon.svg`. **All six tag marks stay as merch** (the round patch and the bead
+bubble on hats especially); the sheet is `isms/logo/marks-sheet.html` / `.png`.

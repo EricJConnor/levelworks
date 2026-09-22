@@ -125,7 +125,7 @@ export const pages: Record<string, string> = {
   'pg.inv.thankYou': 'Gracias',
   'pg.inv.payInvoice': 'Pagar la factura',
   'pg.inv.payNow': 'Pagar {amount} ahora',
-  'pg.inv.payBankNow': 'Pagar {amount} por transferencia bancaria',
+  'pg.inv.payBankNow': 'Pagar {amount} por transferencia',
   'pg.inv.payBankButton': 'Pagar {amount} desde su banco',
   'pg.inv.bankIntro': 'Iniciará sesión en su banco a través de Stripe. Nunca vemos los datos de su cuenta.',
   'pg.inv.bankPending': 'Pago en camino',

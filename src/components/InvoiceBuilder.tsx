@@ -11,7 +11,7 @@ import { looksSpanish } from '@/lib/translate';
 import { linePricesShown, lineAmountShown, rememberedLinePrices, rememberLinePrices } from '@/lib/linePrices';
 import { Switch } from './Switch';
 import { clientAddressOf } from '@/lib/clientAddress';
-import { payMethodsOf, rememberedPayMethods, rememberPayMethods, bankFee, cardFee, type PayMethod } from '@/lib/payMethods';
+import { payMethodsOf, stampedPayMethods, rememberedPayMethods, rememberPayMethods, bankFee, cardFee, type PayMethod } from '@/lib/payMethods';
 import { SendInvoiceModal } from './SendInvoiceModal';
 import { NumInput } from './NumInput';
 import { useKeepInView } from '@/lib/keepInView';
@@ -58,7 +58,7 @@ export const InvoiceBuilder: React.FC<InvoiceBuilderProps> = ({ estimateId, invo
    * the way he left the last one.
    */
   const [payMethods, setPayMethodsState] = useState<PayMethod>(
-    initialData?.lineItems?.length ? payMethodsOf(initialData.lineItems) : rememberedPayMethods()
+    stampedPayMethods(initialData?.lineItems) || rememberedPayMethods()
   );
   const setPayMethods = (v: PayMethod) => { setPayMethodsState(v); rememberPayMethods(v); };
   const [dueDate, setDueDate] = useState('');

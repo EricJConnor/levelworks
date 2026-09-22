@@ -33,12 +33,21 @@ const clean = (v: unknown): PayMethod | null =>
  * before this existed has no stamp at all and means card, which is what those
  * invoices already offered.
  */
-export const payMethodsOf = (items: PayableLine[] | null | undefined): PayMethod => {
+export const payMethodsOf = (items: PayableLine[] | null | undefined): PayMethod =>
+  stampedPayMethods(items) || 'card';
+
+/**
+ * The stamp itself, or null when the lines carry none. The builder needs the
+ * difference: an estimate converted to an invoice has never been stamped, and
+ * treating that as "card" silently took the bank option off every converted
+ * invoice, which is exactly the invoice a roofer wants paid by bank.
+ */
+export const stampedPayMethods = (items: PayableLine[] | null | undefined): PayMethod | null => {
   for (const i of items || []) {
     const v = clean(i?.payMethods);
     if (v) return v;
   }
-  return 'card';
+  return null;
 };
 
 /** Stamp the document's setting onto every line so it is saved with them. */

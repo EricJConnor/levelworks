@@ -4,7 +4,7 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { toast } from '@/components/ui/use-toast';
 import { SendEstimateModal } from './SendEstimateModal';
 import { supabase } from '@/lib/supabase';
-import { X, Plus, Trash2, Users, Edit, ImageIcon, Send, FileText, Eye, Check, ChevronDown, Tag, Languages, Loader2 } from 'lucide-react';
+import { X, Plus, Trash2, Users, Edit, ImageIcon, Send, FileText, Eye, Check, Copy, ChevronDown, Tag, Languages, Loader2 } from 'lucide-react';
 import { PhotoUpload } from './PhotoUpload';
 import { autoGrowTextarea } from '@/lib/utils';
 import { useT, useLang, LanguageToggle } from '@/i18n';
@@ -324,7 +324,21 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     setShowSendModal(true);
   };
 
-  const handleConvert = () => onConvertToInvoice?.({ clientName, clientEmail, clientPhone, clientAddress, projectName, lineItems: withClientAddress(withLinePrices(lineItems, showPrices), clientAddress), taxRate, deposit });
+  const handleConvert = () => onConvertToInvoice?.({ estimateId: existingEstimate?.id || undefined, clientName, clientEmail, clientPhone, clientAddress, projectName, lineItems: withClientAddress(withLinePrices(lineItems, showPrices), clientAddress), taxRate, deposit });
+
+  // The client link, one tap away wherever a saved estimate is on screen.
+  const [copied, setCopied] = useState(false);
+  const linkToken = existingEstimate?.viewToken || previewData?.viewToken;
+  const handleCopyLink = () => {
+    if (!linkToken) return;
+    navigator.clipboard.writeText(`${window.location.origin}/view-estimate/${linkToken}`);
+    setCopied(true);
+    toast({ title: t('lst.linkCopied'), description: t('lst.linkCopiedBody') });
+    setTimeout(() => setCopied(false), 2000);
+  };
+  const copyLinkButton = linkToken ? (
+    <button className="lv-btn sec" onClick={handleCopyLink}>{copied ? <Check size={16} /> : <Copy size={16} />} {copied ? t('a.copied') : t('a.copyLink')}</button>
+  ) : null;
 
   const handleSendModalClose = () => { setShowSendModal(false); setSavedEstimateData(null); };
   const handleSendSuccess = () => { setShowSendModal(false); setSavedEstimateData(null); onClose(); };
@@ -586,6 +600,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
               <div className="spacer" />
               <button className="lv-btn sec" onClick={() => { setShowPreview(false); setIsReadOnly(false); }}><Edit size={16} /> {t('a.edit')}</button>
               {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> {t('est.convertToInvoice')}</button>}
+              {copyLinkButton}
               <button className="lv-btn pri span" onClick={handlePreviewSend} disabled={isSaving}><Send size={16} /> {t('est.sendToClient')}</button>
             </div>
           </footer>
@@ -819,6 +834,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
               <>
                 <button className="lv-btn sec" onClick={() => setIsReadOnly(false)}><Edit size={16} /> {t('a.edit')}</button>
                 {canConvert && <button className="lv-btn sec" onClick={handleConvert}><FileText size={16} /> {t('est.convertToInvoice')}</button>}
+                {copyLinkButton}
                 <button className="lv-btn pri span" onClick={handleSendEstimate} disabled={isSaving}><Send size={16} /> {isSaving ? t('a.saving') : t('est.sendToClient')}</button>
               </>
             ) : (

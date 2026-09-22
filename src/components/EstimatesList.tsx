@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { PhotoUpload } from './PhotoUpload';
 import { PhotoGallery } from './PhotoGallery';
 import { EstimateBuilder } from './EstimateBuilder';
+import { InvoiceBuilder } from './InvoiceBuilder';
 import { useT } from '@/i18n';
 
 interface Photo { id: string; fileUrl: string; caption?: string; }
@@ -71,6 +72,10 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
   const [editEstimate, setEditEstimate] = useState<Estimate | null>(null);
   const [duplicateOf, setDuplicateOf] = useState<Estimate | null>(null);
   const [newEstimate, setNewEstimate] = useState(false);
+  // Convert to invoice from inside the builder: hands the estimate's data to
+  // the invoice builder, the same way the header's New estimate does.
+  const [invoiceFrom, setInvoiceFrom] = useState<any>(null);
+  const openInvoiceFrom = (data: any) => { setEditEstimate(null); setInvoiceFrom(data); };
   const [expandedEstimate, setExpandedEstimate] = useState<string | null>(null);
   const [estimatePhotos, setEstimatePhotos] = useState<Record<string, Photo[]>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -336,7 +341,8 @@ export const EstimatesList: React.FC<EstimatesListProps> = ({ initialStatusFilte
       )}
 
       {resendEstimate && <SendEstimateModal estimate={resendEstimate} onClose={() => setResendEstimate(null)} onSuccess={() => setResendEstimate(null)} />}
-      {editEstimate && <EstimateBuilder existingEstimate={editEstimate} onClose={() => setEditEstimate(null)} />}
+      {editEstimate && <EstimateBuilder existingEstimate={editEstimate} onClose={() => setEditEstimate(null)} onConvertToInvoice={openInvoiceFrom} />}
+      {invoiceFrom && <InvoiceBuilder initialData={invoiceFrom} estimateId={invoiceFrom.estimateId} onClose={() => setInvoiceFrom(null)} />}
       {duplicateOf && <EstimateBuilder existingEstimate={duplicateOf} duplicate onClose={() => setDuplicateOf(null)} />}
       {newEstimate && <EstimateBuilder onClose={() => setNewEstimate(false)} />}
     </div>

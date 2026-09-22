@@ -260,6 +260,7 @@ export const AppLayout: React.FC = () => {
       {showInvoice && (
         <InvoiceBuilder
           initialData={invoiceInitialData}
+          estimateId={invoiceInitialData?.estimateId}
           invoiceId={editInvoiceId || undefined}
           onClose={() => { setShowInvoice(false); setInvoiceInitialData(null); setEditInvoiceId(null); }}
         />

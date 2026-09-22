@@ -110,7 +110,16 @@ unsubscribed contacts; stops at the end of the list. Preview each in a browser, 
   excluded** (`publisher_platforms: facebook, instagram, messenger` on the ad set). Learning had
   zero events, so the reset cost nothing. Same lesson as LW49: read the placement breakdown
   (`publisher_platform`, `platform_position` in Windsor) before believing any number, and never
-  let `audience_network` into a rule again. Next read Sep 22.
+  let `audience_network` into a rule again.
+- **Day-3 read (Sep 22, 9:30am ET).** Since the fix: $34.24, 483 views, ~370 people, 14 clicks,
+  0 uploads, 0 saves, 0 paid. All-time: $37.69, 21 clicks, 0 uploads. Placements are now
+  Facebook feed (most of it), Reels, Instagram feed/Reels/Stories; Audience Network gone.
+  **The problem is the CPM: about $71 per thousand views.** The ~230 affluent-ZIP audience is
+  tiny, so Meta charges LW49-launch prices for it; $10/day buys ~140 views and ~5 clicks. Cost
+  per click ~$2.45 is fine; the volume is not. 0 of 14 clicks uploading is too few to judge the
+  page. Recommendation put to Eric (not done, his call): open geography to the whole US, keep
+  30–65, so the CPM drops to normal (~$10–15) and the same $10 buys 4–6x the clicks; income
+  targeting through ZIPs costs more than it is worth at this budget. Next read Sep 24.
 - **Rules:** nothing touched before day five unless rejected or zero delivery. Judge by cost per
   upload (under $5 working) and uploads → purchases. Short pauses cost nothing; a pause of a week
   or edits to budget/targeting reset Meta's learning. Do not daypart (not available on daily

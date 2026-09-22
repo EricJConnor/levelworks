@@ -82,3 +82,9 @@ This is a real site on wearisms.com (Etsy cannot do a live custom preview): our 
 Stripe checkout, orders sent to the print-on-demand company automatically. **Printful** is the
 pick (free, no minimums, API for mockups and orders). Eric opens the account; the site is a
 couple of days of build.
+- **Text styles (Eric, Sep 22):** the buyer also picks from 10 to 12 lettering styles that print
+  well on clothing (the seventies stack is one of them). Each style is a font plus a treatment
+  (stack, outline, plain, varsity, script), all free-for-commercial fonts, all previewed live.
+- **Print-on-demand partner: to be chosen on research, not by default.** Criteria from Eric:
+  best for new brands, sales and marketing help, turnaround, product quality, reachable customer
+  service, speed of payment, plus what we are not thinking of yet.

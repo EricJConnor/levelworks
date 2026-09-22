@@ -337,7 +337,7 @@ export const EstimateBuilder: React.FC<Props> = ({ onClose, onConvertToInvoice, 
     setTimeout(() => setCopied(false), 2000);
   };
   const copyLinkButton = linkToken ? (
-    <button className="lv-btn sec" onClick={handleCopyLink}>{copied ? <Check size={16} /> : <Copy size={16} />} {copied ? t('a.copied') : t('a.copyLink')}</button>
+    <button className="lv-btn sec span" onClick={handleCopyLink}>{copied ? <Check size={16} /> : <Copy size={16} />} {copied ? t('a.copied') : t('a.copyLink')}</button>
   ) : null;
 
   const handleSendModalClose = () => { setShowSendModal(false); setSavedEstimateData(null); };

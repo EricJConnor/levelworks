@@ -144,3 +144,7 @@ dashed stitch border, three beads (gold, orange, red), "isms" in Shrikhand, "A W
 under it. Master: `isms/logo/isms-label.svg`. App icon / favicon: the bead bubble,
 `isms/logo/isms-icon.svg`. **All six tag marks stay as merch** (the round patch and the bead
 bubble on hats especially); the sheet is `isms/logo/marks-sheet.html` / `.png`.
+
+**Sep 22 2026, evening: the site lives in its own repo, `EricJConnor/wearisms`.** Everything
+about the build, the design decisions, the Specials and what is next is in `brand/NOTES.md`
+there. This file stays as the record of the brand's birth.

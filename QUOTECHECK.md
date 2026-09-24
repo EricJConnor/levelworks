@@ -119,7 +119,15 @@ unsubscribed contacts; stops at the end of the list. Preview each in a browser, 
   per click ~$2.45 is fine; the volume is not. 0 of 14 clicks uploading is too few to judge the
   page. Recommendation put to Eric (not done, his call): open geography to the whole US, keep
   30–65, so the CPM drops to normal (~$10–15) and the same $10 buys 4–6x the clicks; income
-  targeting through ZIPs costs more than it is worth at this budget. Next read Sep 24.
+  targeting through ZIPs costs more than it is worth at this budget.
+- **Day-5 read (Sep 24, 9:30am ET): Meta numbers unavailable.** Windsor's free plan paused
+  reads: "3 accounts connected and your Free plan includes 1 account". Eric has to disconnect
+  two at https://onboard.windsor.ai/app/ and keep only the Meta ad account `3071713068446` (drop
+  the personal Meta account "Eric Connor" `1357024962671524` and the Google Business Profile
+  "EC Home Improvement"). Until then nothing here can read or change the ads. The site itself:
+  still 1 upload (the Sep 19 test), 0 paid, 0 saves, so the ad has produced no upload in five
+  days on ~$60. Eric had not answered the day-3 recommendation (open geography to the whole US).
+  The page answered fine (one transient 30s timeout, then 200s in under half a second).
 - **Rules:** nothing touched before day five unless rejected or zero delivery. Judge by cost per
   upload (under $5 working) and uploads → purchases. Short pauses cost nothing; a pause of a week
   or edits to budget/targeting reset Meta's learning. Do not daypart (not available on daily

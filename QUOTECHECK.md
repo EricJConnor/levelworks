@@ -128,6 +128,12 @@ unsubscribed contacts; stops at the end of the list. Preview each in a browser, 
   still 1 upload (the Sep 19 test), 0 paid, 0 saves, so the ad has produced no upload in five
   days on ~$60. Eric had not answered the day-3 recommendation (open geography to the whole US).
   The page answered fine (one transient 30s timeout, then 200s in under half a second).
+- **Day-7 read (Sep 26, 9:30am ET).** Windsor still paused (same message); Eric has not
+  disconnected the two extra accounts and has not answered since Sep 20. Site: still 1 upload
+  (the test), 0 paid, 0 saves. A week of ads (~$70 if it kept pacing at $10/day) and no upload.
+  Recommendation restated: open geography to the whole US, or pause the campaign until the $79
+  purchase has been tested. Neither done: no word from Eric, and nothing here can touch the
+  ads until Windsor is reconnected. Next read Sep 29.
 - **Rules:** nothing touched before day five unless rejected or zero delivery. Judge by cost per
   upload (under $5 working) and uploads → purchases. Short pauses cost nothing; a pause of a week
   or edits to budget/targeting reset Meta's learning. Do not daypart (not available on daily

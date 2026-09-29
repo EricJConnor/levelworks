@@ -133,7 +133,10 @@ unsubscribed contacts; stops at the end of the list. Preview each in a browser, 
   (the test), 0 paid, 0 saves. A week of ads (~$70 if it kept pacing at $10/day) and no upload.
   Recommendation restated: open geography to the whole US, or pause the campaign until the $79
   purchase has been tested. Neither done: no word from Eric, and nothing here can touch the
-  ads until Windsor is reconnected. Next read Sep 29.
+  ads until Windsor is reconnected.
+- **Day-10 read (Sep 29, 9:30am ET).** Unchanged: Windsor paused, no word from Eric since
+  Sep 20, still 1 upload (the test), 0 paid, 0 saves. Campaign presumably still spending $10/day
+  (cannot confirm). Next read Oct 2; after that, drop to weekly until Eric answers.
 - **Rules:** nothing touched before day five unless rejected or zero delivery. Judge by cost per
   upload (under $5 working) and uploads → purchases. Short pauses cost nothing; a pause of a week
   or edits to budget/targeting reset Meta's learning. Do not daypart (not available on daily

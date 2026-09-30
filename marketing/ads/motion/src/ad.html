@@ -41,7 +41,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .m169 .cap .sub{font-size:36px}
 .m916 .cap{left:70px;right:70px;top:220px;font-size:96px}
 .m916 .cap .sub{font-size:40px}
-.m11  .cap{left:64px;right:64px;top:150px;font-size:74px}
+.m11  .cap{left:64px;right:64px;top:122px;font-size:72px}
 .m11  .cap .sub{font-size:32px}
 /* full-frame type lines */
 .line{position:absolute;left:0;right:0;text-align:center;font-weight:800;letter-spacing:-.04em;color:var(--ink);opacity:0;z-index:70;white-space:nowrap}
@@ -52,7 +52,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .m916 .line.wrap,.m11 .line.wrap{white-space:normal}
 
 /* the paper card in frame one */
-.paper{position:absolute;width:420px;height:560px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 30px 60px -30px rgba(11,18,32,.35);padding:34px;z-index:40;transform-origin:center}
+.paper{position:absolute;width:480px;height:640px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 30px 60px -30px rgba(11,18,32,.35);padding:34px;z-index:40;transform-origin:center}
 .paper h4{font-size:22px;font-weight:700;margin-bottom:6px}
 .paper p{font-size:15px;color:var(--mute);margin-bottom:22px}
 .paper i{display:block;height:12px;border-radius:6px;background:var(--sunken);margin:0 0 14px}
@@ -146,7 +146,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 </head>
 <body class="m169">
 <div id="stage">
-  <div class="glow"></div>
+  <div id="cam" style="position:absolute;inset:0;transform-origin:center;will-change:transform">
+  <div class="glow" id="glow"></div>
 
   <div class="corner" id="corner"><svg viewBox="0 0 28 28" fill="none"><rect x="1.5" y="8.5" width="25" height="11" rx="3.5" stroke="#0b1220" stroke-width="2"/><rect x="10" y="11" width="8" height="6" rx="2" fill="#2563eb"/><path d="M8.5 9v10M19.5 9v10" stroke="#0b1220" stroke-width="1.5" stroke-opacity=".35"/></svg>Level<b>Works</b></div>
 
@@ -246,6 +247,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   <!-- the card that becomes the $5 chip -->
   <div class="chipbox lay" id="chip"><div class="mini"><h4>Invoice #1042</h4><p>Roof replacement · Paid</p><i style="width:80%"></i><i style="width:60%"></i><i style="width:70%"></i></div><div class="price" id="price">$5<small>a month</small></div></div>
 
+  </div><!-- /cam -->
   <!-- end card -->
   <div class="end" id="endB">
     <div><span class="cta">Start free</span></div>
@@ -285,8 +287,8 @@ function L(){
     twoS:H*0.70/844, twoX1:W*0.53, twoX2:W*0.79, twoY:H*0.55, chipY:H*0.42, endY:H*0.22, paperX:W*0.71, paperY:H*0.5, lineY:H*0.5, l10gap:150, l8a:-90, l8b:90};
   if(mode==='m916') return {W,H, phS:H*0.56/844, phX:W*0.5, phY:H*0.66, capY:220,
     twoS:H*0.42/844, twoX1:W*0.29, twoX2:W*0.71, twoY:H*0.62, chipY:H*0.45, endY:H*0.26, paperX:W*0.5, paperY:H*0.66, lineY:H*0.5, l10gap:120, l8a:-230, l8b:110};
-  return {W,H, phS:H*0.62/844, phX:W*0.5, phY:H*0.66, capY:150,
-    twoS:H*0.50/844, twoX1:W*0.33, twoX2:W*0.67, twoY:H*0.62, chipY:H*0.42, endY:H*0.17, paperX:W*0.5, paperY:H*0.66, lineY:H*0.5, l10gap:110, l8a:-230, l8b:110};
+  return {W,H, phS:H*0.70/844, phX:W*0.5, phY:H*0.62, capY:150,
+    twoS:H*0.56/844, twoX1:W*0.33, twoX2:W*0.67, twoY:H*0.62, chipY:H*0.42, endY:H*0.17, paperX:W*0.5, paperY:H*0.66, lineY:H*0.5, l10gap:110, l8a:-230, l8b:110};
 }
 
 // place a phone (390x844 native) by centre and scale, plus extra transform
@@ -304,7 +306,7 @@ function caption(el, t, a, b, dirIn=1){
 function lineIn(el, t, a, b, y, from){ // from = -1 left, +1 right
   const {W}=L();
   const pin=seg(t,a,a+0.6), pout=seg(t,b-0.3,b);
-  const x = from*W*0.6*(1-eo(pin)) - from*W*0.5*ei(pout);
+  const x = from*W*0.6*(1-eo(pin)) - from*W*0.5*ei(pout) - from*18*seg(t,a+0.6,b);
   set(el,{opacity: t<a||t>=b?0:1, transform:`translate(${x}px,0)`, top:(y-70)+'px'});
 }
 
@@ -314,13 +316,19 @@ function render(t){
   const els=['cap1','cap2','cap3','cap5','cap6','cap7','cap9','cap11','l8a','l8b','l10a','l10b','l10c','paper','phA','phEN','phES','chip','end','endB'];
   for(const id of els) set($(id),{opacity:0});
   set($('corner'),{opacity: t<C.s12 ? 1 : 1-eo(seg(t,C.s12,C.s12+0.4))});
+  // the frame never stops: a slow push-in inside every shot (resets on the cut) and a drifting glow
+  const cutsArr=[0,C.s2,C.s3,C.s4,C.s5,C.s6,C.s7,C.s8,C.s9,C.s10,C.s11,C.s12,C.END];
+  let si=0; for(let i=0;i<cutsArr.length-1;i++) if(t>=cutsArr[i]) si=i;
+  const sp=(t-cutsArr[si])/(cutsArr[si+1]-cutsArr[si]);
+  set($('cam'),{transform:`scale(${1+0.035*sp})`});
+  set($('glow'),{transform:`translate(${-50+4*Math.sin(t*0.5)}%,${-50+3*Math.cos(t*0.37)}%)`});
 
   // S1 hook 0 → 2.44 : finished frame, then the type splits and the paper heads for the phone
   if(t<C.s2+0.4){
     const pout=seg(t,C.s2-0.35,C.s2);
     set($('cap1'),{opacity:1-ei(pout), transform:`translate(${-W*0.3*ei(pout)}px,0)`});
     // paper: sits, breathes very slightly, then slides toward where the phone rises
-    const px=g.paperX-210, py=g.paperY-280;
+    const px=g.paperX-240, py=g.paperY-320;
     const rise = 6*Math.sin(t*1.4);
     const pp = seg(t,C.s2-0.25,C.s2+0.35);
     set($('paper'),{opacity:1-eo(pp), transform:`translate(${px}px,${py+rise-40*eo(pp)}px) scale(${1-0.15*eo(pp)}) rotate(${-4+3*Math.sin(t*0.9)}deg)`});
@@ -330,9 +338,9 @@ function render(t){
   const phIn = seg(t,C.s2-0.1,C.s2+0.75);
   const phOut = seg(t,C.s8-0.45,C.s8); // leaves before the full-frame type
   if(t>=C.s2-0.1 && t<C.s8){
-    const y = g.phY + 160*(1-back(phIn)) + 260*ei(phOut);
-    const s = g.phS*(1+0.04*(1-eo(phIn)))*(1-0.25*ei(phOut));
-    phone($('phA'), g.phX, y, s, '', t<C.s8?1-ei(phOut):0);
+    const y = g.phY + 160*(1-back(phIn)) + 260*ei(phOut) + 7*Math.sin(t*0.9);
+    const s = g.phS*(1+0.04*(1-eo(phIn)))*(1-0.25*ei(phOut))*(1+0.006*Math.sin(t*0.6));
+    phone($('phA'), g.phX, y, s, `rotate(${0.5*Math.sin(t*0.7)}deg)`, t<C.s8?1-ei(phOut):0);
     caption($('cap2'), t, C.s2, C.s3);
   }
 
@@ -411,14 +419,14 @@ function render(t){
   // S11 the card drops in and shrinks to the $5 chip 25.81 → 27.52, then holds through the end
   if(t>=C.s11-0.1){
     const p=seg(t,C.s11-0.05,C.s11+0.9);
-    const w=lerp(380,520,eo(p)), h=lerp(480,190,eo(p));
+    const w=lerp(380,660,eo(p)), h=lerp(480,230,eo(p));
     const y=lerp(-h, g.chipY-h/2, back(p));
-    const endShift = -eo(seg(t,C.s12,C.s12+0.6))*(g.chipY - (g.endY+265));
+    const endShift = -eo(seg(t,C.s12,C.s12+0.6))*(g.chipY - (g.endY+285));
     set($('chip'),{opacity:1, width:w+'px', height:h+'px', transform:`translate(${W/2-w/2}px,${y+endShift}px)`});
-    set($('price'),{opacity:eo(seg(t,C.s11+0.45,C.s11+0.8)), fontSize:(mode==='m169'?96:88)+'px'});
+    set($('price'),{opacity:eo(seg(t,C.s11+0.45,C.s11+0.8)), fontSize:'112px'});
     set($('chip').firstElementChild,{opacity:1-eo(seg(t,C.s11+0.4,C.s11+0.75))});
     // fine print under the chip
-    const c11=$('cap11'); const yy=g.chipY+ (190/2) + 40;
+    const c11=$('cap11'); const yy=g.chipY+ (230/2) + 40;
     set(c11,{opacity: t<C.s12 ? eo(seg(t,C.s11+0.9,C.s11+1.3)) : 1-eo(seg(t,C.s12,C.s12+0.3)), top:yy+'px', left:0, right:0, width:'auto', textAlign:'center', transform:`translateY(${30*(1-eo(seg(t,C.s11+0.9,C.s11+1.3)))}px)`});
   }
 
@@ -426,7 +434,7 @@ function render(t){
   const ep=seg(t,C.s12+0.15,C.s12+0.75);
   set($('end'),{opacity:eo(ep), top:g.endY+'px', transform:`translateY(${40*(1-eo(ep))}px)`});
   const ep2=seg(t,C.s12+0.35,C.s12+0.95);
-  set($('endB'),{opacity:eo(ep2), top:(g.endY+265+95+40)+'px', transform:`translateY(${40*(1-eo(ep2))}px)`});
+  set($('endB'),{opacity:eo(ep2), top:(g.endY+285+115+40)+'px', transform:`translateY(${40*(1-eo(ep2))}px)`});
 }
 window.render=render; window.setMode=setMode; window.DUR=30;
 setMode(document.body.className||'m169'); render(0);

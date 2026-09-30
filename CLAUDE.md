@@ -55,6 +55,30 @@ listed without a token, exposing a list of member company names but no client da
 bank payments have still never been proven with real money. Stripe Express onboarding is agreed
 in principle and not built.
 
+## Stripe payouts: the money sat for five days (Sep 30 2026)
+
+A client paid EC Home Improvement by card on Friday Sep 25 and nothing reached the bank by
+Sep 30. The payment was in the connected account the whole time: **that Stripe account's payout
+schedule was set to manual**, so Stripe held it until Eric pressed Pay out. LevelWorks never
+touches payouts (the charge is made inside the contractor's own account) and on a Standard
+account the platform cannot change the schedule. Three things shipped the same day:
+
+- **`api/stripe-payouts.js`** reads the connected account's `settings.payouts.schedule` and
+  `payouts_enabled`; the dashboard payments card (`AppLayout.tsx`, `src/lib/stripePayouts.ts`,
+  cached a day in `localStorage` under `lw-payouts`) shows an amber warning with a link to
+  `dashboard.stripe.com/settings/payouts` when the schedule is manual or payouts are off.
+- **`api/_lib/paymentMail.js`**: the contractor is emailed the moment a payment is recorded on
+  `api/invoice-payment.js` (card success; bank debit accepted; bank debit cleared in `sync`).
+  From `documents@levelworks.org`, to his business email or else his login, transactional so no
+  unsubscribe, never fails the payment. Before this nobody was told a payment had arrived.
+- **Note `stripePayouts`** in `api/_lib/notes.js`, Oct 1 2026 9am ET, both languages: how the
+  money moves, checking Stripe, automatic vs manual, paying out by hand, timing and fees.
+  Preview at `/api/note-preview?which=stripePayouts&lang=en|es`.
+
+Timing to quote honestly: client to Stripe is instant; card money is Available in about two
+business days; the first payout on a new account takes about seven days; a bank transfer clears
+in about four business days. There is no server-side push; the email is the alert.
+
 ## Stack and shipping
 
 - React 18 + Vite + TypeScript, Tailwind and a partial shadcn/ui layer, Supabase (auth, data, edge

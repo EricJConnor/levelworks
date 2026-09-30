@@ -1,0 +1,6 @@
+{
+  "name": "levelworks-motion-video",
+  "private": true,
+  "description": "Renderer for marketing/ads/motion. npm install here, then node render.mjs.",
+  "dependencies": { "playwright-core": "^1.50.0" }
+}

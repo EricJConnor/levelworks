@@ -77,3 +77,29 @@ blue "Works", not by the font).
 Weakest size in round 2: 9:16; strongest: 1:1, which is the one the live ad set serves.
 
 ## Round 3 — third full render
+**Measured:** loudness -19.7 LUFS, peak -4.7 dBFS; frozen 1:1 none, 9:16 0.50 s at 28.47,
+16:9 0.53 s and 0.52 s at 28.48 and 29.02 (end card).
+
+**Third critic's read of round 2's list:** fixed 1, 2, 3, 4, 7, 8, 10, 11, 12; partly 5 (the
+chip was still a crossfade of two objects), 9 (16:9 pay crop hid the pill); still 6 (the
+signature now started 1.7 s after the cut, because the cut had moved earlier and the stroke
+had not).
+
+**New, ranked, and what changed for round 4**
+1. The invoice flashed back to "Balance due" with a washed button for 0.25 s between the form
+   leaving and Paid landing. Fixed: Paid lands before the form starts to leave.
+2. Signature 1.7 s after the cut. Fixed: the stroke starts 0.45 s after the 8.14 cut, the tap,
+   fill and Approved follow, and the beat holds on the approved state.
+3. Header lagged the lines by up to 0.3 s at each landing. Fixed: each line's amount counts up
+   with the header, so the screen always adds up.
+4. "Only Stripe's standard fees." orphaned "fees." in 1:1. Fixed: 70 px in the square and tall
+   sizes, one line.
+5. 9:16 phone bottom sat inside the platform overlay band. Fixed: bottom now at about 1550.
+6. Chip morph still two objects. Fixed: one box; its fill turns blue and only the text crossfades.
+7. 16:9 pay push-in hid the Paid pill. Fixed: crop moved up.
+- Also: a visible press on Send (fill and a 5% squeeze) and a bigger lift through the cut.
+
+Verdict on round 3 was "one more pass, a short one"; the 1:1 was called shippable on facts and
+layout with the flash-back as the one blocker.
+
+## Round 4 — final render

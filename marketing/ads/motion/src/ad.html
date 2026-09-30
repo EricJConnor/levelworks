@@ -48,6 +48,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .m169 .line{font-size:96px}
 .m916 .line{font-size:80px;padding:0 40px;line-height:1.02}
 .m11  .line{font-size:80px;padding:0 40px;line-height:1.02}
+.m916 .line.wrap,.m11 .line.wrap{font-size:70px;letter-spacing:-.045em}
 .m916 .line.wrap,.m11 .line.wrap{white-space:normal}
 
 /* the legal pad in frame one */
@@ -88,7 +89,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .btn.dark{background:var(--ink);color:#fff}
 .btn.pri{background:var(--blue);color:#fff}
 .btn.go{background:var(--green);color:#fff}
-.btn .fill{position:absolute;inset:0;background:rgba(255,255,255,.28);transform-origin:left;transform:scaleX(0)}
+.btn .fill{position:absolute;inset:0;background:rgba(255,255,255,.45);transform-origin:left;transform:scaleX(0)}
 .doc{padding:14px 16px 0}
 .biz{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .biz .lg{width:40px;height:40px;border-radius:10px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:16px}
@@ -127,7 +128,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .chipbox .mini p{font-size:18px;color:var(--mute);margin:6px 0 22px}
 .chipbox .mini i{display:block;height:12px;border-radius:6px;background:var(--sunken);margin-bottom:14px}
 .chipbox .mini .tot{margin-top:24px;border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;font-weight:800;font-size:24px;color:var(--green)}
-.chipbox .price{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:14px;background:var(--blue);color:#fff;font-weight:800;letter-spacing:-.03em;font-size:112px;white-space:nowrap;opacity:0}
+.chipbox .price{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:14px;color:#fff;font-weight:800;letter-spacing:-.03em;font-size:112px;white-space:nowrap;opacity:0}
 .chipbox .price small{font-size:44px;font-weight:600;letter-spacing:-.01em;opacity:.92}
 .end{position:absolute;left:0;right:0;text-align:center;z-index:74;opacity:0}
 .end .brand{display:flex;align-items:center;justify-content:center;gap:16px;font-size:64px;font-weight:800;letter-spacing:-.03em}
@@ -277,9 +278,9 @@ function L(){
   const {W,H}=MODE[mode];
   if(mode==='m169'){ const s=H*0.86/844, cx=W*0.66;
     return {W,H, capY:250, base:[cx,H*0.5,s,0],
-      frames:{ s2:[cx,H*0.5,s,0], s3:[cx,H*0.5+(422-330)*s*1.5,s*1.5,0], s3b:[cx,H*0.5,s,0], s5:[cx+30,H*0.5,s*1.02,-4], s6:[cx,H*0.5,s,0], s7:[cx,H*0.5+(422-520)*s*1.4,s*1.4,0] },
+      frames:{ s2:[cx,H*0.5,s,0], s3:[cx,H*0.5+(422-330)*s*1.5,s*1.5,0], s3b:[cx,H*0.5,s,0], s5:[cx+30,H*0.5,s*1.02,-4], s6:[cx,H*0.5,s,0], s7:[cx,H*0.5+(422-440)*s*1.4,s*1.4,0] },
       twoS:H*0.70/844, two:[[W*0.59,H*0.55,0],[W*0.83,H*0.55,0]], chipY:H*0.42, endY:H*0.22, padX:W*0.71, padY:H*0.53, lineY:H*0.5, l10gap:150, l8a:-90, l8b:90}; }
-  if(mode==='m916'){ const s=(1650-480)/844*0.90, cx=W*0.5, cy=1120;
+  if(mode==='m916'){ const s=(1650-480)/844*0.83, cx=W*0.5, cy=1065;
     return {W,H, capY:340, base:[cx,cy,s,0],
       frames:{ s2:[cx,cy,s,0], s3:[cx,570+422*s*1.2,s*1.2,0], s3b:[cx,cy,s,0], s5:[cx+20,cy,s*1.02,-3], s6:[cx,cy,s,0], s7:[cx,cy,s,0] },
       twoS:H*0.30/844, two:[[W*0.36,H*0.47,-4],[W*0.64,H*0.63,3]], chipY:H*0.50, endY:H*0.30, padX:W*0.5, padY:H*0.60, lineY:H*0.5, l10gap:120, l8a:-230, l8b:110}; }
@@ -336,7 +337,7 @@ function render(t){
     const [cx,cy,s,rot]=camFrame(t,g);
     const y=cy+160*(1-back(phIn))+260*ei(phOut)+6*Math.sin(t*0.9);
     const sc=s*(1+0.04*(1-eo(phIn)))*(1-0.25*ei(phOut))*(1+0.005*Math.sin(t*0.6));
-    const lift=1+(mode==='m169'?0.10:0.05)*Math.sin(Math.PI*seg(t,C.s4-0.3,C.s4+0.3));   // the phone itself comes toward the viewer on the send
+    const lift=1+(mode==='m169'?0.12:0.08)*Math.sin(Math.PI*seg(t,C.s4-0.3,C.s4+0.3));   // the phone itself comes toward the viewer on the send
     const flipAng=180*eio(seg(t,C.s6-0.05,C.s6+0.7));
     phone($('phA'), cx, y, sc*lift, `rotate(${rot+0.5*Math.sin(t*0.7)}deg) rotateY(${flipAng}deg)`, 1-ei(phOut));
     caption($('cap2'), t, C.s2, C.s3);
@@ -347,22 +348,24 @@ function render(t){
   let tot=0;
   for(let i=0;i<4;i++){
     const p=eo(seg(t,lands[i],lands[i]+0.3));
-    set($('it'+(i+1)),{opacity:p, transform:`translate(${40*(1-p)}px,0) scale(${0.96+0.04*p})`});
+    set($('it'+(i+1)),{opacity:Math.min(1,p*1.6), transform:`translate(${40*(1-p)}px,0) scale(${0.96+0.04*p})`});
+    $('it'+(i+1)).querySelector('.lt').textContent=fmt(Math.round(amounts[i]*p));
     tot+=amounts[i]*p;
   }
   $('runTot').textContent=fmt(Math.round(tot));
   caption($('cap3'), t, C.s3, C.s4);
   tap($('tapSend'), t, C.s4-0.7, 300, 800);
   set($('fillSend'),{transform:`scaleX(${eo(seg(t,C.s4-0.6,C.s4-0.2))})`});
+  set($('btnSend'),{transform:`scale(${1-0.05*Math.sin(Math.PI*seg(t,C.s4-0.7,C.s4-0.3))})`});
   set($('vBuild'),{opacity:t<C.s4?1:0, display:t<C.s4?'block':'none'});
 
   // client: signature draws, tap, pill and button snap to approved
   const path=$('sigPath'); const len=path.getTotalLength();
-  const drew=eio(seg(t,C.s5+0.15,C.s5+1.55));
+  const drew=eio(seg(t,C.s4+0.45,C.s4+1.85));
   path.style.strokeDasharray=len; path.style.strokeDashoffset=len*(1-drew);
-  tap($('tapSign'), t, C.s5+1.85, 195, 690);
-  set($('fillSign'),{transform:`scaleX(${t>=C.s5+2.25?0:eo(seg(t,C.s5+1.9,C.s5+2.2))})`});
-  const approved=t>=C.s5+2.25; const ap=back(seg(t,C.s5+2.25,C.s5+2.6));
+  tap($('tapSign'), t, C.s5+0.85, 195, 690);
+  set($('fillSign'),{transform:`scaleX(${t>=C.s5+1.25?0:eo(seg(t,C.s5+0.9,C.s5+1.2))})`});
+  const approved=t>=C.s5+1.25; const ap=back(seg(t,C.s5+1.25,C.s5+1.6));
   $('pillA').textContent=approved?'Approved and signed':'Sent for approval';
   $('pillA').className='pill'+(approved?' g':'');
   set($('pillA'),{transform:`scale(${approved?ap:back(seg(t,C.s4+0.25,C.s4+0.6))})`});
@@ -380,13 +383,13 @@ function render(t){
 
   // pay: tap, sheet, card types, tap Pay now, sheet drops, Paid lands on the invoice itself
   tap($('tapPay'), t, C.s7+0.1, 195, 615);
-  set($('fillPay'),{transform:`scaleX(${t>=C.s7+2.45?0:eo(seg(t,C.s7+0.15,C.s7+0.45))})`});
+  set($('fillPay'),{transform:`scaleX(${t>=C.s7+2.1?0:eo(seg(t,C.s7+0.15,C.s7+0.45))})`});
   const sh=eo(seg(t,C.s7+0.45,C.s7+0.95))-eo(seg(t,C.s7+2.15,C.s7+2.5));
   set($('sheet'),{transform:`translateY(${110*(1-clamp(sh))}%)`});
   const digits='•••• •••• •••• 4242', n=Math.round(19*eo(seg(t,C.s7+1.0,C.s7+1.7)));
   $('cardNo').innerHTML=n>0?digits.slice(0,n):'&nbsp;';
   set($('fillPayNow'),{transform:`scaleX(${eo(seg(t,C.s7+1.8,C.s7+2.1))})`});
-  const paid=t>=C.s7+2.45; const pp2=back(seg(t,C.s7+2.45,C.s7+2.85));
+  const paid=t>=C.s7+2.1; const pp2=back(seg(t,C.s7+2.1,C.s7+2.5));
   $('pillInv').textContent=paid?'Paid':'Balance due'; $('pillInv').className='pill'+(paid?' g':'');
   set($('pillInv'),{transform:`scale(${paid?pp2:1})`});
   $('balLab').textContent=paid?'Paid in full':'Balance due'; $('balRow').className='row t'+(paid?' g':'');
@@ -418,7 +421,8 @@ function render(t){
     const w=lerp(520,660,m), h=lerp(640,230,m);
     const y=lerp(-700, g.chipY-h/2, pin);
     const endShift=-eo(seg(t,C.s12,C.s12+0.6))*(g.chipY-(g.endY+285));
-    set($('chip'),{opacity:1, width:w+'px', height:h+'px', borderRadius:lerp(22,28,m)+'px', transform:`translate(${W/2-w/2}px,${y+endShift}px)`});
+    const blue=eo(seg(t,C.s11+0.6,C.s11+1.0));
+    set($('chip'),{opacity:1, width:w+'px', height:h+'px', borderRadius:lerp(22,28,m)+'px', background:`rgb(${Math.round(lerp(255,37,blue))},${Math.round(lerp(255,99,blue))},${Math.round(lerp(255,235,blue))})`, borderColor:blue>0.5?'transparent':'', transform:`translate(${W/2-w/2}px,${y+endShift}px)`});
     set($('mini'),{opacity:1-eo(seg(t,C.s11+0.55,C.s11+0.8)), transform:`scale(${1-0.2*m})`});
     set($('price'),{opacity:eo(seg(t,C.s11+0.7,C.s11+1.05))});
     const c11=$('cap11'), yy=g.chipY+115+40, cin=eo(seg(t,C.s11+1.0,C.s11+1.4));

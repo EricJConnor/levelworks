@@ -243,4 +243,9 @@ export const lists: Record<string, string> = {
   'lst.cardPaymentsOn': 'Ya cobras con tarjeta',
   'lst.cardPaymentsOnBody': 'Tus clientes pueden pagar cualquier factura en línea. Los depósitos llegan a tu banco a través de Stripe.',
   'lst.openStripe': 'Abrir Stripe',
+  'lst.payoutsManual': 'Tus depósitos de Stripe están en modo manual',
+  'lst.payoutsManualBody': 'Stripe retiene tus pagos hasta que tú mismo toques Pay out. Cambia el calendario de depósitos a automático y el dinero llega solo a tu banco, unos dos días hábiles después de que el cliente paga.',
+  'lst.payoutsOff': 'Stripe todavía no deposita a tu banco',
+  'lst.payoutsOffBody': 'Stripe necesita algo más de ti antes de poder mandar dinero a tu banco, normalmente una cuenta bancaria o una verificación de identidad. Abre Stripe para ver qué te pide.',
+  'lst.fixPayouts': 'Arreglarlo en Stripe',
 };

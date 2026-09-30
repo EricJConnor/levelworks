@@ -6,3 +6,5 @@ out/audio/
 out/*_test_*
 video_*
 out/levelworks_*.mp4
+src/node_modules/
+src/package-lock.json

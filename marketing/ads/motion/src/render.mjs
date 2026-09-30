@@ -2,7 +2,7 @@
 // PNGs into ffmpeg. Usage:
 //   node src/render.mjs stills m169 0,2.4,5,8.5,10.5,13,16,19,22,24.5,26.5,29   (frames to look at)
 //   node src/render.mjs video m169 [seconds]                                     (silent mp4)
-import { chromium } from '/tmp/claude-0/-home-user-levelworks/e37bc1b6-2018-54c3-8ddb-320600aa4b4b/scratchpad/mv/node_modules/playwright-core/index.mjs';
+import { chromium } from 'playwright-core';   // npm install in this folder (src/package.json)
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';

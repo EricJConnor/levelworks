@@ -1,5 +1,8 @@
 # LevelWorks — "From the driveway to the bank" (motion video, Sep 30 2026)
 
+**Start with `METHOD.md`**: the house method for the next video, trimmed from the original
+prompt (`PROMPT-ORIGINAL.md`) to what actually did the work.
+
 A 30-second product video built entirely in code, from the prompt Eric sent (the X post
 by @everestchris6). The kit it references could not be cloned from this environment, so the
 method is followed from the prompt itself with the tools here: headless Chromium, ffmpeg.
@@ -13,8 +16,9 @@ method is followed from the prompt itself with the tools here: headless Chromium
   Open it in a browser and call `setMode('m916'); render(12.5)` in the console to look at any frame.
 - `src/render.mjs` — `node src/render.mjs stills m169 0,2.4,8.5` writes PNGs of those moments;
   `node src/render.mjs video m169` renders the full 30 s at 60 fps through ffmpeg.
-  Uses the Chromium at `/opt/pw-browsers/chromium` and `playwright-core` from the scratchpad;
-  point the import at a local `node_modules` if that path is gone.
+  Uses the Chromium at `/opt/pw-browsers/chromium`; `cd src && npm install` first for
+  `playwright-core`. ffmpeg comes from `apt-get install ffmpeg` (it was not preinstalled).
+- `src/audio.sh` — tempo read, the synthesized whoosh and click, the music bed and the mix.
 - `src/critic.sh <mp4>` — contact sheet every 0.2 s, dense sheets around every cut, frozen time,
   loudness. The critic reads these, never the builder's opinion.
 - `out/` — renders. `levelworks_<size>.mp4` with sound, `levelworks_<size>_music-only.mp4`,

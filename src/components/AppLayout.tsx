@@ -15,7 +15,8 @@ import { useData, Estimate } from '@/contexts/DataContext';
 import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
 import { startStripeConnect } from '@/lib/stripeConnect';
-import { Menu, Bell, Loader2, User, Users, LogOut, ArrowLeft, Receipt, FileText, CheckCircle, HelpCircle, Plus, CreditCard, Home, StickyNote, Camera, ChevronRight } from 'lucide-react';
+import { fetchPayoutInfo, PayoutInfo, STRIPE_PAYOUT_SETTINGS } from '@/lib/stripePayouts';
+import { Menu, Bell, Loader2, User, Users, LogOut, ArrowLeft, Receipt, FileText, CheckCircle, HelpCircle, Plus, CreditCard, Home, StickyNote, Camera, ChevronRight, AlertTriangle } from 'lucide-react';
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -221,6 +222,7 @@ export const AppLayout: React.FC = () => {
             onViewEstimate={(estimate) => { setSelectedEstimate(estimate); setShowEstimate(true); }}
             onConnectStripe={handleConnectStripe}
             stripeConnected={!!profile?.stripe_account_id}
+            stripeAccountId={profile?.stripe_account_id || ''}
             firstName={profile?.full_name?.split(' ')[0]}
           />
         )}
@@ -305,11 +307,22 @@ interface DashboardViewProps {
   onViewEstimate: (estimate: any) => void;
   onConnectStripe: () => void;
   stripeConnected: boolean;
+  stripeAccountId?: string;
   firstName?: string;
 }
 
-function DashboardView({ clients, estimates, onCreateEstimate, onViewEstimates, onViewClients, onViewEstimate, onConnectStripe, stripeConnected, firstName }: DashboardViewProps) {
+function DashboardView({ clients, estimates, onCreateEstimate, onViewEstimates, onViewClients, onViewEstimate, onConnectStripe, stripeConnected, stripeAccountId, firstName }: DashboardViewProps) {
   const t = useT();
+  /* How his Stripe account pays him. "manual" means Stripe holds every payment
+     until he presses Pay out, which once cost a member five days of waiting. */
+  const [payouts, setPayouts] = useState<PayoutInfo | null>(null);
+  useEffect(() => {
+    if (!stripeConnected || !stripeAccountId) { setPayouts(null); return; }
+    let live = true;
+    fetchPayoutInfo(stripeAccountId).then((info) => { if (live) setPayouts(info); }).catch(() => {});
+    return () => { live = false; };
+  }, [stripeConnected, stripeAccountId]);
+  const payoutProblem = payouts && (!payouts.payoutsEnabled ? 'off' : payouts.interval === 'manual' ? 'manual' : '');
   const recentEstimates = estimates.slice(0, 5);
   const pendingEstimates = estimates.filter(e => e.status === 'sent').length;
   const totalEstimateValue = estimates.reduce((sum, e) => sum + (e.total || 0), 0);
@@ -350,6 +363,17 @@ function DashboardView({ clients, estimates, onCreateEstimate, onViewEstimates, 
             </div>
           </div>
           <a className="lv-btn quiet sm" href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer">{t('lst.openStripe')}</a>
+          {payoutProblem && (
+            /* Amber means attention: the money is his, but Stripe is not sending it on its own. */
+            <div style={{ flexBasis: '100%', display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px', borderRadius: 10, background: '#fff7e6', border: '1px solid #f3d9a4', color: '#0b1220' }}>
+              <AlertTriangle size={17} style={{ color: '#b45309', flexShrink: 0, marginTop: 2 }} />
+              <div style={{ minWidth: 0 }}>
+                <p className="lv-h3" style={{ fontSize: 14 }}>{payoutProblem === 'off' ? t('lst.payoutsOff') : t('lst.payoutsManual')}</p>
+                <p className="lv-small" style={{ marginTop: 2 }}>{payoutProblem === 'off' ? t('lst.payoutsOffBody') : t('lst.payoutsManualBody')}</p>
+                <a className="lv-btn sec sm" style={{ marginTop: 8 }} href={STRIPE_PAYOUT_SETTINGS} target="_blank" rel="noopener noreferrer">{t('lst.fixPayouts')}</a>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="lv-card lv-card-pad" style={{ marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', borderColor: '#cfe0ff', background: 'linear-gradient(180deg, #f7faff, #ffffff)' }}>

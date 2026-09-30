@@ -243,4 +243,9 @@ export const lists: Record<string, string> = {
   'lst.cardPaymentsOn': 'You take card payments',
   'lst.cardPaymentsOnBody': 'Clients can pay any invoice online. Payouts go to your bank through Stripe.',
   'lst.openStripe': 'Open Stripe',
+  'lst.payoutsManual': 'Your Stripe payouts are set to manual',
+  'lst.payoutsManualBody': 'Stripe is holding your payments until you press Pay out yourself. Switch the payout schedule to automatic and the money reaches your bank on its own, about two business days after a client pays.',
+  'lst.payoutsOff': 'Stripe is not paying out to your bank yet',
+  'lst.payoutsOffBody': 'Stripe still needs something from you before it can send money to your bank, usually a bank account or an ID check. Open Stripe to see what it is asking for.',
+  'lst.fixPayouts': 'Fix it in Stripe',
 };

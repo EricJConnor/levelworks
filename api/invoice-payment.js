@@ -41,6 +41,7 @@
  */
 import Stripe from 'stripe';
 import { json, readBody, admin, missingEnv } from './_lib/annual.js';
+import { notifyPaid } from './_lib/paymentMail.js';
 
 const clean = (v, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const UUID = /^[0-9a-f-]{8,64}$/i;
@@ -70,7 +71,7 @@ export default async function handler(req, res) {
 
   const { data: prof } = await db
     .from('profiles')
-    .select('stripe_account_id, company_name')
+    .select('stripe_account_id, company_name, business_email, lang')
     .eq('user_id', inv.user_id)
     .maybeSingle();
   const stripeAccountId = prof?.stripe_account_id || '';
@@ -148,6 +149,7 @@ export default async function handler(req, res) {
     let next = [...history];
     let newPaid = paid;
     let changed = false;
+    const settled = [];
     for (const entry of pending) {
       let p;
       try { p = await stripe.paymentIntents.retrieve(entry.paymentIntentId, {}, { stripeAccount: stripeAccountId }); }
@@ -164,6 +166,7 @@ export default async function handler(req, res) {
         const got = (Number(p.amount_received) || 0) / 100;
         newPaid = Math.min(Math.round((newPaid + got) * 100) / 100, Math.round(total * 100) / 100);
         next = next.map((h) => (h.paymentIntentId === p.id ? { ...h, pending: false, amount: got, settledAt: new Date().toISOString() } : h));
+        settled.push(got);
       } else {
         // Failed or cancelled: the money never moved, so the record should not
         // imply it did. Keep it, marked, so the client is not left wondering.
@@ -175,6 +178,8 @@ export default async function handler(req, res) {
     const newStatus = newPaid >= total - 0.005 ? 'paid' : newPaid > 0 ? 'partially_paid' : inv.status;
     const { error: sErr } = await db.from('invoices').update({ amount_paid: newPaid, status: newStatus, payment_history: next }).eq('id', inv.id);
     if (sErr) return json(res, 503, { error: 'db', message: sErr.message });
+    // The contractor hears the moment it lands, whoever opened the invoice.
+    for (const got of settled) await notifyPaid({ db, inv, prof, kind: 'settled', amount: got });
     return json(res, 200, { ok: true, changed: true, amountPaid: newPaid, status: newStatus, pending: next.filter((h) => h.pending).length });
   }
 
@@ -210,6 +215,7 @@ export default async function handler(req, res) {
     };
     const { error: pErr } = await db.from('invoices').update({ payment_history: [...historyP, pendingEntry] }).eq('id', inv.id);
     if (pErr) return json(res, 503, { error: 'db', message: pErr.message });
+    await notifyPaid({ db, inv, prof, kind: 'pending', amount: pendingEntry.amount });
     return json(res, 200, { ok: true, pending: true, amountPaid: paid, status: inv.status });
   }
 
@@ -229,6 +235,9 @@ export default async function handler(req, res) {
 
   // Stripe is the idempotency store: a second confirm for this intent is a no-op above.
   try { await stripe.paymentIntents.update(pi.id, { metadata: { recorded: '1' } }, { stripeAccount: stripeAccountId }); } catch { /* the invoice is already marked; this only guards a retry */ }
+  // Tell the contractor he got paid. A bank debit that lands here succeeded
+  // outright (rare, but Stripe allows it), so it reads as settled money.
+  await notifyPaid({ db, inv, prof, kind: viaBank ? 'settled' : 'card', amount: received });
   return json(res, 200, { ok: true, amountPaid: newPaid, status: newStatus });
 }
 

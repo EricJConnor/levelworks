@@ -19,6 +19,47 @@ const IMG = (name, alt) => `<img src="${SITE_URL}/email/${name}.png" alt="${alt}
 const utm = (path, content) => `${SITE_URL}${path}?utm_source=email&utm_medium=email&utm_campaign=notes&utm_content=${content}`;
 
 export const NOTES = {
+  stripePayouts: {
+    // Oct 1 2026, 9am ET. Written after a real payment sat in a connected
+    // account for five days because its payout schedule was set to manual.
+    sendAt: '2026-10-01T12:00:00Z',
+    en: {
+      subject: 'Where the money goes after a client pays you (read this once)',
+      lines: [
+        'Hi, it’s Eric. This one is about what happens to the money after a client pays an invoice, because I got caught by it myself last week and I do not want it to happen to you.',
+        '<b>What happened to me.</b> A customer paid my own company’s invoice by card on a Friday. I could see the payment in Stripe, so I waited. Five days later nothing had reached my bank. The money was sitting in my Stripe account the whole time, because that account’s payout schedule was set to <b>manual</b>. I pressed one button and it arrived the next business day. That button is the whole story of this email.',
+        '<b>How the money moves.</b> When a client taps Pay on your invoice, the money goes into <b>your</b> Stripe account, not ours. LevelWorks never holds it and takes nothing from it. Stripe then sends it from your Stripe balance to your bank on a schedule that you control. So there are two steps: client to Stripe, which is instant, and Stripe to your bank, which is the part to understand.',
+        '<b>1. How to know a client paid.</b> Two ways. In LevelWorks, the invoice turns <b>Paid</b> in your Invoices list. And starting today, <b>you get an email the moment a payment lands</b> on any of your invoices, with the amount, the client and the invoice. A bank transfer sends two: one when the client pays, one when it clears. You no longer have to go looking.',
+        '<b>2. How to see it in Stripe.</b> Go to dashboard.stripe.com and sign in. <b>Balance</b> shows two numbers: <b>Available</b>, money Stripe can send to your bank now, and <b>Pending</b>, money still clearing. <b>Payments</b> lists every payment with the client’s name and the invoice number. The <b>Open Stripe</b> button on your LevelWorks dashboard takes you there.',
+        '<b>3. Make sure payouts are automatic.</b> This is the one that cost me five days. In Stripe go to <b>Settings</b>, then <b>Payouts</b> (or open dashboard.stripe.com/settings/payouts). Under <b>Payout schedule</b> pick <b>Automatic</b> and <b>Every day</b>. If it says Manual, that is why money sits there. Your LevelWorks dashboard now checks this too and shows a yellow warning on the payments card if your account is set to manual.',
+        '<b>4. Pay yourself out by hand.</b> If money is sitting in Available and you want it now, or your schedule is still manual: in Stripe open <b>Balance</b>, press <b>Pay out funds</b>, enter the amount, press <b>Pay out</b>. It lands in your bank in about two business days. On some accounts Stripe also offers <b>Instant payout</b> to a debit card, in minutes, for a 1.5% fee. If you see that option it works the same way.',
+        '<b>5. How long it takes.</b> A card payment becomes Available about two business days after the client pays, and on an automatic schedule Stripe sends it that day. The very first payout on a brand new Stripe account takes about seven days while they verify you. A bank transfer (the client pays from their checking account) takes about four business days to clear before any of that starts. Weekends and bank holidays do not count. So a card payment on a Friday reaches your bank on Tuesday or Wednesday, not Saturday.',
+        '<b>6. Fees, so there are no surprises.</b> Card: 2.9% plus 30 cents, taken by Stripe before the money reaches you. Bank transfer: 0.8%, capped at $5, so a $20,000 job costs $5. LevelWorks takes 0% on both. You choose which one a client may use on each invoice, under the total in the invoice builder.',
+        '<b>7. Let Stripe tell you too.</b> In Stripe, under your name at the top right, <b>Profile</b>, then <b>Notifications</b>, turn on the emails for payments and payouts. The Stripe app on your phone does the same with a push. Between that and the LevelWorks email, you will never wonder again.',
+        'If anything in Stripe looks different from what I described, or a payment is not where you expect it, reply to this email with what the screen says. I answer these myself.',
+      ],
+      cta: 'Check your payout schedule', ctaUrl: 'https://dashboard.stripe.com/settings/payouts',
+      ps: 'P.S. A full year of LevelWorks is $49 at levelworks.org/annual. One payment, no auto-renew. If you’d rather not hear from me, there’s an unsubscribe link at the bottom.',
+    },
+    es: {
+      subject: 'A dónde va el dinero cuando un cliente te paga (léelo una vez)',
+      lines: [
+        'Hola, soy Eric. Este correo es sobre qué pasa con el dinero después de que un cliente paga una factura, porque a mí me pasó la semana pasada y no quiero que te pase a ti.',
+        '<b>Lo que me pasó.</b> Un cliente pagó con tarjeta una factura de mi propia empresa un viernes. Vi el pago en Stripe, así que esperé. Cinco días después no había llegado nada a mi banco. El dinero estuvo todo ese tiempo en mi cuenta de Stripe, porque el calendario de depósitos de esa cuenta estaba en <b>manual</b>. Toqué un botón y llegó al siguiente día hábil. Ese botón es toda la historia de este correo.',
+        '<b>Cómo se mueve el dinero.</b> Cuando un cliente toca Pagar en tu factura, el dinero entra a <b>tu</b> cuenta de Stripe, no a la nuestra. LevelWorks nunca lo retiene ni se queda con nada. Después Stripe lo manda de tu saldo de Stripe a tu banco según un calendario que tú controlas. Son dos pasos: del cliente a Stripe, que es instantáneo, y de Stripe a tu banco, que es la parte que hay que entender.',
+        '<b>1. Cómo saber que un cliente pagó.</b> De dos formas. En LevelWorks, la factura cambia a <b>Pagada</b> en tu lista de Facturas. Y desde hoy, <b>te llega un correo en el momento en que entra un pago</b> en cualquiera de tus facturas, con el monto, el cliente y la factura. Una transferencia bancaria manda dos: uno cuando el cliente paga y otro cuando se acredita. Ya no tienes que andar buscando.',
+        '<b>2. Cómo verlo en Stripe.</b> Entra a dashboard.stripe.com e inicia sesión. <b>Balance</b> muestra dos números: <b>Available</b>, dinero que Stripe ya puede mandar a tu banco, y <b>Pending</b>, dinero que todavía se está acreditando. <b>Payments</b> lista cada pago con el nombre del cliente y el número de factura. El botón <b>Abrir Stripe</b> en tu Inicio de LevelWorks te lleva ahí.',
+        '<b>3. Asegúrate de que los depósitos sean automáticos.</b> Esto es lo que me costó cinco días. En Stripe ve a <b>Settings</b>, luego <b>Payouts</b> (o abre dashboard.stripe.com/settings/payouts). En <b>Payout schedule</b> elige <b>Automatic</b> y <b>Every day</b>. Si dice Manual, por eso el dinero se queda ahí. Tu Inicio de LevelWorks ahora también lo revisa y muestra un aviso amarillo en la tarjeta de pagos si tu cuenta está en manual.',
+        '<b>4. Depositarte tú mismo.</b> Si hay dinero en Available y lo quieres ya, o tu calendario sigue en manual: en Stripe abre <b>Balance</b>, toca <b>Pay out funds</b>, escribe el monto y toca <b>Pay out</b>. Llega a tu banco en unos dos días hábiles. En algunas cuentas Stripe también ofrece <b>Instant payout</b> a una tarjeta de débito, en minutos, por una comisión del 1.5%. Si ves esa opción, funciona igual.',
+        '<b>5. Cuánto tarda.</b> Un pago con tarjeta pasa a Available unos dos días hábiles después de que el cliente paga, y con el calendario automático Stripe lo manda ese mismo día. El primer depósito de una cuenta de Stripe nueva tarda unos siete días mientras te verifican. Una transferencia bancaria (el cliente paga desde su cuenta de cheques) tarda unos cuatro días hábiles en acreditarse antes de que empiece todo eso. Los fines de semana y días festivos no cuentan. Así que un pago con tarjeta un viernes llega a tu banco el martes o miércoles, no el sábado.',
+        '<b>6. Comisiones, para que no haya sorpresas.</b> Tarjeta: 2.9% más 30 centavos, que Stripe descuenta antes de que el dinero te llegue. Transferencia bancaria: 0.8%, con tope de $5, así que un trabajo de $20,000 cuesta $5. LevelWorks cobra 0% en las dos. Tú eliges cuál puede usar el cliente en cada factura, debajo del total en el editor de facturas.',
+        '<b>7. Deja que Stripe también te avise.</b> En Stripe, bajo tu nombre arriba a la derecha, <b>Profile</b>, luego <b>Notifications</b>, activa los correos de pagos y depósitos. La app de Stripe en tu teléfono hace lo mismo con una notificación. Entre eso y el correo de LevelWorks, no vuelves a quedarte con la duda.',
+        'Si algo en Stripe se ve distinto a lo que describí, o un pago no está donde esperas, responde a este correo con lo que dice la pantalla. Yo mismo contesto.',
+      ],
+      cta: 'Revisar tu calendario de depósitos', ctaUrl: 'https://dashboard.stripe.com/settings/payouts',
+      ps: 'P.D. Un año completo de LevelWorks cuesta $49 en levelworks.org/es/annual. Un solo pago, sin renovación automática. Si prefieres no recibir correos míos, abajo hay un enlace para cancelar.',
+    },
+  },
   stripeTutorial: {
     // The 9am ET cron runs at 13:00 UTC; anything at or before that sends on Sep 17.
     sendAt: '2026-09-17T12:00:00Z',

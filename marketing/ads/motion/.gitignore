@@ -4,3 +4,4 @@ out/sheet_*
 out/render.log
 out/audio/
 out/*_test_*
+video_*

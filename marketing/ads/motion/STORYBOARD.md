@@ -37,10 +37,10 @@ the $5 chip at the end. It never leaves the frame for more than a cut.
 | 2 | 2.4–4.6 | A phone rises into frame; the card becomes the estimate builder screen: project "Roof replacement", client, empty lines. Caption: "Write it in the driveway." | Shows the product in the first three seconds. | Caption leaves fast; the phone stays. | the estimate on the phone |
 | 3 | 4.6–8.0 | Four line items land in turn; the header total counts 0 → $8,200. Caption: "Price the job on your phone." | Signature moment 1, the product doing real work. | The Send button fills blue and the whole document lifts toward camera. | the document |
 | 4 | 8.0–9.4 | The document flies at the viewer and is already the client's view underneath: "Estimate from EC Home Improvement" on a second phone, "Approve and sign". Caption: "Send it by text or email." | Transition principle 1: the front object becomes the cut. | Settles instantly into #5. | the document, now the client's copy |
-| 5 | 9.4–12.4 | Signature draws itself; pill snaps "Sent" → "Approved" in green. Caption: "The client signs from their phone." | Signature moment 2, the moment a contractor cares about. | The card flips on its vertical axis. | the document |
-| 6 | 12.4–14.6 | Flip lands on "Invoice #1042", same lines, "Balance due $5,740". Caption: "One tap turns it into the invoice." | Fact: convert to invoice. Same object keeps identity. | Pay button fills; card form slides up over the invoice. | the invoice |
-| 7 | 14.6–18.0 | Client taps Pay → card form → green "Paid $5,740". Under it: "Card or bank transfer. Straight to your bank through Stripe." Caption: "They tap pay." | Signature moment 3 begins. Honest wording on timing. | Whole phone scales down and drifts left; the caption line moves to full frame. | "Paid" pill |
-| 8 | 18.0–20.4 | Full-frame type, two lines entering from opposite sides: "No LevelWorks fee on payments." / "Only Stripe's standard card fee." | The money point, stated within the facts. | Lines exit the way they came. | — (type) |
+| 5 | 9.4–12.4 | Signature draws itself; pill snaps "Sent" → "Approved" in green and the button turns green. Caption: "Sent. The client signs from their phone." | Signature moment 2, the moment a contractor cares about. | The card flips on its vertical axis. | the document |
+| 6 | 12.4–14.6 | Flip lands on "Invoice #1042", same lines, "Balance due $8,200". Caption: "One tap turns it into the invoice." | Fact: convert to invoice. Same object keeps identity. | Pay button fills; card form slides up over the invoice. | the invoice |
+| 7 | 14.6–18.0 | Client taps Pay → card form → "Paid" lands on the invoice itself: green pill, balance row reads Paid in full, button turns green. Under it: "Card or bank transfer. Straight to your bank through Stripe." Caption: "They tap pay." | Signature moment 3 begins. Honest wording on timing. | Whole phone scales down and drifts left; the caption line moves to full frame. | "Paid" pill |
+| 8 | 18.0–20.4 | Full-frame type, two lines entering from opposite sides: "No LevelWorks fee on payments." / "Only Stripe's standard fee." | The money point, stated within the facts. | Lines exit the way they came. | — (type) |
 | 9 | 20.4–23.4 | Two phones side by side, the same estimate in English and Spanish, flags US/MX, prices identical. Caption: "English or Spanish. One tap." | The feature no competitor shows. | Both phones slide off downward. | the document, twice |
 | 10 | 23.4–25.6 | Full-frame stacked type from alternating sides: "Unlimited estimates." "Unlimited invoices." "Recurring billing." | The three feature words Eric fixed. | Lines compress upward to make room. | — (type) |
 | 11 | 25.6–27.8 | The document card slides down from the top and shrinks into a blue chip: "$5 a month". Under it: "30 days free. No card to start." | The offer, only price allowed. | Chip holds; end card assembles around it. | the card → the chip |
@@ -48,6 +48,11 @@ the $5 chip at the end. It never leaves the frame for more than a cut.
 
 Each composition runs 1.4–3.4 s. Scale varies: full-frame type (1, 8, 10), phone close (3, 5, 7),
 two phones wide (9), object-only (11), end card (12). No layout repeats twice in a row.
+
+## Framing inside the phone scenes
+The phone is a crop, not a device on a shelf: the pricing beat pushes in on the header and
+line items, the client beat pulls back and tilts, the pay beat pushes in on the bottom of the
+screen. Every move eases over ~0.7 s from the cut, and a slow push-in runs inside every shot.
 
 ## Layout per size
 - 16:9: caption left third, phone right two thirds, phone height ~86% of frame.

@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8">
 <title>LevelWorks — From the driveway to the bank</title>
-<link rel="stylesheet" href="fonts/inter.css">
+<link rel="stylesheet" href="inter.css">
 <style>
 /* ------------------------------------------------------------------
-   Everything on screen is a function of one time value t (seconds), set by
-   render(t). No CSS animation, no transitions, no timers, no randomness: any
-   frame renders the same every time, which is what lets Playwright seek.
-   Palette and type are the app's own (src/app-ui.css).
+   Every element is positioned by render(t) from one time value. No CSS
+   animation, no transitions, no timers, no randomness: any frame renders the
+   same every time. Palette and type are the app's own (src/app-ui.css).
+   The phone is treated as a crop, not a device on a shelf: each beat frames a
+   different part of the screen so the numbers are legible at feed size.
    ------------------------------------------------------------------ */
 :root{
   --ink:#0b1220;--mute:#5b6472;--faint:#8a93a3;--line:#e6e9ef;--bg:#f5f7fb;--sunken:#f1f4f9;
-  --blue:#2563eb;--bluesoft:#e8efff;--green:#16a34a;--greensoft:#e8f7ee;--amber:#b45309;
+  --blue:#2563eb;--bluesoft:#e8efff;--green:#16a34a;--greensoft:#e8f7ee;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;color:var(--ink)}
@@ -21,43 +22,41 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .m169 #stage{width:1920px;height:1080px}
 .m916 #stage{width:1080px;height:1920px}
 .m11  #stage{width:1080px;height:1080px}
+#cam{position:absolute;inset:0;transform-origin:center;will-change:transform}
 .glow{position:absolute;left:50%;top:50%;width:1600px;height:1600px;transform:translate(-50%,-50%);
   background:radial-gradient(closest-side,rgba(37,99,235,.13),rgba(37,99,235,0) 70%);pointer-events:none}
 .lay{position:absolute;will-change:transform,opacity}
 
-/* corner brand, on screen almost the whole time */
 .corner{position:absolute;display:flex;align-items:center;gap:12px;font-weight:700;font-size:30px;letter-spacing:-.02em;z-index:80}
 .corner svg{width:38px;height:38px}
 .corner b{color:var(--blue);font-weight:700}
 .m169 .corner{left:80px;top:60px}
-.m916 .corner{left:70px;top:90px}
+.m916 .corner{left:70px;top:270px}
 .m11  .corner{left:64px;top:56px}
 
-/* captions */
 .cap{position:absolute;font-weight:800;letter-spacing:-.035em;line-height:1.02;color:var(--ink);opacity:0;z-index:70}
 .cap b{color:var(--blue);font-weight:800}
-.cap .sub{display:block;margin-top:22px;font-weight:500;letter-spacing:-.01em;color:var(--mute);line-height:1.25}
-.m169 .cap{left:80px;width:820px;top:250px;font-size:92px}
-.m169 .cap .sub{font-size:36px}
-.m916 .cap{left:70px;right:70px;top:220px;font-size:96px}
+.cap .sub{display:block;margin-top:20px;font-weight:500;letter-spacing:-.01em;color:var(--mute);line-height:1.25}
+.m169 .cap{left:80px;width:840px;top:250px;font-size:92px}
+.m169 .cap .sub{font-size:38px}
+.m916 .cap{left:70px;right:70px;top:340px;font-size:88px}
 .m916 .cap .sub{font-size:40px}
 .m11  .cap{left:64px;right:64px;top:122px;font-size:72px}
 .m11  .cap .sub{font-size:32px}
-/* full-frame type lines */
 .line{position:absolute;left:0;right:0;text-align:center;font-weight:800;letter-spacing:-.04em;color:var(--ink);opacity:0;z-index:70;white-space:nowrap}
 .line b{color:var(--blue);font-weight:800}
 .m169 .line{font-size:96px}
-.m916 .line{font-size:80px;white-space:nowrap;padding:0 40px;line-height:1.02}
-.m11  .line{font-size:80px;white-space:nowrap;padding:0 40px;line-height:1.02}
+.m916 .line{font-size:80px;padding:0 40px;line-height:1.02}
+.m11  .line{font-size:80px;padding:0 40px;line-height:1.02}
 .m916 .line.wrap,.m11 .line.wrap{white-space:normal}
 
-/* the paper card in frame one */
-.paper{position:absolute;width:480px;height:640px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 30px 60px -30px rgba(11,18,32,.35);padding:34px;z-index:40;transform-origin:center}
-.paper h4{font-size:22px;font-weight:700;margin-bottom:6px}
-.paper p{font-size:15px;color:var(--mute);margin-bottom:22px}
-.paper i{display:block;height:12px;border-radius:6px;background:var(--sunken);margin:0 0 14px}
-.paper i.s{width:60%}.paper i.m{width:80%}
-.paper .tot{margin-top:26px;border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;font-weight:700;font-size:20px}
+/* the legal pad in frame one */
+.pad{position:absolute;width:520px;height:680px;background:#fbf3c8;border-radius:6px;box-shadow:0 34px 60px -28px rgba(11,18,32,.45);z-index:40;transform-origin:center;overflow:hidden;
+  background-image:repeating-linear-gradient(180deg,transparent 0 41px,#b9c7e6 41px 42px);background-position:0 64px}
+.pad:before{content:'';position:absolute;left:62px;top:0;bottom:0;width:2px;background:#e59aa0}
+.pad:after{content:'';position:absolute;left:0;right:0;top:0;height:44px;background:#e8dfad;border-bottom:2px solid #d6cb93}
+.pad svg{position:absolute;left:72px;top:60px;width:430px;height:600px}
+.pad svg path{fill:none;stroke:#1d3a8a;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
 
 /* phones */
 .phone{position:absolute;left:0;top:0;width:390px;height:844px;transform-origin:center;z-index:50;
@@ -66,119 +65,118 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .notch{position:absolute;left:50%;top:0;transform:translateX(-50%);width:120px;height:32px;background:#0b1220;border-radius:0 0 20px 20px;z-index:30}
 .view{position:absolute;inset:0;background:var(--bg);transform-origin:center;backface-visibility:hidden}
 .status{height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;font-weight:600}
-.status i{display:inline-block;width:22px;height:11px;border:1.5px solid var(--ink);border-radius:3px;position:relative;vertical-align:middle}
+.status i{display:inline-block;width:22px;height:11px;border:1.5px solid var(--ink);border-radius:3px;position:relative}
 .status i:after{content:'';position:absolute;left:1.5px;top:1.5px;bottom:1.5px;width:70%;background:var(--ink);border-radius:1px}
-.hdr{height:58px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px}
-.hdr .x{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);display:grid;place-items:center;color:var(--mute);font-size:17px}
+.hdr{height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.hdr .x{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);display:grid;place-items:center;color:var(--mute);font-size:17px}
 .hdr .eb{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--blue)}
-.hdr .nm{font-size:16px;font-weight:700;letter-spacing:-.01em}
-.hdr .tot{font-size:20px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;text-align:right}
+.hdr .nm{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.hdr .tot{font-size:24px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;text-align:right}
 .hdr .tot small{display:block;font-size:11px;color:var(--mute);font-weight:500}
 .bd{padding:14px;position:relative}
 .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;position:relative}
 .lab{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
-.inp{height:42px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 12px;display:flex;align-items:center;font-size:16px;margin-bottom:10px}
+.inp{height:44px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:0 12px;display:flex;align-items:center;font-size:17px;margin-bottom:10px}
 .item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;transform-origin:left center}
 .item .r1{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .chip{width:24px;height:24px;border-radius:8px;background:var(--bluesoft);color:var(--blue);font-size:12px;font-weight:700;display:grid;place-items:center}
-.item .d{font-size:15px;font-weight:600;line-height:1.25;margin-bottom:6px}
+.item .d{font-size:17px;font-weight:600;line-height:1.2;margin-bottom:4px}
 .item .q{font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
-.item .lt{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.item .lt{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
 .bar{position:absolute;left:0;right:0;bottom:0;height:86px;background:#fff;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center;padding:0 14px 8px}
-.btn{height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;flex:1;position:relative;overflow:hidden}
+.btn{height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;flex:1;position:relative;overflow:hidden}
 .btn.dark{background:var(--ink);color:#fff}
 .btn.pri{background:var(--blue);color:#fff}
 .btn.go{background:var(--green);color:#fff}
 .btn .fill{position:absolute;inset:0;background:rgba(255,255,255,.28);transform-origin:left;transform:scaleX(0)}
-/* client document */
-.doc{padding:16px 16px 0}
-.biz{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.biz .lg{width:38px;height:38px;border-radius:10px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
-.biz b{display:block;font-size:16px;font-weight:700}
-.biz span{font-size:12px;color:var(--mute)}
-.pill{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--bluesoft);color:var(--blue)}
+.doc{padding:14px 16px 0}
+.biz{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.biz .lg{width:40px;height:40px;border-radius:10px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:16px}
+.biz b{display:block;font-size:18px;font-weight:700}
+.pill{display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:999px;font-size:13px;font-weight:600;background:var(--bluesoft);color:var(--blue);transform-origin:left center}
 .pill.g{background:var(--greensoft);color:var(--green)}
-.dt{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:4px 0 2px}
-.dfor{font-size:13px;color:var(--mute);margin-bottom:12px}
+.dt{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.08;margin:8px 0 2px}
+.dfor{font-size:14px;color:var(--mute);margin-bottom:12px}
 .rows{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:12px}
-.row{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:13.5px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:16px;line-height:1.2}
 .row:last-child{border-bottom:0}
 .row span:last-child{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
-.row.t{background:var(--sunken);font-weight:700;font-size:15px}
+.row.t{background:var(--sunken);font-weight:700;font-size:18px}
 .row.t span:last-child{font-weight:800}
+.row.g{color:var(--green)}
 .row.g span:last-child{color:var(--green)}
-.sig{height:92px;border:1.5px dashed #c9d2e0;border-radius:12px;background:#fff;position:relative;margin-bottom:10px}
+.sig{height:96px;border:1.5px dashed #c9d2e0;border-radius:12px;background:#fff;position:relative;margin-bottom:10px}
 .sig small{position:absolute;left:12px;top:8px;font-size:11px;color:var(--faint)}
-.sig svg{position:absolute;left:20px;top:16px;width:300px;height:70px}
-.sig svg path{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
-.tick{position:absolute;right:12px;top:10px;width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800}
-/* card form sheet */
+.sig svg{position:absolute;left:20px;top:18px;width:300px;height:70px}
+.sig svg path{fill:none;stroke:var(--ink);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+.tick{position:absolute;right:12px;top:10px;width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:800}
 .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:22px 22px 0 0;padding:18px 16px 24px;box-shadow:0 -20px 50px rgba(11,18,32,.18);transform:translateY(110%)}
-.sheet h5{font-size:16px;font-weight:700;margin-bottom:12px}
+.sheet h5{font-size:18px;font-weight:700;margin-bottom:12px}
 .sheet .inp{font-variant-numeric:tabular-nums;letter-spacing:.04em}
-.paid{position:absolute;inset:0;display:grid;place-items:center;background:rgba(245,247,251,.92);opacity:0}
-.paid .big{width:96px;height:96px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:52px;font-weight:800;margin:0 auto 16px}
-.paid h3{font-size:30px;font-weight:800;letter-spacing:-.02em;text-align:center}
-.paid p{font-size:14px;color:var(--mute);text-align:center;margin-top:6px}
-/* flags */
+.tap{position:absolute;width:44px;height:44px;border-radius:50%;border:3px solid var(--blue);opacity:0;transform-origin:center;pointer-events:none}
 .flag{display:inline-block;width:22px;height:15px;border-radius:3px;vertical-align:-2px;margin-right:6px;overflow:hidden;position:relative}
 .flag.us{background:repeating-linear-gradient(#b22234 0 2.1px,#fff 2.1px 4.2px)}
 .flag.us:before{content:'';position:absolute;left:0;top:0;width:9px;height:8px;background:#3c3b6e}
 .flag.mx{background:linear-gradient(90deg,#006847 33%,#fff 33% 66%,#ce1126 66%)}
 .tag{position:absolute;top:-56px;left:0;right:0;text-align:center;font-size:24px;font-weight:700;color:var(--ink)}
-/* the chip and end card */
-.chipbox{position:absolute;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 60px -30px rgba(11,18,32,.35);z-index:75;display:grid;place-items:center;overflow:hidden;transform-origin:center}
+
+.chipbox{position:absolute;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 60px -30px rgba(11,18,32,.35);z-index:75;overflow:hidden;transform-origin:center}
 .chipbox .mini{position:absolute;inset:0;padding:30px}
-.chipbox .mini h4{font-size:22px;font-weight:700}
-.chipbox .mini p{font-size:15px;color:var(--mute);margin:4px 0 20px}
-.chipbox .mini i{display:block;height:11px;border-radius:6px;background:var(--sunken);margin-bottom:12px}
-.chipbox .price{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:14px;background:var(--blue);color:#fff;font-weight:800;letter-spacing:-.03em;font-size:96px;white-space:nowrap;opacity:0}
-.chipbox .price small{font-size:40px;font-weight:600;letter-spacing:-.01em;opacity:.9}
+.chipbox .mini .pill{margin-bottom:10px}
+.chipbox .mini h4{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.chipbox .mini p{font-size:18px;color:var(--mute);margin:6px 0 22px}
+.chipbox .mini i{display:block;height:12px;border-radius:6px;background:var(--sunken);margin-bottom:14px}
+.chipbox .mini .tot{margin-top:24px;border-top:1px solid var(--line);padding-top:16px;display:flex;justify-content:space-between;font-weight:800;font-size:24px;color:var(--green)}
+.chipbox .price{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:14px;background:var(--blue);color:#fff;font-weight:800;letter-spacing:-.03em;font-size:112px;white-space:nowrap;opacity:0}
+.chipbox .price small{font-size:44px;font-weight:600;letter-spacing:-.01em;opacity:.92}
 .end{position:absolute;left:0;right:0;text-align:center;z-index:74;opacity:0}
 .end .brand{display:flex;align-items:center;justify-content:center;gap:16px;font-size:64px;font-weight:800;letter-spacing:-.03em}
 .end .brand svg{width:72px;height:72px}
 .end .brand b{color:var(--blue);font-weight:800}
 .end .url{font-size:40px;font-weight:600;color:var(--mute);margin-top:6px}
-.end .cta{display:inline-block;margin-top:34px;background:var(--blue);color:#fff;font-weight:700;font-size:40px;padding:22px 54px;border-radius:18px}
+.end .cta{display:inline-block;background:var(--blue);color:#fff;font-weight:700;font-size:40px;padding:22px 54px;border-radius:18px}
 .end .fine{margin-top:26px;font-size:28px;color:var(--mute);font-weight:500}
 .end .by{margin-top:10px;font-size:24px;color:var(--faint)}
 </style>
 </head>
 <body class="m169">
 <div id="stage">
-  <div id="cam" style="position:absolute;inset:0;transform-origin:center;will-change:transform">
+  <div id="cam">
   <div class="glow" id="glow"></div>
-
   <div class="corner" id="corner"><svg viewBox="0 0 28 28" fill="none"><rect x="1.5" y="8.5" width="25" height="11" rx="3.5" stroke="#0b1220" stroke-width="2"/><rect x="10" y="11" width="8" height="6" rx="2" fill="#2563eb"/><path d="M8.5 9v10M19.5 9v10" stroke="#0b1220" stroke-width="1.5" stroke-opacity=".35"/></svg>Level<b>Works</b></div>
 
-  <!-- captions -->
   <div class="cap" id="cap1">Still writing estimates at the <b>kitchen table?</b></div>
   <div class="cap" id="cap2">Write it in the <b>driveway.</b></div>
   <div class="cap" id="cap3">Price the job on your <b>phone.</b></div>
-  <div class="cap" id="cap5">The client signs from <b>their</b> phone.</div>
+  <div class="cap" id="cap5">Sent. The client signs from <b>their</b> phone.</div>
   <div class="cap" id="cap6">One tap turns it into the <b>invoice.</b></div>
   <div class="cap" id="cap7">They tap <b>pay.</b><span class="sub">Card or bank transfer. Straight to your bank through Stripe.</span></div>
   <div class="cap" id="cap9">English or Spanish. <b>One tap.</b></div>
   <div class="cap" id="cap11"><span class="sub" style="margin-top:0">30 days free. No card to start.</span></div>
-
   <div class="line wrap" id="l8a">No <b>LevelWorks</b> fee on payments.</div>
-  <div class="line wrap" id="l8b">Only Stripe’s standard card fee.</div>
+  <div class="line wrap" id="l8b">Only Stripe’s standard fee.</div>
   <div class="line" id="l10a">Unlimited <b>estimates.</b></div>
   <div class="line" id="l10b">Unlimited <b>invoices.</b></div>
   <div class="line" id="l10c">Recurring <b>billing.</b></div>
 
-  <!-- frame one paper -->
-  <div class="paper lay" id="paper"><h4>Estimate</h4><p>Roof replacement</p><i class="m"></i><i></i><i class="s"></i><i class="m"></i><i class="s"></i><div class="tot"><span>Total</span><span>$8,200.00</span></div></div>
+  <!-- frame one: a legal pad with a hand-written estimate -->
+  <div class="pad lay" id="pad"><svg viewBox="0 0 430 600">
+    <path d="M10 28 c14 -18 30 -6 42 4 c10 8 20 -14 34 -6 c12 8 14 12 30 2 c14 -10 28 4 42 -2 c18 -8 30 8 48 0"/>
+    <path d="M12 74 c18 -14 26 10 44 2 c16 -8 24 6 40 0 c14 -6 22 10 36 4 c18 -8 30 4 46 -4 M300 70 c10 -12 24 -4 30 4 c8 10 18 -8 30 -2"/>
+    <path d="M12 116 c12 -10 26 8 40 0 c14 -8 22 6 38 -2 c14 -8 26 8 44 2 c14 -6 24 4 38 -2 M296 112 c12 -10 22 6 34 0 c10 -6 20 8 32 2"/>
+    <path d="M12 158 c16 -12 24 8 40 2 c14 -6 22 8 36 0 c16 -8 28 6 46 -2 c12 -6 22 6 36 0 M292 154 c12 -8 24 6 36 0 c12 -6 22 8 34 2"/>
+    <path d="M12 200 c14 -10 28 6 44 0 c14 -6 24 8 40 2 c14 -6 22 4 40 -2 M298 196 c10 -10 22 6 34 0 c12 -6 22 8 32 2"/>
+    <path d="M10 270 c40 -2 80 2 130 0 M250 262 c12 -14 28 -2 40 6 c10 8 18 -12 30 -4 c12 8 20 10 36 0 c10 -6 20 2 28 -2" stroke-width="4"/>
+    <path d="M14 330 c30 -6 60 4 90 0 c30 -4 50 6 80 0 M230 326 c12 -12 26 -2 38 4 c10 6 20 -10 34 -2 c12 8 22 6 36 -2"/>
+  </svg></div>
 
-  <!-- the contractor's phone, with the client's view layered under the builder -->
   <div class="phone lay" id="phA">
     <div class="scr">
       <div class="notch"></div>
-      <!-- client view (under) -->
       <div class="view" id="vClient">
         <div class="status"><span>9:41</span><span><i></i></span></div>
         <div class="doc">
-          <div class="biz"><div class="lg">EC</div><div><b>EC Home Improvement</b><span>(215) 555-0148 · Wyncote, PA</span></div></div>
+          <div class="biz"><div class="lg">EC</div><b>EC Home Improvement</b></div>
           <span class="pill" id="pillA">Sent for approval</span>
           <div class="dt">Estimate #1042<br>Roof replacement</div>
           <div class="dfor">Prepared for M. Alvarez · 1,200 sq ft</div>
@@ -188,17 +186,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
             <div class="row"><span>Architectural shingles, installed</span><span>$5,200.00</span></div>
             <div class="row"><span>Ridge vent and flashing</span><span>$700.00</span></div>
             <div class="row t"><span>Total</span><span>$8,200.00</span></div>
-            <div class="row"><span>Deposit (30%)</span><span>$2,460.00</span></div>
           </div>
           <div class="sig" id="sigBox"><small>Sign here</small><svg viewBox="0 0 300 70"><path id="sigPath" d="M6 48 C 20 10, 34 10, 40 42 C 44 60, 52 58, 60 34 C 66 18, 72 22, 74 40 C 78 62, 96 20, 112 26 C 128 32, 118 54, 138 44 C 156 34, 170 12, 186 30 C 196 42, 206 46, 222 30 C 236 16, 250 30, 262 42 C 272 52, 284 40, 294 34"/></svg><div class="tick" id="sigTick" style="opacity:0">✓</div></div>
-          <div class="btn pri" id="btnSign">Approve and sign<div class="fill" id="fillSign"></div></div>
+          <div class="btn pri" id="btnSign"><span id="btnSignT">Approve and sign</span><div class="fill" id="fillSign"></div></div>
         </div>
+        <div class="tap" id="tapSign"></div>
       </div>
-      <!-- invoice view (for the flip) -->
       <div class="view" id="vInv" style="opacity:0">
         <div class="status"><span>9:41</span><span><i></i></span></div>
         <div class="doc">
-          <div class="biz"><div class="lg">EC</div><div><b>EC Home Improvement</b><span>(215) 555-0148 · Wyncote, PA</span></div></div>
+          <div class="biz"><div class="lg">EC</div><b>EC Home Improvement</b></div>
           <span class="pill" id="pillInv">Balance due</span>
           <div class="dt">Invoice #1042<br>Roof replacement</div>
           <div class="dfor">Billed to M. Alvarez · Due on receipt</div>
@@ -208,50 +205,46 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
             <div class="row"><span>Architectural shingles, installed</span><span>$5,200.00</span></div>
             <div class="row"><span>Ridge vent and flashing</span><span>$700.00</span></div>
             <div class="row t"><span>Total</span><span>$8,200.00</span></div>
-            <div class="row g"><span>Deposit received</span><span>−$2,460.00</span></div>
-            <div class="row t"><span>Balance due</span><span id="balDue">$5,740.00</span></div>
+            <div class="row t" id="balRow"><span id="balLab">Balance due</span><span id="balDue">$8,200.00</span></div>
           </div>
-          <div class="btn go" id="btnPay">Pay invoice<div class="fill" id="fillPay"></div></div>
+          <div class="btn go" id="btnPay"><span id="btnPayT">Pay invoice</span><div class="fill" id="fillPay"></div></div>
         </div>
-        <div class="sheet" id="sheet"><h5>Pay $5,740.00</h5><div class="lab">Name on card</div><div class="inp">Maria Alvarez</div><div class="lab">Card</div><div class="inp" id="cardNo">•••• •••• •••• 4242</div><div class="btn go">Pay now</div></div>
-        <div class="paid" id="paid"><div><div class="big">✓</div><h3>Paid $5,740.00</h3><p>Receipt sent · Money on its way to your bank</p></div></div>
+        <div class="sheet" id="sheet"><h5>Pay $8,200.00</h5><div class="lab">Name on card</div><div class="inp">Maria Alvarez</div><div class="lab">Card</div><div class="inp" id="cardNo">&nbsp;</div><div class="btn go" id="btnPayNow">Pay now<div class="fill" id="fillPayNow"></div></div></div>
+        <div class="tap" id="tapPay"></div>
       </div>
-      <!-- builder (top) -->
       <div class="view" id="vBuild">
         <div class="status"><span>9:41</span><span><i></i></span></div>
         <div class="hdr"><div class="x">✕</div><div><div class="eb">New estimate</div><div class="nm">Roof replacement</div></div><div class="tot"><span id="runTot">$0.00</span><small>Total</small></div></div>
         <div class="bd">
-          <div class="card"><div class="lab">Client</div><div class="inp">M. Alvarez</div><div class="lab">Project</div><div class="inp" style="margin-bottom:0">Roof replacement, 1,200 sq ft</div></div>
+          <div class="card"><div class="lab">Client</div><div class="inp" id="clientInp">M. Alvarez</div><div class="lab">Project</div><div class="inp" style="margin-bottom:0">Roof replacement, 1,200 sq ft</div></div>
           <div class="item" id="it1"><div class="r1"><span class="chip">1</span><span class="lt">$1,400.00</span></div><div class="d">Tear-off and disposal</div><div class="q">1 × $1,400.00</div></div>
           <div class="item" id="it2"><div class="r1"><span class="chip">2</span><span class="lt">$900.00</span></div><div class="d">Ice and water shield, underlayment</div><div class="q">12 sq × $75.00</div></div>
           <div class="item" id="it3"><div class="r1"><span class="chip">3</span><span class="lt">$5,200.00</span></div><div class="d">Architectural shingles, installed</div><div class="q">13 sq × $400.00</div></div>
           <div class="item" id="it4"><div class="r1"><span class="chip">4</span><span class="lt">$700.00</span></div><div class="d">Ridge vent and flashing</div><div class="q">1 × $700.00</div></div>
         </div>
         <div class="bar"><div class="btn dark" style="flex:.7">Save</div><div class="btn pri" id="btnSend">Send to client<div class="fill" id="fillSend"></div></div></div>
+        <div class="tap" id="tapSend"></div>
       </div>
     </div>
   </div>
 
-  <!-- the two phones for the Spanish scene -->
   <div class="phone lay" id="phEN"><div class="tag"><span class="flag us"></span>English</div><div class="scr"><div class="notch"></div><div class="view"><div class="status"><span>9:41</span><span><i></i></span></div><div class="doc">
-    <div class="biz"><div class="lg">EC</div><div><b>EC Home Improvement</b><span>(215) 555-0148 · Wyncote, PA</span></div></div>
+    <div class="biz"><div class="lg">EC</div><b>EC Home Improvement</b></div>
     <span class="pill">Sent for approval</span><div class="dt">Estimate #1042<br>Roof replacement</div><div class="dfor">Prepared for M. Alvarez · 1,200 sq ft</div>
     <div class="rows"><div class="row"><span>Tear-off and disposal</span><span>$1,400.00</span></div><div class="row"><span>Ice and water shield, underlayment</span><span>$900.00</span></div><div class="row"><span>Architectural shingles, installed</span><span>$5,200.00</span></div><div class="row"><span>Ridge vent and flashing</span><span>$700.00</span></div><div class="row t"><span>Total</span><span>$8,200.00</span></div></div>
     <div class="btn pri">Approve and sign</div></div></div></div></div>
   <div class="phone lay" id="phES"><div class="tag"><span class="flag mx"></span>Español</div><div class="scr"><div class="notch"></div><div class="view"><div class="status"><span>9:41</span><span><i></i></span></div><div class="doc">
-    <div class="biz"><div class="lg">EC</div><div><b>EC Home Improvement</b><span>(215) 555-0148 · Wyncote, PA</span></div></div>
+    <div class="biz"><div class="lg">EC</div><b>EC Home Improvement</b></div>
     <span class="pill">Enviado para aprobación</span><div class="dt">Presupuesto #1042<br>Reemplazo de techo</div><div class="dfor">Preparado para M. Alvarez · 1,200 pies²</div>
     <div class="rows"><div class="row"><span>Retiro y desecho del techo viejo</span><span>$1,400.00</span></div><div class="row"><span>Barrera de hielo y agua, membrana</span><span>$900.00</span></div><div class="row"><span>Tejas arquitectónicas, instaladas</span><span>$5,200.00</span></div><div class="row"><span>Ventila de cumbrera y tapajuntas</span><span>$700.00</span></div><div class="row t"><span>Total</span><span>$8,200.00</span></div></div>
     <div class="btn pri">Aprobar y firmar</div></div></div></div></div>
 
-  <!-- the card that becomes the $5 chip -->
-  <div class="chipbox lay" id="chip"><div class="mini"><h4>Invoice #1042</h4><p>Roof replacement · Paid</p><i style="width:80%"></i><i style="width:60%"></i><i style="width:70%"></i></div><div class="price" id="price">$5<small>a month</small></div></div>
-
+  <div class="chipbox lay" id="chip"><div class="mini" id="mini"><span class="pill g">Paid</span><h4>Invoice #1042<br>Roof replacement</h4><p>M. Alvarez</p><i style="width:80%"></i><i style="width:60%"></i><i style="width:70%"></i><div class="tot"><span>Paid in full</span><span>$8,200.00</span></div></div><div class="price" id="price">$5<small>a month</small></div></div>
   </div><!-- /cam -->
-  <!-- end card -->
+
   <div class="end" id="endB">
     <div><span class="cta">Start free</span></div>
-    <div class="fine">30 days free · No card to start · $5 a month after</div>
+    <div class="fine">30 days free · No card to start</div>
     <div class="by">Built by a contractor.</div>
   </div>
   <div class="end" id="end">
@@ -261,179 +254,175 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 </div>
 
 <script>
-// ---------------------------------------------------------------- helpers
 const $ = id => document.getElementById(id);
 const clamp = (v,a=0,b=1) => Math.max(a, Math.min(b, v));
 const seg = (t,a,b) => clamp((t-a)/(b-a));
 const lerp = (a,b,p) => a+(b-a)*p;
-const eo  = p => 1-Math.pow(1-p,3);            // ease out (things land slow enough to read)
-const ei  = p => p*p*p;                         // ease in (things leave fast)
+const eo  = p => 1-Math.pow(1-p,3);
+const ei  = p => p*p*p;
 const eio = p => p<.5 ? 4*p*p*p : 1-Math.pow(-2*p+2,3)/2;
-const back= p => { const c=1.70158*0.7; return 1+ (c+1)*Math.pow(p-1,3)+c*Math.pow(p-1,2); }; // soft overshoot landing
+const back= p => { const c=1.70158*0.7; return 1+(c+1)*Math.pow(p-1,3)+c*Math.pow(p-1,2); };
 const fmt = n => '$'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const set = (el, o) => { for (const k in o) el.style[k]=o[k]; };
-const tf = (x=0,y=0,s=1,extra='') => `translate(${x}px,${y}px) scale(${s}) ${extra}`;
 
-// cut points, snapped to the music's beat grid (105 bpm, first hit 2.44 s)
+// cut points on the music's beat grid (105 bpm, first hit 2.44 s)
 const C = { s2:2.44, s3:4.72, s4:8.14, s5:9.28, s6:12.13, s7:14.41, s8:17.83, s9:20.68, s10:23.53, s11:25.81, s12:27.52, END:30 };
-
-// per-size layout numbers
 const MODE = { m169:{W:1920,H:1080}, m916:{W:1080,H:1920}, m11:{W:1080,H:1080} };
 let mode='m169';
 function setMode(m){ mode=m; document.body.className=m; }
+
+/* Layout per size. The phone framing table is the "camera": [cx, cy, scale, rotate] per beat.
+   9:16 keeps everything inside y = 250–1650 (the Reels/Stories overlays live outside that). */
 function L(){
   const {W,H}=MODE[mode];
-  if(mode==='m169') return {W,H, phS:H*0.86/844, phX:W*0.66, phY:H*0.5, capY:250,
-    twoS:H*0.70/844, twoX1:W*0.53, twoX2:W*0.79, twoY:H*0.55, chipY:H*0.42, endY:H*0.22, paperX:W*0.71, paperY:H*0.5, lineY:H*0.5, l10gap:150, l8a:-90, l8b:90};
-  if(mode==='m916') return {W,H, phS:H*0.56/844, phX:W*0.5, phY:H*0.66, capY:220,
-    twoS:H*0.42/844, twoX1:W*0.29, twoX2:W*0.71, twoY:H*0.62, chipY:H*0.45, endY:H*0.26, paperX:W*0.5, paperY:H*0.66, lineY:H*0.5, l10gap:120, l8a:-230, l8b:110};
-  return {W,H, phS:H*0.70/844, phX:W*0.5, phY:H*0.62, capY:150,
-    twoS:H*0.56/844, twoX1:W*0.33, twoX2:W*0.67, twoY:H*0.62, chipY:H*0.42, endY:H*0.17, paperX:W*0.5, paperY:H*0.66, lineY:H*0.5, l10gap:110, l8a:-230, l8b:110};
+  if(mode==='m169'){ const s=H*0.86/844, cx=W*0.66;
+    return {W,H, capY:250, base:[cx,H*0.5,s,0],
+      frames:{ s2:[cx,H*0.5,s,0], s3:[cx,H*0.5+(422-330)*s*1.5,s*1.5,0], s3b:[cx,H*0.5,s,0], s5:[cx+30,H*0.5,s*1.02,-4], s6:[cx,H*0.5,s,0], s7:[cx,H*0.5+(422-600)*s*1.4,s*1.4,0] },
+      twoS:H*0.70/844, two:[[W*0.53,H*0.55,0],[W*0.79,H*0.55,0]], chipY:H*0.42, endY:H*0.22, padX:W*0.71, padY:H*0.53, lineY:H*0.5, l10gap:150, l8a:-90, l8b:90}; }
+  if(mode==='m916'){ const s=1650-480 > 0 ? (1650-480)/844*0.92 : 1, cx=W*0.5, cy=1080;
+    return {W,H, capY:340, base:[cx,cy,s,0],
+      frames:{ s2:[cx,cy,s,0], s3:[cx,470+422*s*1.45,s*1.45,0], s3b:[cx,cy,s,0], s5:[cx+20,cy,s*1.02,-3], s6:[cx,cy,s,0], s7:[cx,cy,s,0] },
+      twoS:H*0.30/844, two:[[W*0.36,H*0.47,-4],[W*0.64,H*0.63,3]], chipY:H*0.50, endY:H*0.30, padX:W*0.5, padY:H*0.60, lineY:H*0.5, l10gap:120, l8a:-230, l8b:110}; }
+  const s=H*0.70/844, cx=W*0.5, cy=H*0.62;
+  return {W,H, capY:122, base:[cx,cy,s,0],
+    frames:{ s2:[cx,cy,s,0], s3:[cx,300+422*s*1.35,s*1.35,0], s3b:[cx,cy,s,0], s5:[cx+16,cy,s*1.0,-3], s6:[cx,cy,s,0], s7:[cx,cy,s,0] },
+    twoS:H*0.56/844, two:[[W*0.33,H*0.62,0],[W*0.67,H*0.62,0]], chipY:H*0.44, endY:H*0.17, padX:W*0.5, padY:H*0.63, lineY:H*0.5, l10gap:110, l8a:-230, l8b:110};
 }
-
-// place a phone (390x844 native) by centre and scale, plus extra transform
-function phone(el, cx, cy, s, extra='', op=1){
-  set(el,{transform:`translate(${cx-195}px,${cy-422}px) scale(${s}) ${extra}`, opacity:op});
+// camera keyframes for the hero phone: time → frame key; moves ease over 0.7 s from each cut
+const CAMK=[[C.s2,'s2'],[C.s3,'s3'],[C.s3+2.5,'s3b'],[C.s4,'s5'],[C.s6,'s6'],[C.s7,'s7']];
+function camFrame(t,g){
+  let cur=g.frames.s2, prev=cur, at=-1;
+  for(const [tt,k] of CAMK){ if(t>=tt){ prev=cur; cur=g.frames[k]; at=tt; } }
+  const p=eio(seg(t,at,at+0.7));
+  return prev.map((v,i)=>lerp(v,cur[i],p));
 }
-// caption enter/leave: in from below with ease-out, out upward fast
-function caption(el, t, a, b, dirIn=1){
-  const pin = seg(t,a,a+0.55), pout = seg(t,b-0.3,b);
-  const y = lerp(60*dirIn,0,eo(pin)) - 70*ei(pout);
-  const op = t<a||t>=b ? 0 : Math.min(eo(pin), 1-ei(pout));
-  set(el,{opacity:op, transform:`translateY(${y}px)`});
+function phone(el, cx, cy, s, extra='', op=1){ set(el,{transform:`translate(${cx-195}px,${cy-422}px) scale(${s}) ${extra}`, opacity:op}); }
+function caption(el, t, a, b){
+  const pin=seg(t,a,a+0.55), pout=seg(t,b-0.3,b);
+  const y=lerp(60,0,eo(pin)) - 70*ei(pout);
+  set(el,{opacity: t<a||t>=b ? 0 : Math.min(eo(pin),1-ei(pout)), transform:`translateY(${y}px)`});
 }
-// full-frame line: enters from a side, leaves the other way
-function lineIn(el, t, a, b, y, from){ // from = -1 left, +1 right
-  const {W}=L();
-  const pin=seg(t,a,a+0.6), pout=seg(t,b-0.3,b);
+function lineIn(el, t, a, b, y, from){
+  const {W}=L(); const pin=seg(t,a,a+0.6), pout=seg(t,b-0.3,b);
   const x = from*W*0.6*(1-eo(pin)) - from*W*0.5*ei(pout) - from*18*seg(t,a+0.6,b);
   set(el,{opacity: t<a||t>=b?0:1, transform:`translate(${x}px,0)`, top:(y-70)+'px'});
 }
+// a tap ripple at a point inside a phone view, at time a
+function tap(el, t, a, x, y){ const p=seg(t,a,a+0.45); set(el,{left:(x-22)+'px', top:(y-22)+'px', opacity: p>0&&p<1 ? 1-p : 0, transform:`scale(${0.4+1.4*eo(p)})`}); }
 
-// ---------------------------------------------------------------- render
 function render(t){
   const g=L(); const {W,H}=g;
-  const els=['cap1','cap2','cap3','cap5','cap6','cap7','cap9','cap11','l8a','l8b','l10a','l10b','l10c','paper','phA','phEN','phES','chip','end','endB'];
-  for(const id of els) set($(id),{opacity:0});
-  set($('corner'),{opacity: t<C.s12 ? 1 : 1-eo(seg(t,C.s12,C.s12+0.4))});
-  // the frame never stops: a slow push-in inside every shot (resets on the cut) and a drifting glow
-  const cutsArr=[0,C.s2,C.s3,C.s4,C.s5,C.s6,C.s7,C.s8,C.s9,C.s10,C.s11,C.s12,C.END];
-  let si=0; for(let i=0;i<cutsArr.length-1;i++) if(t>=cutsArr[i]) si=i;
-  const sp=(t-cutsArr[si])/(cutsArr[si+1]-cutsArr[si]);
+  for(const id of ['cap1','cap2','cap3','cap5','cap6','cap7','cap9','cap11','l8a','l8b','l10a','l10b','l10c','pad','phA','phEN','phES','chip','end','endB']) set($(id),{opacity:0});
+  // the frame never stops: a slow push-in inside every shot and a drifting glow
+  const cuts=[0,C.s2,C.s3,C.s4,C.s5,C.s6,C.s7,C.s8,C.s9,C.s10,C.s11,C.s12,C.END];
+  let si=0; for(let i=0;i<cuts.length-1;i++) if(t>=cuts[i]) si=i;
+  const sp=(t-cuts[si])/(cuts[si+1]-cuts[si]);
   set($('cam'),{transform:`scale(${1+0.035*sp})`});
   set($('glow'),{transform:`translate(${-50+4*Math.sin(t*0.5)}%,${-50+3*Math.cos(t*0.37)}%)`});
+  set($('corner'),{opacity: t<C.s11 ? 1-eo(seg(t,C.s11-0.4,C.s11)) : 0});
 
-  // S1 hook 0 → 2.44 : finished frame, then the type splits and the paper heads for the phone
+  // S1 hook: the type splits, the pad slides off toward the phone
   if(t<C.s2+0.4){
     const pout=seg(t,C.s2-0.35,C.s2);
     set($('cap1'),{opacity:1-ei(pout), transform:`translate(${-W*0.3*ei(pout)}px,0)`});
-    // paper: sits, breathes very slightly, then slides toward where the phone rises
-    const px=g.paperX-240, py=g.paperY-320;
-    const rise = 6*Math.sin(t*1.4);
-    const pp = seg(t,C.s2-0.25,C.s2+0.35);
-    set($('paper'),{opacity:1-eo(pp), transform:`translate(${px}px,${py+rise-40*eo(pp)}px) scale(${1-0.15*eo(pp)}) rotate(${-4+3*Math.sin(t*0.9)}deg)`});
+    const pp=seg(t,C.s2-0.3,C.s2+0.4);
+    set($('pad'),{opacity:1-eo(pp), transform:`translate(${g.padX-260}px,${g.padY-340+7*Math.sin(t*1.3)-60*eo(pp)}px) scale(${1-0.12*eo(pp)}) rotate(${-5+2.5*Math.sin(t*0.8)}deg)`});
   }
 
-  // S2 phone rises 2.44 → 4.72
-  const phIn = seg(t,C.s2-0.1,C.s2+0.75);
-  const phOut = seg(t,C.s8-0.45,C.s8); // leaves before the full-frame type
+  // hero phone with camera framing, a rise-in and a leave, and a gentle float
+  const phIn=seg(t,C.s2-0.1,C.s2+0.75), phOut=seg(t,C.s8-0.45,C.s8);
   if(t>=C.s2-0.1 && t<C.s8){
-    const y = g.phY + 160*(1-back(phIn)) + 260*ei(phOut) + 7*Math.sin(t*0.9);
-    const s = g.phS*(1+0.04*(1-eo(phIn)))*(1-0.25*ei(phOut))*(1+0.006*Math.sin(t*0.6));
-    phone($('phA'), g.phX, y, s, `rotate(${0.5*Math.sin(t*0.7)}deg)`, t<C.s8?1-ei(phOut):0);
+    const [cx,cy,s,rot]=camFrame(t,g);
+    const y=cy+160*(1-back(phIn))+260*ei(phOut)+6*Math.sin(t*0.9);
+    const sc=s*(1+0.04*(1-eo(phIn)))*(1-0.25*ei(phOut))*(1+0.005*Math.sin(t*0.6));
+    const lift=1+(mode==='m169'?0.10:0.05)*Math.sin(Math.PI*seg(t,C.s4-0.05,C.s4+0.55));   // the phone itself comes toward the viewer on the send
+    phone($('phA'), cx, y, sc*lift, `rotate(${rot+0.5*Math.sin(t*0.7)}deg)`, 1-ei(phOut));
     caption($('cap2'), t, C.s2, C.s3);
   }
 
-  // builder layers
-  const vB=$('vBuild');
-  // line items land in turn 4.72 → 7.4, total counts up as each arrives
-  const lands=[C.s3+0.15, C.s3+0.75, C.s3+1.35, C.s3+1.95];
-  const amounts=[1400,900,5200,700];
+  // builder: line items land in turn; the total is the sum of what has landed, tweened only with each landing
+  const lands=[C.s3+0.15,C.s3+0.7,C.s3+1.25,C.s3+1.8], amounts=[1400,900,5200,700];
   let tot=0;
   for(let i=0;i<4;i++){
-    const p=seg(t,lands[i],lands[i]+0.55);
-    set($('it'+(i+1)),{opacity:eo(p), transform:`translate(${40*(1-eo(p))}px,0) scale(${0.96+0.04*back(p)})`});
-    tot += amounts[i]*clamp(seg(t,lands[i]+0.05,lands[i]+0.55));
+    const p=eo(seg(t,lands[i],lands[i]+0.3));
+    set($('it'+(i+1)),{opacity:p, transform:`translate(${40*(1-p)}px,0) scale(${0.96+0.04*p})`});
+    tot+=amounts[i]*p;
   }
-  $('runTot').textContent = fmt(tot);
+  $('runTot').textContent=fmt(Math.round(tot));
   caption($('cap3'), t, C.s3, C.s4);
-  // Send button fills 7.5 → 8.0, then the whole builder lifts toward camera 8.14 → 8.9
-  set($('fillSend'),{transform:`scaleX(${eo(seg(t,C.s4-0.6,C.s4-0.15))})`});
-  const fly = seg(t,C.s4-0.05,C.s4+0.5);
-  set(vB,{opacity: 1-eo(fly), transform:`scale(${1+1.2*ei(fly)}) translateY(${-60*ei(fly)}px)`, display: fly>=1?'none':'block'});
+  tap($('tapSend'), t, C.s4-0.7, 300, 800);
+  set($('fillSend'),{transform:`scaleX(${eo(seg(t,C.s4-0.6,C.s4-0.2))})`});
+  const fly=seg(t,C.s4-0.05,C.s4+0.45);
+  set($('vBuild'),{opacity:1-eo(fly), transform:`scale(${1+2.2*ei(fly)}) translateY(${-80*ei(fly)}px)`, display:fly>=1?'none':'block'});
 
-  // S4/S5 client view under it: signature draws 9.6 → 11.2, pill snaps 11.4
+  // client: signature draws, tap, pill and button snap to approved
   const path=$('sigPath'); const len=path.getTotalLength();
-  const drew = eio(seg(t,C.s5+0.35,C.s5+1.9));
-  path.style.strokeDasharray = len; path.style.strokeDashoffset = len*(1-drew);
-  set($('fillSign'),{transform:`scaleX(${eo(seg(t,C.s5+1.95,C.s5+2.3))})`});
-  const approved = t>=C.s5+2.35;
-  $('pillA').textContent = approved ? 'Approved and signed' : 'Sent for approval';
-  $('pillA').className = 'pill' + (approved?' g':'');
-  set($('pillA'),{transform:`scale(${approved?back(seg(t,C.s5+2.35,C.s5+2.7)):1})`, display:'inline-flex'});
-  set($('sigTick'),{opacity:approved?1:0});
+  const drew=eio(seg(t,C.s5+0.3,C.s5+1.7));
+  path.style.strokeDasharray=len; path.style.strokeDashoffset=len*(1-drew);
+  tap($('tapSign'), t, C.s5+1.85, 195, 690);
+  set($('fillSign'),{transform:`scaleX(${eo(seg(t,C.s5+1.9,C.s5+2.2))})`});
+  const approved=t>=C.s5+2.25; const ap=back(seg(t,C.s5+2.25,C.s5+2.6));
+  $('pillA').textContent=approved?'Approved and signed':'Sent for approval';
+  $('pillA').className='pill'+(approved?' g':'');
+  set($('pillA'),{transform:`scale(${approved?ap:1})`});
+  $('btnSignT').textContent=approved?'Approved ✓':'Approve and sign';
+  $('btnSign').className='btn '+(approved?'go':'pri');
+  set($('sigTick'),{opacity:approved?1:0, transform:`scale(${approved?ap:0})`});
   caption($('cap5'), t, C.s4, C.s6);
 
-  // S6 flip client → invoice, 12.13 → 12.9
-  const fp = seg(t,C.s6-0.05,C.s6+0.7);
-  const ang = 180*eio(fp);
-  set($('vClient'),{transform:`rotateY(${ang}deg)`, opacity: ang<90?1:0, display: t>=C.s2?'block':'block'});
-  set($('vInv'),{transform:`rotateY(${ang-180}deg)`, opacity: ang>=90?1:0});
+  // invoice flip
+  const fp=seg(t,C.s6-0.05,C.s6+0.7), ang=180*eio(fp);
+  set($('vClient'),{transform:`rotateY(${ang}deg)`, opacity:ang<90?1:0});
+  set($('vInv'),{transform:`rotateY(${ang-180}deg)`, opacity:ang>=90?1:0});
   caption($('cap6'), t, C.s6, C.s7);
 
-  // S7 pay: button fills 14.6, sheet slides up 14.9, card types 15.3, paid 16.6
-  set($('fillPay'),{transform:`scaleX(${eo(seg(t,C.s7+0.15,C.s7+0.5))})`});
-  const sh = eo(seg(t,C.s7+0.5,C.s7+1.0)) - eo(seg(t,C.s7+2.05,C.s7+2.35));
+  // pay: tap, sheet, card types, tap Pay now, sheet drops, Paid lands on the invoice itself
+  tap($('tapPay'), t, C.s7+0.1, 195, 615);
+  set($('fillPay'),{transform:`scaleX(${eo(seg(t,C.s7+0.15,C.s7+0.45))})`});
+  const sh=eo(seg(t,C.s7+0.45,C.s7+0.95))-eo(seg(t,C.s7+2.15,C.s7+2.5));
   set($('sheet'),{transform:`translateY(${110*(1-clamp(sh))}%)`});
-  const digits='4242 4242 4242 4242'; const n=Math.round(19*eo(seg(t,C.s7+1.05,C.s7+1.9)));
-  $('cardNo').textContent = n>0 ? digits.slice(0,n) : '';
-  const pd = seg(t,C.s7+2.3,C.s7+2.75);
-  set($('paid'),{opacity:eo(pd)});
-  set($('paid').firstElementChild,{transform:`scale(${0.9+0.1*back(pd)})`});
-  if(t>=C.s7+2.3){ $('balDue').textContent='$0.00'; } else { $('balDue').textContent='$5,740.00'; }
+  const digits='4242 4242 4242 4242', n=Math.round(19*eo(seg(t,C.s7+1.0,C.s7+1.7)));
+  $('cardNo').innerHTML=n>0?digits.slice(0,n):'&nbsp;';
+  set($('fillPayNow'),{transform:`scaleX(${eo(seg(t,C.s7+1.8,C.s7+2.1))})`});
+  const paid=t>=C.s7+2.45; const pp2=back(seg(t,C.s7+2.45,C.s7+2.85));
+  $('pillInv').textContent=paid?'Paid':'Balance due'; $('pillInv').className='pill'+(paid?' g':'');
+  set($('pillInv'),{transform:`scale(${paid?pp2:1})`});
+  $('balLab').textContent=paid?'Paid in full':'Balance due'; $('balRow').className='row t'+(paid?' g':'');
+  $('btnPayT').textContent=paid?'Paid ✓':'Pay invoice';
+  set($('btnPay'),{transform:`scale(${paid?0.97+0.03*pp2:1})`});
   caption($('cap7'), t, C.s7, C.s8);
 
-  // S8 full-frame type 17.83 → 20.68
   lineIn($('l8a'), t, C.s8, C.s9, g.lineY+g.l8a, -1);
   lineIn($('l8b'), t, C.s8+0.3, C.s9, g.lineY+g.l8b, +1);
 
-  // S9 two phones 20.68 → 23.53
-  if(t>=C.s9-0.2 && t<C.s10+0.3){
-    const pin1=seg(t,C.s9-0.1,C.s9+0.7), pin2=seg(t,C.s9+0.05,C.s9+0.85);
-    const pout=seg(t,C.s10-0.35,C.s10);
-    const dy = 500;
-    const y1 = g.twoY + dy*(1-back(pin1)) + dy*ei(pout);
-    const y2 = g.twoY + dy*(1-back(pin2)) + dy*ei(pout);
-    const rot = mode==='m916' ? 0 : 0;
-    phone($('phEN'), g.twoX1, y1, g.twoS, `rotate(${-3*(1-eo(pin1))+rot}deg)`, 1);
-    phone($('phES'), g.twoX2, y2, g.twoS, `rotate(${3*(1-eo(pin2))-rot}deg)`, 1);
+  // two phones, entering only after the type has cleared
+  if(t>=C.s9 && t<C.s10+0.3){
+    const pin1=seg(t,C.s9+0.05,C.s9+0.8), pin2=seg(t,C.s9+0.2,C.s9+0.95), pout=seg(t,C.s10-0.35,C.s10);
+    const dy=560;
+    phone($('phEN'), g.two[0][0], g.two[0][1]+dy*(1-back(pin1))+dy*ei(pout)+5*Math.sin(t*0.8), g.twoS, `rotate(${g.two[0][2]-3*(1-eo(pin1))}deg)`, 1);
+    phone($('phES'), g.two[1][0], g.two[1][1]+dy*(1-back(pin2))+dy*ei(pout)+5*Math.cos(t*0.8), g.twoS, `rotate(${g.two[1][2]+3*(1-eo(pin2))}deg)`, 1);
     caption($('cap9'), t, C.s9, C.s10);
   }
 
-  // S10 three lines 23.53 → 25.81
   const gap=g.l10gap;
   lineIn($('l10a'), t, C.s10, C.s11, g.lineY-gap, -1);
   lineIn($('l10b'), t, C.s10+0.25, C.s11, g.lineY, +1);
   lineIn($('l10c'), t, C.s10+0.5, C.s11, g.lineY+gap, -1);
 
-  // S11 the card drops in and shrinks to the $5 chip 25.81 → 27.52, then holds through the end
+  // the paid invoice drops in as a card and shrinks into the $5 chip
   if(t>=C.s11-0.1){
-    const p=seg(t,C.s11-0.05,C.s11+0.9);
-    const w=lerp(380,660,eo(p)), h=lerp(480,230,eo(p));
-    const y=lerp(-h, g.chipY-h/2, back(p));
-    const endShift = -eo(seg(t,C.s12,C.s12+0.6))*(g.chipY - (g.endY+285));
+    const p=seg(t,C.s11-0.05,C.s11+1.1);
+    const w=lerp(520,660,eo(p)), h=lerp(640,230,eo(p));
+    const y=lerp(-700, g.chipY-h/2, back(p));
+    const endShift=-eo(seg(t,C.s12,C.s12+0.6))*(g.chipY-(g.endY+285));
     set($('chip'),{opacity:1, width:w+'px', height:h+'px', transform:`translate(${W/2-w/2}px,${y+endShift}px)`});
-    set($('price'),{opacity:eo(seg(t,C.s11+0.45,C.s11+0.8)), fontSize:'112px'});
-    set($('chip').firstElementChild,{opacity:1-eo(seg(t,C.s11+0.4,C.s11+0.75))});
-    // fine print under the chip
-    const c11=$('cap11'); const yy=g.chipY+ (230/2) + 40;
-    set(c11,{opacity: t<C.s12 ? eo(seg(t,C.s11+0.9,C.s11+1.3)) : 1-eo(seg(t,C.s12,C.s12+0.3)), top:yy+'px', left:0, right:0, width:'auto', textAlign:'center', transform:`translateY(${30*(1-eo(seg(t,C.s11+0.9,C.s11+1.3)))}px)`});
+    set($('mini'),{opacity:1-eo(seg(t,C.s11+0.35,C.s11+0.75))});
+    set($('price'),{opacity:eo(seg(t,C.s11+0.5,C.s11+0.95))});
+    const c11=$('cap11'), yy=g.chipY+115+40, cin=eo(seg(t,C.s11+1.0,C.s11+1.4));
+    set(c11,{opacity: t<C.s12 ? cin : 1-eo(seg(t,C.s12,C.s12+0.3)), top:yy+'px', left:0, right:0, width:'auto', textAlign:'center', transform:`translateY(${30*(1-cin)}px)`});
   }
-
-  // S12 end card 27.52 → 30
-  const ep=seg(t,C.s12+0.15,C.s12+0.75);
+  const ep=seg(t,C.s12+0.15,C.s12+0.75), ep2=seg(t,C.s12+0.35,C.s12+0.95);
   set($('end'),{opacity:eo(ep), top:g.endY+'px', transform:`translateY(${40*(1-eo(ep))}px)`});
-  const ep2=seg(t,C.s12+0.35,C.s12+0.95);
   set($('endB'),{opacity:eo(ep2), top:(g.endY+285+115+40)+'px', transform:`translateY(${40*(1-eo(ep2))}px)`});
 }
 window.render=render; window.setMode=setMode; window.DUR=30;

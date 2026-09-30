@@ -43,4 +43,7 @@ endpoint. If it is not here, it does not go on screen.
 - Client: M. Alvarez (fictional)
 - Lines: Tear-off and disposal $1,400 · Ice and water shield, underlayment $900 ·
   Architectural shingles, installed $5,200 · Ridge vent and flashing $700
-- Total: $8,200 · Deposit 30%: $2,460 · Balance: $5,740
+- Total: $8,200, invoiced and paid in full on screen (no deposit shown, so no payment is
+  implied that the film does not depict).
+- Document number on screen: #1042 (sample). Business block shows the company name only;
+  no phone number or address is invented for a real business.

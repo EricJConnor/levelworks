@@ -20,6 +20,9 @@ const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromi
 const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
 await page.goto('file://' + path.join(here, 'ad.html'));
 await page.evaluate((m) => { setMode(m); return document.fonts.ready; }, mode);
+// The film is not the film in a fallback font: refuse to render unless Inter is really loaded.
+const fontOk = await page.evaluate(() => [400, 500, 600, 700, 800].every((w) => document.fonts.check(`${w} 20px Inter`)) && [...document.fonts].filter((f) => f.family === 'Inter' && f.status === 'loaded').length >= 5);
+if (!fontOk) { console.error('Inter did not load; check src/inter.css and src/fonts/*.woff2'); await browser.close(); process.exit(1); }
 const shot = async (t) => { await page.evaluate((t) => render(t), t); return page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: W, height: H } }); };
 
 if (cmd === 'stills') {

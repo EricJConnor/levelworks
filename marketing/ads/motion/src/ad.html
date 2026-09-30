@@ -22,7 +22,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 .m169 #stage{width:1920px;height:1080px}
 .m916 #stage{width:1080px;height:1920px}
 .m11  #stage{width:1080px;height:1080px}
-#cam{position:absolute;inset:0;transform-origin:center;will-change:transform}
+#cam{position:absolute;inset:0;transform-origin:center;will-change:transform;perspective:2200px}
 .glow{position:absolute;left:50%;top:50%;width:1600px;height:1600px;transform:translate(-50%,-50%);
   background:radial-gradient(closest-side,rgba(37,99,235,.13),rgba(37,99,235,0) 70%);pointer-events:none}
 .lay{position:absolute;will-change:transform,opacity}
@@ -63,7 +63,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   background:#0b1220;border-radius:56px;padding:12px;box-shadow:0 50px 90px -40px rgba(11,18,32,.55),0 0 0 2px rgba(255,255,255,.35)}
 .phone .scr{position:absolute;inset:12px;border-radius:44px;overflow:hidden;background:var(--bg);perspective:1400px}
 .notch{position:absolute;left:50%;top:0;transform:translateX(-50%);width:120px;height:32px;background:#0b1220;border-radius:0 0 20px 20px;z-index:30}
-.view{position:absolute;inset:0;background:var(--bg);transform-origin:center;backface-visibility:hidden}
+.view{position:absolute;inset:0;background:var(--bg);transform-origin:center}
 .status{height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-size:15px;font-weight:600}
 .status i{display:inline-block;width:22px;height:11px;border:1.5px solid var(--ink);border-radius:3px;position:relative}
 .status i:after{content:'';position:absolute;left:1.5px;top:1.5px;bottom:1.5px;width:70%;background:var(--ink);border-radius:1px}
@@ -143,7 +143,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 <div id="stage">
   <div id="cam">
   <div class="glow" id="glow"></div>
-  <div class="corner" id="corner"><svg viewBox="0 0 28 28" fill="none"><rect x="1.5" y="8.5" width="25" height="11" rx="3.5" stroke="#0b1220" stroke-width="2"/><rect x="10" y="11" width="8" height="6" rx="2" fill="#2563eb"/><path d="M8.5 9v10M19.5 9v10" stroke="#0b1220" stroke-width="1.5" stroke-opacity=".35"/></svg>Level<b>Works</b></div>
+  <div class="corner" id="corner"><svg viewBox="0 0 28 28" fill="none"><rect x="1.5" y="8.5" width="25" height="11" rx="3.5" stroke="#0b1220" stroke-width="2"/><rect x="10" y="11" width="8" height="6" rx="2" fill="#2563eb"/><path d="M8.5 9v10M19.5 9v10" stroke="#0b1220" stroke-width="1.5" stroke-opacity=".35"/></svg><span>Level<b>Works</b></span></div>
 
   <div class="cap" id="cap1">Still writing estimates at the <b>kitchen table?</b></div>
   <div class="cap" id="cap2">Write it in the <b>driveway.</b></div>
@@ -154,7 +154,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   <div class="cap" id="cap9">English or Spanish. <b>One tap.</b></div>
   <div class="cap" id="cap11"><span class="sub" style="margin-top:0">30 days free. No card to start.</span></div>
   <div class="line wrap" id="l8a">No <b>LevelWorks</b> fee on payments.</div>
-  <div class="line wrap" id="l8b">Only Stripe’s standard fee.</div>
+  <div class="line wrap" id="l8b">Only Stripe’s standard fees.</div>
   <div class="line" id="l10a">Unlimited <b>estimates.</b></div>
   <div class="line" id="l10b">Unlimited <b>invoices.</b></div>
   <div class="line" id="l10c">Recurring <b>billing.</b></div>
@@ -167,7 +167,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
     <path d="M12 158 c16 -12 24 8 40 2 c14 -6 22 8 36 0 c16 -8 28 6 46 -2 c12 -6 22 6 36 0 M292 154 c12 -8 24 6 36 0 c12 -6 22 8 34 2"/>
     <path d="M12 200 c14 -10 28 6 44 0 c14 -6 24 8 40 2 c14 -6 22 4 40 -2 M298 196 c10 -10 22 6 34 0 c12 -6 22 8 32 2"/>
     <path d="M10 270 c40 -2 80 2 130 0 M250 262 c12 -14 28 -2 40 6 c10 8 18 -12 30 -4 c12 8 20 10 36 0 c10 -6 20 2 28 -2" stroke-width="4"/>
-    <path d="M14 330 c30 -6 60 4 90 0 c30 -4 50 6 80 0 M230 326 c12 -12 26 -2 38 4 c10 6 20 -10 34 -2 c12 8 22 6 36 -2"/>
+    <path id="padLast" d="M14 330 c30 -6 60 4 90 0 c30 -4 50 6 80 0 M230 326 c12 -12 26 -2 38 4 c10 6 20 -10 34 -2 c12 8 22 6 36 -2"/>
   </svg></div>
 
   <div class="phone lay" id="phA">
@@ -209,7 +209,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
           </div>
           <div class="btn go" id="btnPay"><span id="btnPayT">Pay invoice</span><div class="fill" id="fillPay"></div></div>
         </div>
-        <div class="sheet" id="sheet"><h5>Pay $8,200.00</h5><div class="lab">Name on card</div><div class="inp">Maria Alvarez</div><div class="lab">Card</div><div class="inp" id="cardNo">&nbsp;</div><div class="btn go" id="btnPayNow">Pay now<div class="fill" id="fillPayNow"></div></div></div>
+        <div class="sheet" id="sheet"><h5>Pay $8,200.00</h5><div class="lab">Name on card</div><div class="inp">M. Alvarez</div><div class="lab">Card</div><div class="inp" id="cardNo">&nbsp;</div><div class="btn go" id="btnPayNow">Pay now<div class="fill" id="fillPayNow"></div></div></div>
         <div class="tap" id="tapPay"></div>
       </div>
       <div class="view" id="vBuild">
@@ -248,7 +248,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
     <div class="by">Built by a contractor.</div>
   </div>
   <div class="end" id="end">
-    <div class="brand"><svg viewBox="0 0 28 28" fill="none"><rect x="1.5" y="8.5" width="25" height="11" rx="3.5" stroke="#0b1220" stroke-width="2"/><rect x="10" y="11" width="8" height="6" rx="2" fill="#2563eb"/><path d="M8.5 9v10M19.5 9v10" stroke="#0b1220" stroke-width="1.5" stroke-opacity=".35"/></svg>Level<b>Works</b></div>
+    <div class="brand"><svg viewBox="0 0 28 28" fill="none"><rect x="1.5" y="8.5" width="25" height="11" rx="3.5" stroke="#0b1220" stroke-width="2"/><rect x="10" y="11" width="8" height="6" rx="2" fill="#2563eb"/><path d="M8.5 9v10M19.5 9v10" stroke="#0b1220" stroke-width="1.5" stroke-opacity=".35"/></svg><span>Level<b>Works</b></span></div>
     <div class="url">levelworks.org</div>
   </div>
 </div>
@@ -277,15 +277,15 @@ function L(){
   const {W,H}=MODE[mode];
   if(mode==='m169'){ const s=H*0.86/844, cx=W*0.66;
     return {W,H, capY:250, base:[cx,H*0.5,s,0],
-      frames:{ s2:[cx,H*0.5,s,0], s3:[cx,H*0.5+(422-330)*s*1.5,s*1.5,0], s3b:[cx,H*0.5,s,0], s5:[cx+30,H*0.5,s*1.02,-4], s6:[cx,H*0.5,s,0], s7:[cx,H*0.5+(422-600)*s*1.4,s*1.4,0] },
-      twoS:H*0.70/844, two:[[W*0.53,H*0.55,0],[W*0.79,H*0.55,0]], chipY:H*0.42, endY:H*0.22, padX:W*0.71, padY:H*0.53, lineY:H*0.5, l10gap:150, l8a:-90, l8b:90}; }
-  if(mode==='m916'){ const s=1650-480 > 0 ? (1650-480)/844*0.92 : 1, cx=W*0.5, cy=1080;
+      frames:{ s2:[cx,H*0.5,s,0], s3:[cx,H*0.5+(422-330)*s*1.5,s*1.5,0], s3b:[cx,H*0.5,s,0], s5:[cx+30,H*0.5,s*1.02,-4], s6:[cx,H*0.5,s,0], s7:[cx,H*0.5+(422-520)*s*1.4,s*1.4,0] },
+      twoS:H*0.70/844, two:[[W*0.59,H*0.55,0],[W*0.83,H*0.55,0]], chipY:H*0.42, endY:H*0.22, padX:W*0.71, padY:H*0.53, lineY:H*0.5, l10gap:150, l8a:-90, l8b:90}; }
+  if(mode==='m916'){ const s=(1650-480)/844*0.90, cx=W*0.5, cy=1120;
     return {W,H, capY:340, base:[cx,cy,s,0],
-      frames:{ s2:[cx,cy,s,0], s3:[cx,470+422*s*1.45,s*1.45,0], s3b:[cx,cy,s,0], s5:[cx+20,cy,s*1.02,-3], s6:[cx,cy,s,0], s7:[cx,cy,s,0] },
+      frames:{ s2:[cx,cy,s,0], s3:[cx,570+422*s*1.2,s*1.2,0], s3b:[cx,cy,s,0], s5:[cx+20,cy,s*1.02,-3], s6:[cx,cy,s,0], s7:[cx,cy,s,0] },
       twoS:H*0.30/844, two:[[W*0.36,H*0.47,-4],[W*0.64,H*0.63,3]], chipY:H*0.50, endY:H*0.30, padX:W*0.5, padY:H*0.60, lineY:H*0.5, l10gap:120, l8a:-230, l8b:110}; }
   const s=H*0.70/844, cx=W*0.5, cy=H*0.62;
   return {W,H, capY:122, base:[cx,cy,s,0],
-    frames:{ s2:[cx,cy,s,0], s3:[cx,300+422*s*1.35,s*1.35,0], s3b:[cx,cy,s,0], s5:[cx+16,cy,s*1.0,-3], s6:[cx,cy,s,0], s7:[cx,cy,s,0] },
+    frames:{ s2:[cx,cy,s,0], s3:[cx,300+422*s*1.18,s*1.18,0], s3b:[cx,cy,s,0], s5:[cx+16,cy,s*1.0,-3], s6:[cx,cy,s,0], s7:[cx,cy,s,0] },
     twoS:H*0.56/844, two:[[W*0.33,H*0.62,0],[W*0.67,H*0.62,0]], chipY:H*0.44, endY:H*0.17, padX:W*0.5, padY:H*0.63, lineY:H*0.5, l10gap:110, l8a:-230, l8b:110};
 }
 // camera keyframes for the hero phone: time → frame key; moves ease over 0.7 s from each cut
@@ -325,6 +325,7 @@ function render(t){
   if(t<C.s2+0.4){
     const pout=seg(t,C.s2-0.35,C.s2);
     set($('cap1'),{opacity:1-ei(pout), transform:`translate(${-W*0.3*ei(pout)}px,0)`});
+    const pl=$('padLast'), plen=pl.getTotalLength(); pl.style.strokeDasharray=plen; pl.style.strokeDashoffset=plen*(1-eio(seg(t,0.2,1.5)));
     const pp=seg(t,C.s2-0.3,C.s2+0.4);
     set($('pad'),{opacity:1-eo(pp), transform:`translate(${g.padX-260}px,${g.padY-340+7*Math.sin(t*1.3)-60*eo(pp)}px) scale(${1-0.12*eo(pp)}) rotate(${-5+2.5*Math.sin(t*0.8)}deg)`});
   }
@@ -335,8 +336,9 @@ function render(t){
     const [cx,cy,s,rot]=camFrame(t,g);
     const y=cy+160*(1-back(phIn))+260*ei(phOut)+6*Math.sin(t*0.9);
     const sc=s*(1+0.04*(1-eo(phIn)))*(1-0.25*ei(phOut))*(1+0.005*Math.sin(t*0.6));
-    const lift=1+(mode==='m169'?0.10:0.05)*Math.sin(Math.PI*seg(t,C.s4-0.05,C.s4+0.55));   // the phone itself comes toward the viewer on the send
-    phone($('phA'), cx, y, sc*lift, `rotate(${rot+0.5*Math.sin(t*0.7)}deg)`, 1-ei(phOut));
+    const lift=1+(mode==='m169'?0.10:0.05)*Math.sin(Math.PI*seg(t,C.s4-0.3,C.s4+0.3));   // the phone itself comes toward the viewer on the send
+    const flipAng=180*eio(seg(t,C.s6-0.05,C.s6+0.7));
+    phone($('phA'), cx, y, sc*lift, `rotate(${rot+0.5*Math.sin(t*0.7)}deg) rotateY(${flipAng}deg)`, 1-ei(phOut));
     caption($('cap2'), t, C.s2, C.s3);
   }
 
@@ -352,19 +354,18 @@ function render(t){
   caption($('cap3'), t, C.s3, C.s4);
   tap($('tapSend'), t, C.s4-0.7, 300, 800);
   set($('fillSend'),{transform:`scaleX(${eo(seg(t,C.s4-0.6,C.s4-0.2))})`});
-  const fly=seg(t,C.s4-0.05,C.s4+0.45);
-  set($('vBuild'),{opacity:1-eo(fly), transform:`scale(${1+2.2*ei(fly)}) translateY(${-80*ei(fly)}px)`, display:fly>=1?'none':'block'});
+  set($('vBuild'),{opacity:t<C.s4?1:0, display:t<C.s4?'block':'none'});
 
   // client: signature draws, tap, pill and button snap to approved
   const path=$('sigPath'); const len=path.getTotalLength();
-  const drew=eio(seg(t,C.s5+0.3,C.s5+1.7));
+  const drew=eio(seg(t,C.s5+0.15,C.s5+1.55));
   path.style.strokeDasharray=len; path.style.strokeDashoffset=len*(1-drew);
   tap($('tapSign'), t, C.s5+1.85, 195, 690);
-  set($('fillSign'),{transform:`scaleX(${eo(seg(t,C.s5+1.9,C.s5+2.2))})`});
+  set($('fillSign'),{transform:`scaleX(${t>=C.s5+2.25?0:eo(seg(t,C.s5+1.9,C.s5+2.2))})`});
   const approved=t>=C.s5+2.25; const ap=back(seg(t,C.s5+2.25,C.s5+2.6));
   $('pillA').textContent=approved?'Approved and signed':'Sent for approval';
   $('pillA').className='pill'+(approved?' g':'');
-  set($('pillA'),{transform:`scale(${approved?ap:1})`});
+  set($('pillA'),{transform:`scale(${approved?ap:back(seg(t,C.s4+0.25,C.s4+0.6))})`});
   $('btnSignT').textContent=approved?'Approved ✓':'Approve and sign';
   $('btnSign').className='btn '+(approved?'go':'pri');
   set($('sigTick'),{opacity:approved?1:0, transform:`scale(${approved?ap:0})`});
@@ -372,16 +373,17 @@ function render(t){
 
   // invoice flip
   const fp=seg(t,C.s6-0.05,C.s6+0.7), ang=180*eio(fp);
-  set($('vClient'),{transform:`rotateY(${ang}deg)`, opacity:ang<90?1:0});
-  set($('vInv'),{transform:`rotateY(${ang-180}deg)`, opacity:ang>=90?1:0});
+  // the screen layer is flat, so past 90° the phone's own rotation mirrors it; un-mirror the invoice
+  set($('vClient'),{opacity:ang<90?1:0});
+  set($('vInv'),{transform:'scaleX(-1)', opacity:ang>=90?1:0});
   caption($('cap6'), t, C.s6, C.s7);
 
   // pay: tap, sheet, card types, tap Pay now, sheet drops, Paid lands on the invoice itself
   tap($('tapPay'), t, C.s7+0.1, 195, 615);
-  set($('fillPay'),{transform:`scaleX(${eo(seg(t,C.s7+0.15,C.s7+0.45))})`});
+  set($('fillPay'),{transform:`scaleX(${t>=C.s7+2.45?0:eo(seg(t,C.s7+0.15,C.s7+0.45))})`});
   const sh=eo(seg(t,C.s7+0.45,C.s7+0.95))-eo(seg(t,C.s7+2.15,C.s7+2.5));
   set($('sheet'),{transform:`translateY(${110*(1-clamp(sh))}%)`});
-  const digits='4242 4242 4242 4242', n=Math.round(19*eo(seg(t,C.s7+1.0,C.s7+1.7)));
+  const digits='•••• •••• •••• 4242', n=Math.round(19*eo(seg(t,C.s7+1.0,C.s7+1.7)));
   $('cardNo').innerHTML=n>0?digits.slice(0,n):'&nbsp;';
   set($('fillPayNow'),{transform:`scaleX(${eo(seg(t,C.s7+1.8,C.s7+2.1))})`});
   const paid=t>=C.s7+2.45; const pp2=back(seg(t,C.s7+2.45,C.s7+2.85));
@@ -411,13 +413,14 @@ function render(t){
 
   // the paid invoice drops in as a card and shrinks into the $5 chip
   if(t>=C.s11-0.1){
-    const p=seg(t,C.s11-0.05,C.s11+1.1);
-    const w=lerp(520,660,eo(p)), h=lerp(640,230,eo(p));
-    const y=lerp(-700, g.chipY-h/2, back(p));
+    const pin=back(seg(t,C.s11-0.05,C.s11+0.5));           // the paid invoice drops in at full size
+    const m=eio(seg(t,C.s11+0.55,C.s11+1.05));             // then becomes the chip
+    const w=lerp(520,660,m), h=lerp(640,230,m);
+    const y=lerp(-700, g.chipY-h/2, pin);
     const endShift=-eo(seg(t,C.s12,C.s12+0.6))*(g.chipY-(g.endY+285));
-    set($('chip'),{opacity:1, width:w+'px', height:h+'px', transform:`translate(${W/2-w/2}px,${y+endShift}px)`});
-    set($('mini'),{opacity:1-eo(seg(t,C.s11+0.35,C.s11+0.75))});
-    set($('price'),{opacity:eo(seg(t,C.s11+0.5,C.s11+0.95))});
+    set($('chip'),{opacity:1, width:w+'px', height:h+'px', borderRadius:lerp(22,28,m)+'px', transform:`translate(${W/2-w/2}px,${y+endShift}px)`});
+    set($('mini'),{opacity:1-eo(seg(t,C.s11+0.55,C.s11+0.8)), transform:`scale(${1-0.2*m})`});
+    set($('price'),{opacity:eo(seg(t,C.s11+0.7,C.s11+1.05))});
     const c11=$('cap11'), yy=g.chipY+115+40, cin=eo(seg(t,C.s11+1.0,C.s11+1.4));
     set(c11,{opacity: t<C.s12 ? cin : 1-eo(seg(t,C.s12,C.s12+0.3)), top:yy+'px', left:0, right:0, width:'auto', textAlign:'center', transform:`translateY(${30*(1-cin)}px)`});
   }

@@ -49,3 +49,31 @@ problem first, render again.
   0.50 s at 29.02 s. All on the end card, which sits outside the push-in layer. Pass on the
   total (about 1 s per 30 s); the end card is the one place it still sits.
 
+**Second critic's read of the 15 items:** fixed 1, 4, 8, 14, 15; partly 2, 5, 6, 7, 9, 10, 12,
+13; still there 11 (a word space in the mark, caused by the flex gap between "Level" and the
+blue "Works", not by the font).
+
+**New findings, ranked, and what changed for round 3**
+1. 1:1 push-in put line four below the frame while the total counted past it. Fixed: gentler
+   push-ins (1.18 in 1:1, 1.2 in 9:16) framed so all four lines land in view.
+2. Caption-to-phone collisions: 9:16 at 7.0 and 16.5, 16:9 at 22.0. Fixed: 9:16 phone lowered
+   (top clear of the caption's descender), 16:9 phone pair moved right.
+3. "Maria Alvarez" and a full 16-digit test card on the pay form. Fixed: "M. Alvarez",
+   "•••• •••• •••• 4242".
+4. The send was a ghosted dissolve with two documents readable at once. Fixed: hard cut on the
+   beat, the phone lifting through it, whoosh on the cut.
+5. The card did not become the chip. Fixed: it drops in at full size first, then its box
+   animates to the chip's rectangle and radius while the content fades and the price fades in.
+6. 1.2 s hold on the client phone before the signature. Fixed: the Sent pill lands at the cut,
+   the stroke starts 0.15 s later.
+7. Hook held static. Fixed: the last line on the pad draws itself over the first second.
+8. Done buttons read washed out. Fixed: the white tap fill resets when the state flips.
+9. 16:9 pay crop hid the Paid pill. Fixed: crop pulled up 80 px.
+10. Flip rotated the screen inside a still bezel. Fixed: the whole phone flips (and the back view
+    is un-mirrored, because the screen layer is flat).
+11. Word space in the mark. Fixed: the wordmark is one flex item.
+- "Only Stripe's standard fees." (plural, as in FACTS).
+
+Weakest size in round 2: 9:16; strongest: 1:1, which is the one the live ad set serves.
+
+## Round 3 — third full render

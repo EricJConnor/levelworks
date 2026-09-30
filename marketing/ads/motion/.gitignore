@@ -1,0 +1,6 @@
+out/critic/
+out/still_*
+out/sheet_*
+out/render.log
+out/audio/
+out/*_test_*

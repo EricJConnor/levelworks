@@ -79,6 +79,18 @@ Timing to quote honestly: client to Stripe is instant; card money is Available i
 business days; the first payout on a new account takes about seven days; a bank transfer clears
 in about four business days. There is no server-side push; the email is the alert.
 
+## The motion video (Sep 30 2026)
+
+Eric sent a prompt from X ("the only prompt you need to make high-end motion videos") and said
+"make the video for levelworks". Built in `marketing/ads/motion`: a 30-second product video
+entirely in code, one HTML page driven frame by frame by `render(t)`, rendered at 60 fps through
+headless Chromium into ffmpeg, in 1:1, 9:16 and 16:9, with the LW49 music, a whoosh on each cut
+and a click on each tap. Four rounds with a fresh critic each time; the ledger is in
+`out/CRITIC-LEDGER.md` and is the honest record (round one had rendered in a fallback font and
+carried an invented phone number for EC Home Improvement). Finished files in `out/final/`;
+`FACTS.md` is the only source for anything on screen. Not yet used in any ad; Eric decides.
+Read `marketing/PREFLIGHT.md` before it goes into a campaign.
+
 ## Stack and shipping
 
 - React 18 + Vite + TypeScript, Tailwind and a partial shadcn/ui layer, Supabase (auth, data, edge

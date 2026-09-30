@@ -103,3 +103,25 @@ Verdict on round 3 was "one more pass, a short one"; the 1:1 was called shippabl
 layout with the flash-back as the one blocker.
 
 ## Round 4 — final render
+**Measured:** loudness -19.7 LUFS integrated, peak -4.7 dBFS, LRA 1.7 LU on all three; frozen
+frames over 0.5 s: 1:1 none; 9:16 one 0.50 s hold at 28.47 s; 16:9 three holds of about 0.5 s
+between 28.3 and 29.9 s. All on the end card, by design; total still about 1 s per 30 s.
+
+**Quality bar, final**
+- Frozen screen: pass (1:1 zero; the others about 1 s, all on the closing card).
+- Frame one is a finished composition: pass (headline, pad, wordmark).
+- Text contrast: ink #0b1220 and blue #2563eb on #f5f7fb, both well over 4.5:1; muted #5b6472
+  on the page ground is about 6:1. Pass.
+- Brand colours: no 3D renders; the blue is the CSS token itself. Pass.
+- Loudness steady, no clipping, effects under the music. Pass.
+- Sound-off comprehension (per the third critic): phone, estimate, sent, signed, invoice, paid,
+  English or Spanish, $5. Pass.
+- Facts: every claim on screen is in FACTS.md (third critic's audit). Pass.
+
+**What a human should still check**
+- Watch the 1:1 with sound once: the whoosh and click levels were set by measurement, not by ear.
+- The 9:16 and 16:9 were checked for layout, but the ad set that runs today is feed only, so
+  1:1 is the one that goes up first.
+- The music is "Close Up" (Mixkit 1167) under a free licence already used on the LW49 ads.
+- The Spanish line "Retiro y desecho del techo viejo" adds "viejo" to "Tear-off and disposal";
+  harmless, change if a Spanish-speaking contractor prefers the literal.

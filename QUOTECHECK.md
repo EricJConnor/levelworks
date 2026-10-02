@@ -136,7 +136,11 @@ unsubscribed contacts; stops at the end of the list. Preview each in a browser, 
   ads until Windsor is reconnected.
 - **Day-10 read (Sep 29, 9:30am ET).** Unchanged: Windsor paused, no word from Eric since
   Sep 20, still 1 upload (the test), 0 paid, 0 saves. Campaign presumably still spending $10/day
-  (cannot confirm). Next read Oct 2; after that, drop to weekly until Eric answers.
+  (cannot confirm).
+- **Day-13 read (Oct 2, 9:30am ET).** Unchanged: Windsor paused, no word from Eric, still 1
+  upload (the test), 0 paid, 0 saves. Checks are now weekly (next Oct 9) until he answers.
+  Standing options for him: open geography to the whole US, or pause the campaign (one tap in
+  Ads Manager on the "QuoteCheck-Sep2026" campaign) until the $79 purchase is tested.
 - **Rules:** nothing touched before day five unless rejected or zero delivery. Judge by cost per
   upload (under $5 working) and uploads → purchases. Short pauses cost nothing; a pause of a week
   or edits to budget/targeting reset Meta's learning. Do not daypart (not available on daily

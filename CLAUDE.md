@@ -91,6 +91,17 @@ carried an invented phone number for EC Home Improvement). Finished files in `ou
 `FACTS.md` is the only source for anything on screen. Not yet used in any ad; Eric decides.
 Read `marketing/PREFLIGHT.md` before it goes into a campaign.
 
+## Subscribing before the trial ends (Oct 13 2026)
+
+Mike at Sen Roofing, days from the end of his trial: the Billing tab showed a countdown and
+nothing to press. Now the trial state on Billing has **Subscribe now** (the card form in
+`SubscribeModal`, `SubscriptionGate.tsx`) and **A year for $49** (to `/annual`), and the
+last-five-days banner opens the same modal instead of the "trial has ended" screen. The
+`create-subscription` edge function (repo copy in `supabase/functions/create-subscription/`,
+deployed v11) passes the user's own `subscriptions.trial_end` to Stripe as `trial_end`, so
+subscribing early never costs the remaining free days; if Stripe rejects the date it bills at
+once as before. Not yet proven with a real card: Mike is the first.
+
 ## Stack and shipping
 
 - React 18 + Vite + TypeScript, Tailwind and a partial shadcn/ui layer, Supabase (auth, data, edge

@@ -3,9 +3,10 @@ import { supabase } from '@/lib/supabase';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { Check, Loader2, Lock } from 'lucide-react';
+import { Check, Loader2, Lock, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { Mark } from './Mark';
-import { useT } from '@/i18n';
+import { useT, useLang } from '@/i18n';
 
 const stripePromise = loadStripe('pk_live_51Rv0bbCrlMKmuUj4ll9r1pdjnK3SKP7LmqlTMi4CYBlBHuLu5NtO0UOBSj8aFGiw1qKNkFQgjm3roSWupxHFbUxL00BEFePpG1');
 
@@ -22,7 +23,7 @@ const elementOptions = {
   },
 };
 
-function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEmail: string; onSuccess: () => void }) {
+export function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEmail: string; onSuccess: () => void }) {
   const t = useT();
   const stripe = useStripe();
   const elements = useElements();
@@ -123,6 +124,42 @@ function PaymentForm({ userId, userEmail, onSuccess }: { userId: string; userEma
   );
 }
 
+
+/**
+ * Subscribe before the trial ends. A roofer on his last days asked for this: the
+ * Billing tab told him how many days were left and offered nothing to press.
+ * The remaining free days are kept (create-subscription passes the trial end to
+ * Stripe), so subscribing early never costs anything extra. Rendered through a
+ * portal because it opens over screens that are themselves modals.
+ */
+export function SubscribeModal({ open, onClose, userId, userEmail, onSuccess }: { open: boolean; onClose: () => void; userId: string; userEmail: string; onSuccess: () => void }) {
+  const t = useT();
+  const { lang } = useLang();
+  if (!open) return null;
+  return createPortal(
+    <div className="lv-scrim" onClick={onClose}>
+      <div className="lv-modal" style={{ maxWidth: 440 }} onClick={(e) => e.stopPropagation()}>
+        <div className="lv-modal-head">
+          <div>
+            <h2 className="lv-h2">{t('mod.subscribeNowTitle')}</h2>
+            <p className="lv-sub" style={{ marginTop: 4 }}>{t('mod.subscribeNowBody')}</p>
+          </div>
+          <button className="lv-btn quiet sm" onClick={onClose} aria-label={t('a.close')}><X size={16} /></button>
+        </div>
+        <div className="lv-modal-body">
+          <Elements stripe={stripePromise}>
+            <PaymentForm userId={userId} userEmail={userEmail} onSuccess={onSuccess} />
+          </Elements>
+          <p className="lv-small" style={{ marginTop: 16, textAlign: 'center' }}>
+            <a href={lang === 'es' ? '/es/annual' : '/annual'} style={{ color: 'var(--lv-blue)', fontWeight: 600 }}>{t('mod.orAYear')}</a>
+          </p>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 interface SubscriptionGateProps {
   children: React.ReactNode;
 }
@@ -134,6 +171,7 @@ export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) 
   const [userId, setUserId] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('');
+  const [subscribeOpen, setSubscribeOpen] = useState(false);
 
   useEffect(() => {
     checkSubscription();
@@ -240,11 +278,12 @@ export const SubscriptionGate: React.FC<SubscriptionGateProps> = ({ children }) 
           <span>
             {daysLeft === 1 ? t('mod.trialEndsInOneDay', { n: daysLeft }) : t('mod.trialEndsInDays', { n: daysLeft })}
           </span>
-          <button className="lv-btn pri sm" onClick={() => setStatus('expired')}>
+          <button className="lv-btn pri sm" onClick={() => setSubscribeOpen(true)}>
             {t('mod.subscribeFiveAMonth')}
           </button>
         </div>
       )}
+      <SubscribeModal open={subscribeOpen} onClose={() => setSubscribeOpen(false)} userId={userId} userEmail={userEmail} onSuccess={() => { setSubscribeOpen(false); setStatus('active'); }} />
       {children}
     </>
   );

@@ -16,13 +16,14 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { supabase } from '@/lib/supabase';
 import { startStripeConnect } from '@/lib/stripeConnect';
 import { fetchPayoutInfo, PayoutInfo, STRIPE_PAYOUT_SETTINGS } from '@/lib/stripePayouts';
+import { SubscribeModal } from './SubscriptionGate';
 import { Menu, Bell, Loader2, User, Users, LogOut, ArrowLeft, Receipt, FileText, CheckCircle, HelpCircle, Plus, CreditCard, Home, StickyNote, Camera, ChevronRight, AlertTriangle } from 'lucide-react';
 import { isPushSubscribed } from '@/lib/pushNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { HelpModal } from './HelpModal';
 import { Mark } from './Mark';
-import { LanguageToggle, useT } from '@/i18n';
+import { LanguageToggle, useT, useLang } from '@/i18n';
 import { Tour, tourRequested } from './Tour';
 
 type View = 'dashboard' | 'clients' | 'notifications' | 'estimates' | 'photos' | 'invoices' | 'account' | 'notes';
@@ -441,13 +442,17 @@ function BillingSettings() {
   const [status, setStatus] = useState<string | null>(null);
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [subscribeOpen, setSubscribeOpen] = useState(false);
+  const [me, setMe] = useState<{ id: string; email: string }>({ id: '', email: '' });
   const { toast } = useToast();
   const t = useT();
+  const { lang } = useLang();
 
   useEffect(() => {
     const loadStatus = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setMe({ id: user.id, email: user.email || '' });
       const { data } = await supabase.functions.invoke('check-subscription', {
         body: { userId: user.id, userEmail: user.email, userName: '' }
       });
@@ -487,6 +492,13 @@ function BillingSettings() {
         <div style={{ marginTop: 10 }}>
           <p className="lv-h2" style={{ color: 'var(--lv-blue)' }}>{t('lst.freeTrial')}</p>
           <p className="lv-sub" style={{ marginTop: 4 }}>{daysLeft !== null ? t('lst.daysRemaining', { days: daysLeft }) : t('lst.trialActive')}</p>
+          {/* Subscribe before the trial ends; the free days are kept. */}
+          <p className="lv-small" style={{ margin: '12px 0 14px' }}>{t('lst.subscribeEarlyBody')}</p>
+          <div className="lv-inline" style={{ gap: 10, flexWrap: 'wrap' }}>
+            <button className="lv-btn pri" onClick={() => setSubscribeOpen(true)}>{t('lst.subscribeNow')}</button>
+            <a className="lv-btn sec" href={lang === 'es' ? '/es/annual' : '/annual'}>{t('lst.aYearFor49')}</a>
+          </div>
+          <SubscribeModal open={subscribeOpen} onClose={() => setSubscribeOpen(false)} userId={me.id} userEmail={me.email} onSuccess={() => { setSubscribeOpen(false); setStatus('active'); setDaysLeft(null); toast({ title: t('lst.planActive'), description: t('lst.planActiveBody') }); }} />
         </div>
       )}
       {status === 'cancelled' && (

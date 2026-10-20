@@ -12,6 +12,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AuthModal from '@/components/AuthModal';
+import { supabase } from '@/lib/supabase';
 import { Mark } from '@/components/Mark';
 import { useT, useLang, LanguageToggle } from '@/i18n';
 import { trackEvent } from '@/lib/pixel';
@@ -100,9 +101,13 @@ export default function AnnualPage() {
     setBusy(true); setErr('');
     trackEvent('InitiateCheckout', { value: 49, currency: 'USD', content_name: 'LevelWorks Annual' });
     try {
+      // A signed-in buyer's email goes on the checkout, locked, so the year lands
+      // on the account they already use instead of one Stripe's autofill invents.
+      const { data: { session } } = await supabase.auth.getSession();
       const r = await fetch('/api/annual-checkout', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lang, utm: readUtm() }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+        body: JSON.stringify({ lang, email: session?.user?.email || undefined, utm: readUtm() }),
       });
       const d = await r.json();
       if (r.status === 409) { setCount(c => ({ count: d.count ?? CAP, left: 0, soldOut: true })); setBusy(false); return; }

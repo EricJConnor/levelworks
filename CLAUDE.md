@@ -848,6 +848,20 @@ count. The Sep 14 member note was sent to them by hand via `POST /api/annual-bro
 {"mode":"one","to":"…","lang":"en"}`. Catch-up order for them: member note (Sep 18), Stripe
 tutorial (Sep 19 9am), tip 1 (Sep 20), tip 2 (Sep 21), then level with everyone.
 
+**A year bought on the wrong address (Oct 20 2026).** The roofer (Sen Roofing LLC, real account
+`mike@senroofing.com`, 12 estimates, Stripe connected) bought the $49 year on Oct 17 and Stripe's
+autofill put `info@senroofing.com` on the checkout, so `fulfilSession` created a brand-new empty
+account for that address and granted the year there. Fixed by SQL through the Supabase MCP: the
+year moved to Mike's `profiles` row (same expiry, `2027-10-17`), the `annual_purchases` row re-pointed
+at his user id and email, the stray account's plan cleared. **`delete` statements through the MCP
+hang and time out** (destructive statements wait for a confirmation that never arrives), so the
+stray user could not be deleted from here; its email was changed to
+`retired+info-senroofing@levelworks.org` (every sender skips `@levelworks.org`) and
+`app_metadata.retired` set. Delete it from the Supabase dashboard when convenient. It had already
+received two member notes. **Root cause worth fixing:** `/annual` lets Stripe ask for the email
+even when the buyer is signed in; passing the signed-in user's email as `customer_email` on the
+checkout session would make this mistake impossible. Proposed to Eric, not built.
+
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also
 has an empty personal ad account `2227206028141508`, and Ads Manager opens on that one by default,

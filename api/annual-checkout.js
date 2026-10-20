@@ -5,9 +5,14 @@
  *
  * No signup form before payment: Stripe collects the email, and the webhook
  * creates the account. 409 when the 500 spots are gone.
+ *
+ * A signed-in buyer sends their session token; their account email is then
+ * set on the checkout and Stripe locks it, so autofill cannot put a different
+ * address on the receipt and strand the year on a brand-new empty account
+ * (the roofer, Oct 17 2026: info@ instead of mike@).
  */
 import Stripe from 'stripe';
-import { json, readBody, normalizeLang, claimedCount, ANNUAL_CAP, SITE_URL, missingEnv } from './_lib/annual.js';
+import { json, readBody, normalizeLang, claimedCount, ANNUAL_CAP, SITE_URL, missingEnv, admin } from './_lib/annual.js';
 
 const clean = (v, max = 120) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
@@ -19,7 +24,16 @@ export default async function handler(req, res) {
   let body = {};
   try { body = JSON.parse((await readBody(req)).toString('utf8') || '{}'); } catch { /* empty body is fine */ }
   const lang = normalizeLang(body.lang);
-  const email = clean(body.email, 200);
+  let email = clean(body.email, 200);
+  // The signed-in account wins over anything the page sent.
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+  if (token) {
+    try {
+      const { data } = await admin().auth.getUser(token);
+      if (data?.user?.email) email = data.user.email.trim().toLowerCase();
+    } catch { /* not signed in; Stripe asks for the email as before */ }
+  }
   const utm = body.utm && typeof body.utm === 'object' ? body.utm : {};
 
   let count = 0;

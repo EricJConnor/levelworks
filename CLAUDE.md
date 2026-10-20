@@ -860,7 +860,9 @@ stray user could not be deleted from here; its email was changed to
 `app_metadata.retired` set. Delete it from the Supabase dashboard when convenient. It had already
 received two member notes. **Root cause worth fixing:** `/annual` lets Stripe ask for the email
 even when the buyer is signed in; passing the signed-in user's email as `customer_email` on the
-checkout session would make this mistake impossible. Proposed to Eric, not built.
+checkout session makes this mistake impossible. **Built Oct 20 (PR #126):** the page sends the
+session token and email, the route resolves the email from the token and sets `customer_email`,
+which Stripe locks. Signed-out buyers are unchanged.
 
 **Where the campaign actually lives, because it cost an hour:** the ad account `3071713068446` is
 owned by Eric's business portfolio **"What's Next"** (`1245227667768739`). His personal login also

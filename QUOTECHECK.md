@@ -144,7 +144,12 @@ unsubscribed contacts; stops at the end of the list. Preview each in a browser, 
 - **Weekly read (Oct 9).** Unchanged: Windsor paused, no word from Eric since Sep 20, still 1
   upload (the test), 0 paid, 0 saves.
 - **Weekly read (Oct 16).** Unchanged: Windsor paused, no word from Eric, still 1 upload (the
-  test), 0 paid, 0 saves. Next read Oct 23.
+  test), 0 paid, 0 saves.
+- **Weekly read (Oct 23).** Site unchanged: still 1 upload (the test), 0 paid, 0 saves. **Windsor
+  changed:** it now says no Meta accounts are connected at all, so someone (Eric, presumably)
+  went in and disconnected everything rather than two of three. The ad account `3071713068446`
+  has to be selected again at https://onboard.windsor.ai?datasource=facebook (keep only that
+  one). Until then nothing here can read or change the ads. Next read Oct 30.
 - **Rules:** nothing touched before day five unless rejected or zero delivery. Judge by cost per
   upload (under $5 working) and uploads → purchases. Short pauses cost nothing; a pause of a week
   or edits to budget/targeting reset Meta's learning. Do not daypart (not available on daily

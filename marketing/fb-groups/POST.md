@@ -35,9 +35,9 @@ so every new member carries the group that sent them. Both together take about a
 
 ## 1. General contractor (the main post)
 
-Been a contractor a long time. Estimates used to mean the kitchen table at 10 at night, then
-chasing a signature, then chasing the check. I got tired of paying $50 a month for software that
-still made me do most of it, so I built my own.
+Been a contractor a long time. Estimates meant the kitchen table at 10 at night, then chasing a
+signature, then chasing the check. I got tired of paying $50 a month for software that still made
+me do most of it, so I built my own.
 
 levelworks.org/go/GROUPCODE
 
@@ -45,23 +45,22 @@ Write the estimate on your phone in about a minute, text it, the customer signs 
 tap turns it into an invoice and they pay from the link, card or bank transfer, through Stripe,
 straight to your account. Works in English and translates to or from Spanish.
 
-$5 a month. First 30 days free, no card to try it. If something's missing, tell me. I'm a
-contractor, not a software company, and I fix things fast.
+$5 a month. First 30 days free, no card to try it. I'm a contractor, not a software company. Tell
+me what's missing and I'll build it.
 
 ## 2. Roofer / exterior
 
 Roofers, you know the drill. Customer wants a number before you've been on the roof, you need a
 signature before the shingles get ordered, then you wait on the check.
 
-I got sick of paying $50 a month for estimating software, so I built one that does the job and
-nothing else. levelworks.org/go/GROUPCODE
+I got sick of paying $50 a month for estimating software, so I built my own.
+levelworks.org/go/GROUPCODE
 
-Estimate on your phone from the driveway, text it, they sign on their phone. When you're done,
-convert it to an invoice and they pay from the link, card or bank transfer through Stripe. Bank
-transfer on a $10,000 roof costs $5 instead of $300. Works in English and translates to or from
-Spanish.
+Estimate on your phone from the driveway, text it, they sign on theirs. Convert it to an invoice
+when you're done and they pay from the link, card or bank transfer through Stripe. Bank transfer
+on a $10,000 roof costs $5 instead of $300. Works in English and translates to or from Spanish.
 
-$5 a month, first 30 days free, no card to try it. Built by a contractor. Tell me what you'd change.
+$5 a month, first 30 days free, no card to try it. Tell me what you'd change.
 
 ## 3. Handyman / small jobs
 

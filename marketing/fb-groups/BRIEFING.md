@@ -36,8 +36,6 @@ tracked to the group. The body says `levelworks.org` in plain words where the po
 group must never see a `/go/` address. If a group's post box gives no preview card, post with
 the plain words only and note "no card" in the table. The code comes from the tracker; if the
 group has none yet, make one (lowercase, dashes) and put it in the end-of-day table.
-If the group has no code yet, make one (lowercase, dashes) and put it in the end-of-day table so
-the tracker gets it.
 
 ## The rules
 
@@ -73,7 +71,7 @@ One table, one row per group touched today, in this order:
 
 | Group | Members | Joined | Posted | Variation | Link used | Comments | Sign-ups or demo requests | Next due | Notes |
 
-Variation = 1 general, 2 roofer, 3 handyman, 4 Spanish. Link used = the exact URL posted.
+Variation = 1 general, 2 roofer, 3 handyman, 4 Spanish. Link used = the tracked link pasted to build the card (the group only saw levelworks.org).
 Comments = count, plus any question not on the replies list, quoted. Next due = the earliest the
 group's rules allow the next post. Notes = warnings, rule details, join questions asked, anyone
 to flag.

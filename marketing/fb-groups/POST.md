@@ -41,9 +41,9 @@ me do most of it, so I built my own.
 
 levelworks.org/go/GROUPCODE
 
-Write the estimate on your phone in about a minute, text it, the customer signs it on theirs. One
-tap turns it into an invoice and they pay from the link, card or bank transfer, through Stripe,
-straight to your account. Works in English and translates to or from Spanish.
+Write the estimate on your phone in a minute, text it, the customer signs on theirs. One tap
+turns it into an invoice and they pay from the link, card or bank transfer through Stripe, straight
+to your account. Works in English and translates to or from Spanish.
 
 $5 a month. First 30 days free, no card to try it. I'm a contractor, not a software company. Tell
 me what's missing and I'll build it.

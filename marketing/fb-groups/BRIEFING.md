@@ -17,9 +17,9 @@ either in a contractor group, and never post LevelWorks in a group that was join
 
 levelworks.org. Estimates and invoices for contractors, on the phone. Write an estimate in about a
 minute, send it by text or email, the customer signs it on their phone, convert it to an invoice in
-one tap, the customer pays by card from the link, money goes to the contractor's own Stripe
-account. The whole app is in English and Spanish with a button that translates what the contractor
-typed. Recurring billing for maintenance jobs. Photo updates to the client from the site.
+one tap, the customer pays by card or bank transfer (ACH) through Stripe from the link, money goes
+to the contractor's own Stripe account and LevelWorks takes no cut. Works in English and
+translates to or from Spanish with one button. Recurring billing for maintenance jobs. Photo updates to the client from the site.
 
 $5 a month after a free 30 days. No card needed to try it. A full year is $49. Those are the only
 prices that exist; never quote anything else and never promise a feature that is not listed here.
@@ -28,8 +28,10 @@ prices that exist; never quote anything else and never promise a feature that is
 
 Use the four versions in POST.md (general contractor, roofer/exterior, handyman/small jobs,
 Spanish). Rotate them. Never post the same version twice in one day, and never the same version
-twice in the same group. Replace `[link]` with the tracked link for that group from the tracker:
-`https://levelworks.org/?utm_source=fb&utm_campaign=<groupcode>` (the Spanish version uses `/es`).
+twice in the same group. Replace `GROUPCODE` with the group's code from the tracker, so the link reads
+`levelworks.org/go/<groupcode>` (Spanish: `levelworks.org/es/go/<groupcode>`). The link stays in
+the body of the post exactly where it is written; it is what gets the visits and the sign-ups, so
+it is never dropped and never moved to a comment.
 If the group has no code yet, make one (lowercase, dashes) and put it in the end-of-day table so
 the tracker gets it.
 

@@ -28,10 +28,14 @@ prices that exist; never quote anything else and never promise a feature that is
 
 Use the four versions in POST.md (general contractor, roofer/exterior, handyman/small jobs,
 Spanish). Rotate them. Never post the same version twice in one day, and never the same version
-twice in the same group. Replace `GROUPCODE` with the group's code from the tracker, so the link reads
-`levelworks.org/go/<groupcode>` (Spanish: `levelworks.org/es/go/<groupcode>`). The link stays in
-the body of the post exactly where it is written; it is what gets the visits and the sign-ups, so
-it is never dropped and never moved to a comment.
+twice in the same group. **How the link goes in, every time:** paste the group's tracked link
+`https://levelworks.org/go/<groupcode>` (Spanish: `https://levelworks.org/es/go/<groupcode>`)
+into the post box first, wait for Facebook's preview card to appear, then delete the pasted URL
+from the text and write the post. The card stays and shows only LEVELWORKS.ORG; a tap on it is
+tracked to the group. The body says `levelworks.org` in plain words where the post has it. The
+group must never see a `/go/` address. If a group's post box gives no preview card, post with
+the plain words only and note "no card" in the table. The code comes from the tracker; if the
+group has none yet, make one (lowercase, dashes) and put it in the end-of-day table.
 If the group has no code yet, make one (lowercase, dashes) and put it in the end-of-day table so
 the tracker gets it.
 

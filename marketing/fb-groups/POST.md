@@ -10,11 +10,14 @@ theirs, convert to an invoice, the client pays by card or bank transfer (ACH) th
 the link, works in English and translates to or from Spanish, $5 a month, 30 days free, no card
 needed to try it. Do not add claims (no "scheduling", no "AI", no numbers of users).
 
-**The link goes in the text as `levelworks.org/go/<groupcode>`** (Eric, Oct 28: the link in the
-post is what gets the visits and the sign-ups). It is short enough to read as the site's name,
-Facebook unfurls it into a preview card, and it forwards to the homepage carrying
-`utm_source=fb&utm_campaign=<groupcode>`, so the visit is still tracked. Spanish posts use
-`levelworks.org/es/go/<groupcode>`. Write it once in the body, plain, no "click here".
+**The group only ever sees `levelworks.org`** (Eric, Oct 28: "i'd rather the groups not actually
+see /go/groupcode"). The trick is Facebook's own: paste the tracked link
+`https://levelworks.org/go/<groupcode>` into the post box first, wait for the preview card to
+appear, then **delete the pasted URL from the text**. The card stays, it shows only
+"LEVELWORKS.ORG" and the page title, and a tap on it opens the tracked link, so the visit still
+carries `utm_campaign=<groupcode>`. The body of the post says `levelworks.org` in plain words, as
+written below. Never leave a `/go/` URL visible. Spanish posts build the card from
+`https://levelworks.org/es/go/<groupcode>`.
 
 ## The tracked link
 
@@ -23,7 +26,8 @@ Facebook unfurls it into a preview card, and it forwards to the homepage carryin
 
 `<groupcode>` is the short code from the tracker (lowercase letters, digits and dashes, e.g.
 `pa-contractors`, `nj-roofers`, `handyman-usa`). One code per group, forever. The redirect lives
-in `vercel.json`; the long form with the tags written out also works if ever needed.
+in `vercel.json`. The tracked link is only ever pasted to build the preview card and then removed
+from the text; see above.
 
 **What the site records today:** nothing about a visitor's link on the homepage. The `/annual`
 checkout and Quote Check keep their UTMs, the landing page does not, and there is no analytics on
@@ -39,7 +43,7 @@ Been a contractor a long time. Estimates meant the kitchen table at 10 at night,
 signature, then chasing the check. I got tired of paying $50 a month for software that still made
 me do most of it, so I built my own.
 
-levelworks.org/go/GROUPCODE
+levelworks.org
 
 Write the estimate on your phone in a minute, text it, the customer signs on theirs. One tap
 makes it an invoice and they pay from the link, card or bank transfer through Stripe, to your
@@ -54,7 +58,7 @@ Roofers, you know the drill. Customer wants a number before you've been on the r
 signature before the shingles get ordered, then you wait on the check.
 
 I got sick of paying $50 a month for estimating software, so I built my own.
-levelworks.org/go/GROUPCODE
+levelworks.org
 
 Estimate on your phone from the driveway, text it, they sign on theirs. Convert it to an invoice
 when you're done and they pay from the link, card or bank transfer through Stripe. Bank transfer
@@ -67,7 +71,7 @@ $5 a month, first 30 days free, no card to try it. Tell me what you'd change.
 Small jobs are the worst for paperwork. Twenty estimates a week, half of them under $500, and
 every one still needs a price, a yes and a payment.
 
-I built levelworks.org/go/GROUPCODE because I wasn't paying $50 a month to write a $300 estimate.
+I built levelworks.org because I wasn't paying $50 a month to write a $300 estimate.
 
 Type it on your phone in a minute, text it, the customer signs on theirs. Convert it to an invoice
 and they pay from the link, card or bank transfer, through Stripe. Works in English and translates
@@ -78,7 +82,7 @@ me and I'll build it.
 
 ## 4. Spanish-speaking crews (for bilingual or Spanish groups)
 
-Para los que trabajan en español y cotizan en inglés, o al revés. levelworks.org/es/go/GROUPCODE
+Para los que trabajan en español y cotizan en inglés, o al revés. levelworks.org
 
 Escribes el presupuesto en tu teléfono en un minuto, lo mandas por mensaje, el cliente lo firma
 desde el suyo. Un toque lo convierte en factura y te pagan desde el enlace, con tarjeta o

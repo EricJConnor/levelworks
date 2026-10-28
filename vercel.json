@@ -92,5 +92,17 @@
       "path": "/api/cron-quotecheck",
       "schedule": "0 14 * * *"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/go/:code",
+      "destination": "/?utm_source=fb&utm_campaign=:code",
+      "permanent": false
+    },
+    {
+      "source": "/es/go/:code",
+      "destination": "/es?utm_source=fb&utm_campaign=:code",
+      "permanent": false
+    }
   ]
 }

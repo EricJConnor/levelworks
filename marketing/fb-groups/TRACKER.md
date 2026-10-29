@@ -137,31 +137,22 @@ homeowner-ideas group (kitchen, bathroom, basement ideas).
 
 ## Daily plans
 
-### Day 1, Thursday Oct 29 2026
+### Day 1, Thursday Oct 29 2026 (LevelWorks share: 5 posts, 10 joins; window 11:30 to 1:30 ET)
 
-Posts (10, twenty minutes apart, rules read first every time; version 1 general, 2 roofer, 3
-handyman, 4 Spanish; change the first line to name the group's trade or area):
+| # | Code | Group | Version | First line names |
+|---|---|---|---|---|
+| 1 | pa-contractors | PA Contractors | 1 | PA contractors |
+| 2 | lehigh-biz | Lehigh Valley Contractors/Business Professionals Connection | 3 | Lehigh Valley |
+| 3 | njpa-connected | CONTRACTORS NJ/PA Conncted | 2 | NJ and PA |
+| 4 | nj-providers | New Jersey Contractors and Service Providers | 1 | New Jersey |
+| 5 | tn-construction | Tennessee Construction, General contractors & sub Contractors | 3 | Tennessee |
 
-| # | Code | Group | Version |
-|---|---|---|---|
-| 1 | pa-contractors | PA Contractors | 1 |
-| 2 | lehigh-biz | Lehigh Valley Contractors/Business Professionals Connection | 3 |
-| 3 | nj-lounge | The Contractors Lounge NJ | 2 |
-| 4 | njpa-connected | CONTRACTORS NJ/PA Conncted | 1 |
-| 5 | nj-providers | New Jersey Contractors and Service Providers | 3 |
-| 6 | phl-tristate | Philadelphia/NJ/DE Contractor Handyman Electrician Plumber | 2 |
-| 7 | tn-construction | Tennessee Construction, General contractors & sub Contractors | 1 |
-| 8 | md-connection | Maryland Contractors Connection | 3 |
-| 9 | ga-construction | Construction Contractors of Georgia! | 2 |
-| 10 | nj-contratistas | Contractors of NJ / Contratistas de NJ | 4 |
+Joins (10): chc-136, chc-34, lv-fridays, estimating-pricing, subs-network, roofers-subs,
+nj-construction, bucks-smallbiz, montco-assoc, sj-espanol.
 
-Joins (20): chc-136, chc-34, lv-fridays, mainline, bucks-social, estimating-pricing,
-subs-network, roofers-subs, subcontractors, tx-construction, handyman-services, nj-construction,
-nj-best-gc, nj-contractors-3k, bucks-smallbiz, montco-assoc, schuylkill, sj-espanol, sa-espanol,
-tile-espanol.
-
-Tomorrow if approved: lv-fridays (Free-For-All Friday). Sunday Nov 1: md-network. Next Thursday
-Nov 5: chc-136 and chc-34 shout-out threads. Wednesday Nov 4: tristate-cir.
+Held for later days: nj-lounge, phl-tristate, md-connection, ga-construction, nj-contratistas
+(Spanish), and the rest of the join queue. Set days: lv-fridays Fri Oct 30, md-network Sun Nov 1,
+tristate-cir Wed Nov 4, chc-136 and chc-34 Thu Nov 5, mainline Nov 25.
 
 ## Daily log
 

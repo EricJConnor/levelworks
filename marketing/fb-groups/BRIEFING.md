@@ -44,7 +44,11 @@ group has none yet, make one (lowercase, dashes) and put it in the end-of-day ta
 1. **Read each group's rules before posting**, even though trades groups are loose. If the rules
    say no promo, no links, or promo only on a certain day, obey them exactly. If unsure, skip the
    group and note why.
-2. **10 posts and 20 joins a day, at most.** Twenty minutes between posts. Stop at 9 pm ET.
+2. **The account is shared with isms, so the limits are totals: 10 posts and 20 joins a day
+   across both.** LevelWorks' share is **5 posts and 10 joins**, in the 11:30 to 1:30 ET window,
+   with the 5:00 to 6:30 reply sweep; Eric can move the split in the morning paste. Twenty
+   minutes between any two posts, either business. Stop at 9 pm ET. The full shared clock is
+   in `marketing/fb-groups/SHARED-CLOCK.md`.
 3. **Any warning from Facebook** ("you're posting too fast", "this looks like spam", a block, a
    review notice, anything) means stop everything and tell Eric the exact words.
 4. **Join questions get honest answers** in Eric's words: contractor in PA, here to talk shop and

@@ -27,8 +27,10 @@ prices that exist; never quote anything else and never promise a feature that is
 ## The posts
 
 Use the four versions in POST.md (general contractor, roofer/exterior, handyman/small jobs,
-Spanish). Rotate them. Never post the same version twice in one day, and never the same version
-twice in the same group. **How the link goes in, every time:** paste the group's tracked link
+Spanish). Rotate them 1-2-3-4 so no two posts in a row use the same version, and change the
+first line of each post to name the group's trade or area (roofers in NJ, Bucks County, Georgia)
+so no two posts are word for word the same; Facebook hides identical text posted across groups.
+Never the same version twice in the same group. **How the link goes in, every time:** paste the group's tracked link
 `https://levelworks.org/go/<groupcode>` (Spanish: `https://levelworks.org/es/go/<groupcode>`)
 into the post box first, wait for Facebook's preview card to appear, then delete the pasted URL
 from the text and write the post. The card stays and shows only LEVELWORKS.ORG; a tap on it is
@@ -58,12 +60,12 @@ group has none yet, make one (lowercase, dashes) and put it in the end-of-day ta
 
 ## Where to start
 
-1. The groups Eric is already in, biggest first (Muse's ALREADY JOINED table). He has posted links
-   in some without reading rules and nobody objected; read the rules anyway before the next post.
-2. Then Muse's NEW GROUPS table: tri-state (PA, NJ, DE, by county) before national; general
-   contractors, remodelers, roofers, handymen and "contractor business" groups before single trades.
-3. Neighbourhood community groups are not on this list: a contractor tool belongs where
-   contractors are.
+Follow the daily plan in TRACKER.md: the posting lane, the set-day calendar, the join queue and
+the do-not-post list are all there with a code per group. One thing to hold in mind: in most of
+these groups "promo allowed" means contractors advertising to homeowners. LevelWorks is a tool
+for contractors, and some groups ban pitches to contractors by name (software, estimating
+services, vendors). If a group's rules say anything like that, skip it and note it, even if it is
+on the plan.
 
 ## End-of-day table
 

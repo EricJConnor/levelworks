@@ -78,7 +78,6 @@ Contractor Alliance 13k `ia-alliance`.
 | subs-network | Contractors and Subcontractors Network | https://facebook.com/groups/222442833582028/ | 34,000 | "Learn to grow businesses", no rules |
 | roofers-subs | Roofing Contractors and Subs | https://facebook.com/groups/703081817723204/ | 34,000 | Advertising allowed with a website |
 | subcontractors | Subcontractors | https://facebook.com/groups/297047815357273/ | 17,000 | Business listings are the purpose |
-| tx-construction | Texas Construction Contractors | https://facebook.com/groups/383223972140698/ | 27,000 | Contractors advertise, include location |
 | handyman-services | Contractors & Handyman Services | https://facebook.com/groups/1494102950633199/ | 22,000 | Show your work daily |
 | nj-construction | New Jersey Construction Connection | https://facebook.com/groups/788976671132561/ | 29,000 | NJ pros, no rules |
 | nj-best-gc | Best New Jersey General Contractor | https://facebook.com/groups/1665625800347148/ | 14,000 | NJ, no rules |
@@ -116,7 +115,7 @@ Professionals 4k · Colorado Tile Posse.
 
 ## Do not post LevelWorks here (rules ban vendor, software or estimating pitches to contractors)
 
-Contractors Helping Contractors 34k (177646889606041): run by DripJobs, a competing contractor CRM, and its rule 4 bans self-promotion. Never join. ·
+Texas Construction Contractors 27k: the join form is lead-gen (asks for an email for a newsletter, joining consents to outreach); cancelled, never. · Contractors Helping Contractors 34k (177646889606041): run by DripJobs, a competing contractor CRM, and its rule 4 bans self-promotion. Never join. ·
 Contractor and Homeowner Forum of NJ (estimating services named) · 757 Contractors & Home Services
 (software excluded, links auto-deleted) · Asheville NC Contractor Network (estimating services
 named) · California Roofing Contractors and California Plumbing Contractors (software vendors
@@ -136,6 +135,18 @@ IMPROVEMENT RECOMMENDATIONS, the review and warning groups, the union clubs, and
 homeowner-ideas group (kitchen, bathroom, basement ideas).
 
 ## Daily plans
+
+### Days 3 and 4, Sat Oct 31 and Sun Nov 1 2026 (5 posts, 10 joins each)
+
+Sat posts: bucks-smallbiz v3 · montco-assoc v1 · subcontractors v2 · nj-best-gc v3 · biz-owners v1.
+Sat joins: fl-contractors, denver-trades, orlando-services, okaloosa, utah-northern, trim-carpentry,
+ga-subs-79, finance-playbook, remodeling-jobs, contractors-networking.
+Sun posts: md-network v1 (1st of month) · phl-tristate v2 · md-connection v3 · nj-contractors-3k v1
+(promo every 10 days; answer "Are you promoting your business?" yes) · sj-espanol v4 (Spanish).
+Sun joins: ct-contractors, pool-connection, trades-wealth, tile-espanol, ntx-hispanic, find-bucks,
+sales-talk (ask the admin before ever posting), biz-success, Remodelers Worldwide
+(959498347494402), Indianapolis General Contractors (1303076444457246).
+Held: ga-construction, wa-smallbiz, the pending groups. Mon Nov 2: pa-contractors.
 
 ### Day 2, Friday Oct 30 2026 (5 posts, 10 joins)
 
@@ -162,4 +173,5 @@ tristate-cir Wed Nov 4, chc-136 and chc-34 Thu Nov 5, mainline Nov 25.
 
 | Date | Posts | Joins | Comments | Sign-ups | Warnings | Notes |
 |---|---|---|---|---|---|---|
+| Fri Oct 30 | 5 (live: lv-fridays, subs-network, nj-construction; pending: estimating-pricing, nj-lounge; Thursday's two still pending) | 10 (joined: subcontractors, nj-best-gc, nj-contractors-3k, schuylkill, biz-owners, contractor-ai, sa-espanol; pending: handyman-services, mainline; cancelled: tx-construction, lead-gen form) | 0 | 0 | none | nj-lounge already had an Apr 29 LevelWorks post from Eric ($150/month wording); leave it a long while. Schuylkill and Contractor AI participation questions unanswered (none true / crew size unknown). Main Line questions dialog crashes the extension. |
 | Thu Oct 29 | 5 (3 live: pa-contractors, lehigh-biz, tn-construction; 2 pending: njpa-connected, nj-providers) | 9 (approved: lv-fridays; joined: estimating-pricing, subs-network, nj-construction, bucks-smallbiz, montco-assoc, sj-espanol; pending: chc-136, roofers-subs; skipped chc-34, DripJobs) | 0 | 0 | none, account status good | Card showed LEVELWORKS.ORG on all five. Next due: pa-contractors Mon Nov 2, nj-providers Thu Nov 5, others weekly. |

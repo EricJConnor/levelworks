@@ -7,6 +7,8 @@ Group code = `utm_campaign` for that group, assigned once, never reused.
 
 ## Rules of the routine (fixed)
 
+**Nov 1, Eric's call:** LevelWorks may post up to 10 a day and request 20 joins, because the contractor groups' rules are lax. The risk that remains is Facebook's own account-level spam detection, stated to him once; any warning or hidden post drops the day back to 5 and stops both businesses.
+
 10 posts and 20 joins a day, 20 minutes between posts, stop at 9 pm ET, read each group's rules
 before every post, rotate the four post versions, reply to every comment the same day, any
 Facebook warning stops the day. Nothing new posts without Eric's go the first time.

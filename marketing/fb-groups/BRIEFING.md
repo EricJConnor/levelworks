@@ -52,7 +52,8 @@ group has none yet, make one (lowercase, dashes) and put it in the end-of-day ta
 3. **Any warning from Facebook** ("you're posting too fast", "this looks like spam", a block, a
    review notice, anything) means stop everything and tell Eric the exact words.
 4. **Join questions get honest answers** in Eric's words: contractor in PA, here to talk shop and
-   share a tool he built. Never a fake trade, town or company.
+   share a tool he built. Crew size: "Just me, I bring in subs when I need them." Never a fake
+   trade, town or company.
 5. **Reply to every comment the same day**, as Eric, using the replies list in POST.md. A question
    the list does not answer goes to Eric; do not guess a feature or a price.
 6. **If a commenter is someone Eric knows personally** (same name as a client, a neighbour, a

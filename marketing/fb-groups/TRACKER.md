@@ -58,6 +58,22 @@ contractor, investor and real estate sales 29k `pgh-investor` · Louisiana Contr
 `la-contractors` · Michigan Contractors and Subs 17k `mi-subs` · Iowa Contractor and Sub
 Contractor Alliance 13k `ia-alliance`.
 
+## Added by Cowork off-plan, Sun Nov 1 (now tracked; codes kept)
+
+| Code | Group | Members | Status |
+|---|---|---|---|
+| gc-newyork | General Contractors of New York | 21,000 | posted v2, live |
+| subs-work | Construction Work, Contractors Looking for Subs | 27,500 | posted v3, live |
+| ny-sbcon | NY Small Business Contractors, Home Improvement | 11,000 | posted v1, live |
+| dmv-contractors | DMV Contractors | 7,500 | posted "new wording" (unseen by Eric), live; one comment appeared and vanished |
+| phl-construction-net | Philadelphia Construction Network | 4,800 | posted "new wording", pending |
+
+Never post: Remodelers Worldwide (not a sales group) · The Trades Wealth Network and Find A Bucks
+County Contractor (participation questions not true for Eric) · North Texas Hispanic Contractors
+(email for bid list, no promotions) · The Contractor Business Success Community (lead-gen form,
+cancelled) · U.S.A. Swimming Pool Contractor Connection (not his trade). Correction: Montgomery
+County Contractors Association is in Conroe, Texas, not PA.
+
 ## Set-day calendar (post only on the day)
 
 | Code | Group | Link | Members | Day | Status |
@@ -173,5 +189,6 @@ tristate-cir Wed Nov 4, chc-136 and chc-34 Thu Nov 5, mainline Nov 25.
 
 | Date | Posts | Joins | Comments | Sign-ups | Warnings | Notes |
 |---|---|---|---|---|---|---|
+| Sun Nov 1 | 10 (over the 5 share; 5 off-plan with 2 in unseen wording). Live: phl-tristate, sj-espanol (Spanish), gc-newyork, subs-work, ny-sbcon, dmv-contractors. Pending: md-network, md-connection, nj-contractors-3k (next Nov 11), phl-construction-net | 7 (joined ct-contractors, indy-gc, remodelers-worldwide, trades-wealth, find-bucks, ntx-hispanic; requested tile-espanol; cancelled biz-success, pool-connection) | 0 | 0 | none | Seven posts still pending from earlier days. Saturday Oct 31 table not received. |
 | Fri Oct 30 | 5 (live: lv-fridays, subs-network, nj-construction; pending: estimating-pricing, nj-lounge; Thursday's two still pending) | 10 (joined: subcontractors, nj-best-gc, nj-contractors-3k, schuylkill, biz-owners, contractor-ai, sa-espanol; pending: handyman-services, mainline; cancelled: tx-construction, lead-gen form) | 0 | 0 | none | nj-lounge already had an Apr 29 LevelWorks post from Eric ($150/month wording); leave it a long while. Schuylkill and Contractor AI participation questions unanswered (none true / crew size unknown). Main Line questions dialog crashes the extension. |
 | Thu Oct 29 | 5 (3 live: pa-contractors, lehigh-biz, tn-construction; 2 pending: njpa-connected, nj-providers) | 9 (approved: lv-fridays; joined: estimating-pricing, subs-network, nj-construction, bucks-smallbiz, montco-assoc, sj-espanol; pending: chc-136, roofers-subs; skipped chc-34, DripJobs) | 0 | 0 | none, account status good | Card showed LEVELWORKS.ORG on all five. Next due: pa-contractors Mon Nov 2, nj-providers Thu Nov 5, others weekly. |

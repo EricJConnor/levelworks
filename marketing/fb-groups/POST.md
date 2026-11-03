@@ -108,6 +108,18 @@ Not selling. Want to know what's working for you.
 
 Replies to answers: thank them, one follow-up about what they like or hate about it, no pitch.
 
+## 6. Eric's line (Nov 3)
+
+Eric's own opener, with one line of why so the only reply is not "why?". 46 words. The last
+line is what stops it reading as a billboard.
+
+Do you do work in or on people's houses and get paid for it? Then you need this app. Period.
+
+Estimate on your phone, they sign on theirs, one tap to invoice, paid by card or bank from the
+link. $5 a month. levelworks.org
+
+I'm a contractor, I built it.
+
 ## Replies (Cowork answers these as Eric; anything else, ask Eric)
 
 - "How much?" — $5 a month after 30 days free. No card to start. There's also a full year for $49.

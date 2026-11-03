@@ -92,6 +92,22 @@ botón que traduce lo que escribiste en cualquier dirección.
 $5 al mes, los primeros 30 días gratis, sin tarjeta para probarla. La hice yo, soy contratista.
 Si falta algo, dime.
 
+## 5. The question (Nov 3; Eric: "I like the new version, I would make it even smaller")
+
+Added after 18 live posts drew zero comments: a story ending in a link reads as an ad in a feed of
+guys looking for work. A question gets answers, and answers push the post up. The card carries
+the feature list; the body does not repeat it. 61 words.
+
+What are you guys using for estimates these days? Jobber, Joist, a Word doc, the hood of the
+truck?
+
+I'm a contractor in PA. Got tired of paying $50 a month for software that still had me typing at
+10 at night, so I built my own. levelworks.org. $5 a month, 30 days free.
+
+Not selling. Want to know what's working for you.
+
+Replies to answers: thank them, one follow-up about what they like or hate about it, no pitch.
+
 ## Replies (Cowork answers these as Eric; anything else, ask Eric)
 
 - "How much?" — $5 a month after 30 days free. No card to start. There's also a full year for $49.

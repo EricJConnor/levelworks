@@ -13,6 +13,16 @@ Group code = `utm_campaign` for that group, assigned once, never reused.
 before every post, rotate the four post versions, reply to every comment the same day, any
 Facebook warning stops the day. Nothing new posts without Eric's go the first time.
 
+## Six-day read (Nov 3): the problem is reach, not copy
+
+36 posts, 27 live, three different kinds of copy, zero comments. The story, the question and
+Eric's line all drew the same nothing, so the copy is not the variable. The variable is that a
+link-card post from a brand-new member is what Facebook shows to the fewest people, and most of
+the groups that actually have readers are holding the posts in admin queues. Wednesday's test:
+the 30-second product video uploaded as a native video (`public/fb/levelworks-30s.mp4`, the
+fact-checked motion cut) and the still (`levelworks-still.png`) as a photo post, each with
+levelworks.org in plain text, against the link card, in the biggest live groups.
+
 ## The one thing Muse flagged that changes everything
 
 Most "promo allowed" groups mean contractors may advertise **to homeowners**. LevelWorks is a
@@ -191,6 +201,7 @@ tristate-cir Wed Nov 4, chc-136 and chc-34 Thu Nov 5, mainline Nov 25.
 
 | Date | Posts | Joins | Comments | Sign-ups | Warnings | Notes |
 |---|---|---|---|---|---|---|
+| Tue Nov 3 | 9 (5 question v5, 4 Eric's line v6; live: chesco-smallbiz, pa-hic, phl-homeowner-net, montco-phl, handy-man, roof-njpa; pending: de-homeowners, nj-roofsiding, sa-gc). Skipped flooring-jobs (homeowner jobs board) | 19 (joined 16 incl. master-roofing, flooring-80k, drywall-12k, windows-doors, fence-gate, deck-porch, buffalo-remodelers, richmond-va; pending: kb-remodel-15k, seattle; unpostable: Contractor Services in Seattle; cancelled Utah's Handy Men) | 0 | 0 | none | 36 posts in 6 days, 27 live, 0 comments. Eric now a member of Contractors Helping Contractors 136k. |
 | Mon Nov 2 | 7 of 10 planned (live: pa-contractors, ga-construction, wa-smallbiz, ct-contractors, indy-gc, neo-network; pending: ntx-contractors). Skipped by rules: mn-contractors (post already pending), pgh-group (Pittsburgh work only), sj-projects (now Buy and Sell). Posts lightly reworded at Eric's ask (Nov 1 night) | 20 (joined 18 incl. pa-hic, phl-homeowner-net, montco-phl, de-homeowners, chesco-smallbiz, central-pa, roof-njpa, nj-roofsiding, drywall-painting-nj, flooring-jobs, handy-man, handy-oddjobs, sa-gc, tampa-bay, tampa-fl, fl-gc-subs-5k, mn-construction, idaho-208; Boston and Miami small-biz joined but unpostable; cancelled: Montgomery County PA Contractors Connections (agency, email form), Delaware Contractors (DE only), South Jersey Contractors (paused), Minnesota Contractors (MN only)) | 0 | 0 | none | 12 posts pending in total. Sunday's two reworded posts read fine: same facts, same prices, his voice. |
 | Sun Nov 1 | 10 (over the 5 share; 5 off-plan with 2 in unseen wording). Live: phl-tristate, sj-espanol (Spanish), gc-newyork, subs-work, ny-sbcon, dmv-contractors. Pending: md-network, md-connection, nj-contractors-3k (next Nov 11), phl-construction-net | 7 (joined ct-contractors, indy-gc, remodelers-worldwide, trades-wealth, find-bucks, ntx-hispanic; requested tile-espanol; cancelled biz-success, pool-connection) | 0 | 0 | none | Seven posts still pending from earlier days. Saturday Oct 31 table not received. |
 | Fri Oct 30 | 5 (live: lv-fridays, subs-network, nj-construction; pending: estimating-pricing, nj-lounge; Thursday's two still pending) | 10 (joined: subcontractors, nj-best-gc, nj-contractors-3k, schuylkill, biz-owners, contractor-ai, sa-espanol; pending: handyman-services, mainline; cancelled: tx-construction, lead-gen form) | 0 | 0 | none | nj-lounge already had an Apr 29 LevelWorks post from Eric ($150/month wording); leave it a long while. Schuylkill and Contractor AI participation questions unanswered (none true / crew size unknown). Main Line questions dialog crashes the extension. |

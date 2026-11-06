@@ -151,7 +151,9 @@ unsubscribed contacts; stops at the end of the list. Preview each in a browser, 
   has to be selected again at https://onboard.windsor.ai?datasource=facebook (keep only that
   one). Until then nothing here can read or change the ads.
 - **Weekly read (Oct 30).** Unchanged: Windsor has no Meta account connected, no word from Eric,
-  still 1 upload (the test), 0 paid, 0 saves. Next read Nov 6.
+  still 1 upload (the test), 0 paid, 0 saves.
+- **Weekly read (Nov 6).** Unchanged: Windsor has no Meta account connected, no word from Eric on
+  this track, still 1 upload (the test), 0 paid, 0 saves. Next read Nov 13.
 - **Rules:** nothing touched before day five unless rejected or zero delivery. Judge by cost per
   upload (under $5 working) and uploads → purchases. Short pauses cost nothing; a pause of a week
   or edits to budget/targeting reset Meta's learning. Do not daypart (not available on daily

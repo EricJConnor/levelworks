@@ -155,7 +155,9 @@ unsubscribed contacts; stops at the end of the list. Preview each in a browser, 
 - **Weekly read (Nov 6).** Unchanged: Windsor has no Meta account connected, no word from Eric on
   this track, still 1 upload (the test), 0 paid, 0 saves.
 - **Weekly read (Nov 13).** Unchanged: Windsor has no Meta account connected, no word from Eric on
-  this track, still 1 upload (the test), 0 paid, 0 saves. Next read Nov 20.
+  this track, still 1 upload (the test), 0 paid, 0 saves.
+- **Weekly read (Nov 20).** Unchanged: Windsor has no Meta account connected, no word from Eric on
+  this track, still 1 upload (the test), 0 paid, 0 saves. Next read Nov 27.
 - **Rules:** nothing touched before day five unless rejected or zero delivery. Judge by cost per
   upload (under $5 working) and uploads → purchases. Short pauses cost nothing; a pause of a week
   or edits to budget/targeting reset Meta's learning. Do not daypart (not available on daily
